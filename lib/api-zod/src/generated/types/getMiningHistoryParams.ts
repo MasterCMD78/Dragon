@@ -6,8 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface TelegramAuthInput {
-  initData: string;
-  /** @nullable */
-  referralCode?: string | null;
-}
+export type GetMiningHistoryParams = {
+limit?: number;
+offset?: number;
+};

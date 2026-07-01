@@ -18,12 +18,8 @@ export interface SuccessResponse {
 }
 
 export interface TelegramAuthInput {
-  /** Raw Telegram initData string from window.Telegram.WebApp.initData */
   initData: string;
-  /**
-     * Referrer's Telegram ID passed as the start_param
-     * @nullable
-     */
+  /** @nullable */
   referralCode?: string | null;
 }
 
@@ -34,19 +30,12 @@ export interface User {
   firstName: string;
   /** @nullable */
   lastName?: string | null;
-  /** Current HP balance */
   balance: number;
   level: number;
-  /** Mining streak in days */
   streak: number;
-  /** Total number of times mined */
   totalMines: number;
-  /**
-     * Telegram ID of the user who referred them
-     * @nullable
-     */
+  /** @nullable */
   referredBy?: string | null;
-  /** This user's referral code (their telegram ID) */
   referralCode?: string;
   isAdmin: boolean;
   isBanned: boolean;
@@ -71,7 +60,6 @@ export interface UserProfile {
   level: number;
   streak: number;
   totalMines: number;
-  /** Telegram ID used as the referral code */
   referralCode: string;
   /** @nullable */
   referredBy?: string | null;
@@ -93,4 +81,76 @@ export interface UserStats {
   /** @nullable */
   nextMineAt?: string | null;
 }
+
+/**
+ * idle = no session; mining = session active, timer running; claimable = session complete, ready to claim
+ */
+export type MiningStatusState = typeof MiningStatusState[keyof typeof MiningStatusState];
+
+
+export const MiningStatusState = {
+  idle: 'idle',
+  mining: 'mining',
+  claimable: 'claimable',
+} as const;
+
+export interface MiningStatus {
+  /** idle = no session; mining = session active, timer running; claimable = session complete, ready to claim */
+  state: MiningStatusState;
+  /**
+     * ISO timestamp when session started
+     * @nullable
+     */
+  sessionStartedAt?: string | null;
+  /**
+     * ISO timestamp when session completes (sessionStartedAt + 24h)
+     * @nullable
+     */
+  sessionEndsAt?: string | null;
+  /**
+     * Seconds left in the current session
+     * @nullable
+     */
+  secondsRemaining?: number | null;
+  balance: number;
+  streak: number;
+  totalMines: number;
+  /** HP earned per hour in current/next session */
+  miningRate: number;
+  /** Total HP that will be earned when session completes */
+  estimatedReward: number;
+  /** @nullable */
+  lastClaimedAt?: string | null;
+}
+
+export interface MiningClaimResult {
+  /** Base HP earned */
+  hpEarned: number;
+  /** Streak bonus HP */
+  bonusHp: number;
+  /** Total HP added to balance */
+  totalReward: number;
+  newBalance: number;
+  newStreak: number;
+  newTotalMines: number;
+}
+
+export interface MiningLogEntry {
+  id: number;
+  hpEarned: number;
+  bonusHp: number;
+  totalHp: number;
+  streak: number;
+  minedAt: string;
+}
+
+export interface MiningHistoryResponse {
+  entries: MiningLogEntry[];
+  total: number;
+}
+
+export type GetMiningHistoryParams = {
+limit?: number;
+offset?: number;
+};
 

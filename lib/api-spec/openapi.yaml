@@ -14,6 +14,8 @@ tags:
     description: Telegram authentication
   - name: users
     description: User management
+  - name: mining
+    description: Mining operations
 paths:
   /healthz:
     get:
@@ -123,6 +125,105 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /mining/status:
+    get:
+      operationId: getMiningStatus
+      tags: [mining]
+      summary: Get current mining session status
+      responses:
+        "200":
+          description: Mining status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MiningStatus"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /mining/start:
+    post:
+      operationId: startMining
+      tags: [mining]
+      summary: Start a new 24-hour mining session
+      responses:
+        "200":
+          description: Mining session started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MiningStatus"
+        "400":
+          description: Session already active or not claimable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /mining/claim:
+    post:
+      operationId: claimMining
+      tags: [mining]
+      summary: Claim rewards from a completed mining session
+      responses:
+        "200":
+          description: Rewards claimed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MiningClaimResult"
+        "400":
+          description: Session not complete or no active session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /mining/history:
+    get:
+      operationId: getMiningHistory
+      tags: [mining]
+      summary: Get paginated mining history
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Mining history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MiningHistoryResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -152,10 +253,8 @@ components:
       properties:
         initData:
           type: string
-          description: Raw Telegram initData string from window.Telegram.WebApp.initData
         referralCode:
           type: ["string", "null"]
-          description: Referrer's Telegram ID passed as the start_param
 
     User:
       type: object
@@ -173,21 +272,16 @@ components:
           type: ["string", "null"]
         balance:
           type: integer
-          description: Current HP balance
         level:
           type: integer
         streak:
           type: integer
-          description: Mining streak in days
         totalMines:
           type: integer
-          description: Total number of times mined
         referredBy:
           type: ["string", "null"]
-          description: Telegram ID of the user who referred them
         referralCode:
           type: string
-          description: This user's referral code (their telegram ID)
         isAdmin:
           type: boolean
         isBanned:
@@ -230,7 +324,6 @@ components:
           type: integer
         referralCode:
           type: string
-          description: Telegram ID used as the referral code
         referredBy:
           type: ["string", "null"]
         totalReferrals:
@@ -262,3 +355,83 @@ components:
           type: boolean
         nextMineAt:
           type: ["string", "null"]
+
+    MiningStatus:
+      type: object
+      required: [state, balance, streak, totalMines, miningRate, estimatedReward]
+      properties:
+        state:
+          type: string
+          enum: [idle, mining, claimable]
+          description: "idle = no session; mining = session active, timer running; claimable = session complete, ready to claim"
+        sessionStartedAt:
+          type: ["string", "null"]
+          description: ISO timestamp when session started
+        sessionEndsAt:
+          type: ["string", "null"]
+          description: ISO timestamp when session completes (sessionStartedAt + 24h)
+        secondsRemaining:
+          type: ["integer", "null"]
+          description: Seconds left in the current session
+        balance:
+          type: integer
+        streak:
+          type: integer
+        totalMines:
+          type: integer
+        miningRate:
+          type: number
+          description: HP earned per hour in current/next session
+        estimatedReward:
+          type: integer
+          description: Total HP that will be earned when session completes
+        lastClaimedAt:
+          type: ["string", "null"]
+
+    MiningClaimResult:
+      type: object
+      required: [hpEarned, bonusHp, totalReward, newBalance, newStreak, newTotalMines]
+      properties:
+        hpEarned:
+          type: integer
+          description: Base HP earned
+        bonusHp:
+          type: integer
+          description: Streak bonus HP
+        totalReward:
+          type: integer
+          description: Total HP added to balance
+        newBalance:
+          type: integer
+        newStreak:
+          type: integer
+        newTotalMines:
+          type: integer
+
+    MiningLogEntry:
+      type: object
+      required: [id, hpEarned, bonusHp, totalHp, streak, minedAt]
+      properties:
+        id:
+          type: integer
+        hpEarned:
+          type: integer
+        bonusHp:
+          type: integer
+        totalHp:
+          type: integer
+        streak:
+          type: integer
+        minedAt:
+          type: string
+
+    MiningHistoryResponse:
+      type: object
+      required: [entries, total]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/MiningLogEntry"
+        total:
+          type: integer

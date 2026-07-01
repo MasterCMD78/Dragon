@@ -22,7 +22,11 @@ import type {
 import type {
   AuthResult,
   ErrorResponse,
+  GetMiningHistoryParams,
   HealthStatus,
+  MiningClaimResult,
+  MiningHistoryResponse,
+  MiningStatus,
   SuccessResponse,
   TelegramAuthInput,
   User,
@@ -493,6 +497,307 @@ export function useGetUserStats<TData = Awaited<ReturnType<typeof getUserStats>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetUserStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetMiningStatusUrl = () => {
+
+
+
+
+  return `/api/mining/status`
+}
+
+/**
+ * @summary Get current mining session status
+ */
+export const getMiningStatus = async ( options?: RequestInit): Promise<MiningStatus> => {
+
+  return customFetch<MiningStatus>(getGetMiningStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMiningStatusQueryKey = () => {
+    return [
+    `/api/mining/status`
+    ] as const;
+    }
+
+
+export const getGetMiningStatusQueryOptions = <TData = Awaited<ReturnType<typeof getMiningStatus>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMiningStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMiningStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMiningStatus>>> = ({ signal }) => getMiningStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMiningStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMiningStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getMiningStatus>>>
+export type GetMiningStatusQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get current mining session status
+ */
+
+export function useGetMiningStatus<TData = Awaited<ReturnType<typeof getMiningStatus>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMiningStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMiningStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getStartMiningUrl = () => {
+
+
+
+
+  return `/api/mining/start`
+}
+
+/**
+ * @summary Start a new 24-hour mining session
+ */
+export const startMining = async ( options?: RequestInit): Promise<MiningStatus> => {
+
+  return customFetch<MiningStatus>(getStartMiningUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getStartMiningMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startMining>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startMining>>, TError,void, TContext> => {
+
+const mutationKey = ['startMining'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startMining>>, void> = () => {
+
+
+          return  startMining(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartMiningMutationResult = NonNullable<Awaited<ReturnType<typeof startMining>>>
+
+    export type StartMiningMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Start a new 24-hour mining session
+ */
+export const useStartMining = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startMining>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof startMining>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getStartMiningMutationOptions(options));
+    }
+
+export const getClaimMiningUrl = () => {
+
+
+
+
+  return `/api/mining/claim`
+}
+
+/**
+ * @summary Claim rewards from a completed mining session
+ */
+export const claimMining = async ( options?: RequestInit): Promise<MiningClaimResult> => {
+
+  return customFetch<MiningClaimResult>(getClaimMiningUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getClaimMiningMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimMining>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof claimMining>>, TError,void, TContext> => {
+
+const mutationKey = ['claimMining'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof claimMining>>, void> = () => {
+
+
+          return  claimMining(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClaimMiningMutationResult = NonNullable<Awaited<ReturnType<typeof claimMining>>>
+
+    export type ClaimMiningMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Claim rewards from a completed mining session
+ */
+export const useClaimMining = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimMining>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof claimMining>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getClaimMiningMutationOptions(options));
+    }
+
+export const getGetMiningHistoryUrl = (params?: GetMiningHistoryParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/mining/history?${stringifiedParams}` : `/api/mining/history`
+}
+
+/**
+ * @summary Get paginated mining history
+ */
+export const getMiningHistory = async (params?: GetMiningHistoryParams, options?: RequestInit): Promise<MiningHistoryResponse> => {
+
+  return customFetch<MiningHistoryResponse>(getGetMiningHistoryUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMiningHistoryQueryKey = (params?: GetMiningHistoryParams,) => {
+    return [
+    `/api/mining/history`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetMiningHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getMiningHistory>>, TError = ErrorType<ErrorResponse>>(params?: GetMiningHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMiningHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMiningHistoryQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMiningHistory>>> = ({ signal }) => getMiningHistory(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMiningHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMiningHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getMiningHistory>>>
+export type GetMiningHistoryQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get paginated mining history
+ */
+
+export function useGetMiningHistory<TData = Awaited<ReturnType<typeof getMiningHistory>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetMiningHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMiningHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMiningHistoryQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

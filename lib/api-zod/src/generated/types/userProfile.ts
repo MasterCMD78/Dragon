@@ -17,7 +17,6 @@ export interface UserProfile {
   level: number;
   streak: number;
   totalMines: number;
-  /** Telegram ID used as the referral code */
   referralCode: string;
   /** @nullable */
   referredBy?: string | null;

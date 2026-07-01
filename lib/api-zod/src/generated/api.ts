@@ -20,8 +20,8 @@ export const HealthCheckResponse = zod.object({
  * @summary Authenticate via Telegram Mini App
  */
 export const TelegramAuthBody = zod.object({
-  "initData": zod.string().describe('Raw Telegram initData string from window.Telegram.WebApp.initData'),
-  "referralCode": zod.string().nullish().describe('Referrer\'s Telegram ID passed as the start_param')
+  "initData": zod.string(),
+  "referralCode": zod.string().nullish()
 })
 
 export const TelegramAuthResponse = zod.object({
@@ -31,12 +31,12 @@ export const TelegramAuthResponse = zod.object({
   "username": zod.string(),
   "firstName": zod.string(),
   "lastName": zod.string().nullish(),
-  "balance": zod.number().describe('Current HP balance'),
+  "balance": zod.number(),
   "level": zod.number(),
-  "streak": zod.number().describe('Mining streak in days'),
-  "totalMines": zod.number().describe('Total number of times mined'),
-  "referredBy": zod.string().nullish().describe('Telegram ID of the user who referred them'),
-  "referralCode": zod.string().optional().describe('This user\'s referral code (their telegram ID)'),
+  "streak": zod.number(),
+  "totalMines": zod.number(),
+  "referredBy": zod.string().nullish(),
+  "referralCode": zod.string().optional(),
   "isAdmin": zod.boolean(),
   "isBanned": zod.boolean(),
   "joinDate": zod.string(),
@@ -55,12 +55,12 @@ export const GetMeResponse = zod.object({
   "username": zod.string(),
   "firstName": zod.string(),
   "lastName": zod.string().nullish(),
-  "balance": zod.number().describe('Current HP balance'),
+  "balance": zod.number(),
   "level": zod.number(),
-  "streak": zod.number().describe('Mining streak in days'),
-  "totalMines": zod.number().describe('Total number of times mined'),
-  "referredBy": zod.string().nullish().describe('Telegram ID of the user who referred them'),
-  "referralCode": zod.string().optional().describe('This user\'s referral code (their telegram ID)'),
+  "streak": zod.number(),
+  "totalMines": zod.number(),
+  "referredBy": zod.string().nullish(),
+  "referralCode": zod.string().optional(),
   "isAdmin": zod.boolean(),
   "isBanned": zod.boolean(),
   "joinDate": zod.string(),
@@ -89,7 +89,7 @@ export const GetUserProfileResponse = zod.object({
   "level": zod.number(),
   "streak": zod.number(),
   "totalMines": zod.number(),
-  "referralCode": zod.string().describe('Telegram ID used as the referral code'),
+  "referralCode": zod.string(),
   "referredBy": zod.string().nullish(),
   "totalReferrals": zod.number(),
   "isAdmin": zod.boolean(),
@@ -110,6 +110,77 @@ export const GetUserStatsResponse = zod.object({
   "globalRank": zod.number(),
   "canMineNow": zod.boolean(),
   "nextMineAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get current mining session status
+ */
+export const GetMiningStatusResponse = zod.object({
+  "state": zod.enum(['idle', 'mining', 'claimable']).describe('idle = no session; mining = session active, timer running; claimable = session complete, ready to claim'),
+  "sessionStartedAt": zod.string().nullish().describe('ISO timestamp when session started'),
+  "sessionEndsAt": zod.string().nullish().describe('ISO timestamp when session completes (sessionStartedAt + 24h)'),
+  "secondsRemaining": zod.number().nullish().describe('Seconds left in the current session'),
+  "balance": zod.number(),
+  "streak": zod.number(),
+  "totalMines": zod.number(),
+  "miningRate": zod.number().describe('HP earned per hour in current\/next session'),
+  "estimatedReward": zod.number().describe('Total HP that will be earned when session completes'),
+  "lastClaimedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Start a new 24-hour mining session
+ */
+export const StartMiningResponse = zod.object({
+  "state": zod.enum(['idle', 'mining', 'claimable']).describe('idle = no session; mining = session active, timer running; claimable = session complete, ready to claim'),
+  "sessionStartedAt": zod.string().nullish().describe('ISO timestamp when session started'),
+  "sessionEndsAt": zod.string().nullish().describe('ISO timestamp when session completes (sessionStartedAt + 24h)'),
+  "secondsRemaining": zod.number().nullish().describe('Seconds left in the current session'),
+  "balance": zod.number(),
+  "streak": zod.number(),
+  "totalMines": zod.number(),
+  "miningRate": zod.number().describe('HP earned per hour in current\/next session'),
+  "estimatedReward": zod.number().describe('Total HP that will be earned when session completes'),
+  "lastClaimedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Claim rewards from a completed mining session
+ */
+export const ClaimMiningResponse = zod.object({
+  "hpEarned": zod.number().describe('Base HP earned'),
+  "bonusHp": zod.number().describe('Streak bonus HP'),
+  "totalReward": zod.number().describe('Total HP added to balance'),
+  "newBalance": zod.number(),
+  "newStreak": zod.number(),
+  "newTotalMines": zod.number()
+})
+
+
+/**
+ * @summary Get paginated mining history
+ */
+export const getMiningHistoryQueryLimitDefault = 20;
+export const getMiningHistoryQueryOffsetDefault = 0;
+
+export const GetMiningHistoryQueryParams = zod.object({
+  "limit": zod.coerce.number().default(getMiningHistoryQueryLimitDefault),
+  "offset": zod.coerce.number().default(getMiningHistoryQueryOffsetDefault)
+})
+
+export const GetMiningHistoryResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "hpEarned": zod.number(),
+  "bonusHp": zod.number(),
+  "totalHp": zod.number(),
+  "streak": zod.number(),
+  "minedAt": zod.string()
+})),
+  "total": zod.number()
 })
 
 

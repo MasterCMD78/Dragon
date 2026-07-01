@@ -13,19 +13,12 @@ export interface User {
   firstName: string;
   /** @nullable */
   lastName?: string | null;
-  /** Current HP balance */
   balance: number;
   level: number;
-  /** Mining streak in days */
   streak: number;
-  /** Total number of times mined */
   totalMines: number;
-  /**
-     * Telegram ID of the user who referred them
-     * @nullable
-     */
+  /** @nullable */
   referredBy?: string | null;
-  /** This user's referral code (their telegram ID) */
   referralCode?: string;
   isAdmin: boolean;
   isBanned: boolean;

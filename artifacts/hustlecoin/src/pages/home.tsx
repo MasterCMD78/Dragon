@@ -1,95 +1,370 @@
-import React, { useState } from "react";
-import { useGetUserStats } from "@workspace/api-client-react";
-import { Flame, Trophy, Zap, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { 
+  useGetMiningStatus, 
+  useGetMiningHistory, 
+  useStartMining, 
+  useClaimMining,
+  getGetMiningStatusQueryKey,
+  getGetMiningHistoryQueryKey
+} from "@workspace/api-client-react";
+import { Loader2, Zap, Flame, Clock, History, Check, ShieldCheck, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
+
+function formatCountdown(secs: number) {
+  const h = Math.floor(secs / 3600).toString().padStart(2, "0");
+  const m = Math.floor((secs % 3600) / 60).toString().padStart(2, "0");
+  const s = (secs % 60).toString().padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
 
 export default function Home() {
-  const { data: stats, isLoading } = useGetUserStats();
-  const [isMining, setIsMining] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  const { data: status, isLoading: isStatusLoading } = useGetMiningStatus();
+  const { data: history, isLoading: isHistoryLoading } = useGetMiningHistory({ limit: 5, offset: 0 });
+  
+  const startMining = useStartMining();
+  const claimMining = useClaimMining();
 
-  const handleMine = () => {
-    if (!stats?.canMineNow || isMining) return;
-    setIsMining(true);
-    // In Phase 1 we just simulate the mining action since we don't have the hook requested, 
-    // or rather, we were told to build the UI for it.
-    setTimeout(() => {
-      setIsMining(false);
-    }, 2000);
+  const [countdown, setCountdown] = useState(0);
+  const [showSplash, setShowSplash] = useState(false);
+  const [splashReward, setSplashReward] = useState(0);
+
+  useEffect(() => {
+    if (status?.state === "mining" && status?.secondsRemaining) {
+      setCountdown(status.secondsRemaining);
+      const interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+    setCountdown(0);
+    return undefined;
+  }, [status?.sessionStartedAt, status?.state, status?.secondsRemaining, queryClient]);
+
+  const handleStartMining = () => {
+    if (status?.state !== "idle" || startMining.isPending) return;
+    
+    startMining.mutate(undefined, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+        toast({
+          title: "Mining Session Started",
+          description: "Your 24-hour mining session has begun.",
+        });
+      },
+      onError: (error: unknown) => {
+        const msg = (error as { error?: string })?.error ?? "An unexpected error occurred";
+        toast({ title: "Failed to start mining", description: msg, variant: "destructive" });
+      }
+    });
   };
 
-  if (isLoading) {
+  const handleClaimRewards = () => {
+    if (status?.state !== "claimable" || claimMining.isPending) return;
+    
+    claimMining.mutate(undefined, {
+      onSuccess: (result) => {
+        setSplashReward(result.totalReward);
+        setShowSplash(true);
+        
+        queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetMiningHistoryQueryKey() });
+        
+        setTimeout(() => {
+          setShowSplash(false);
+        }, 3000);
+      },
+      onError: (error: unknown) => {
+        const msg = (error as { error?: string })?.error ?? "An unexpected error occurred";
+        toast({ title: "Failed to claim rewards", description: msg, variant: "destructive" });
+      }
+    });
+  };
+
+  if (isStatusLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <div className="w-full h-full flex flex-col items-center justify-center">
+        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center animate-pulse mb-8">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+        </div>
+        <p className="text-muted-foreground font-display tracking-widest text-sm uppercase">LOADING</p>
       </div>
     );
   }
 
+  const isMining = status?.state === "mining";
+  const isClaimable = status?.state === "claimable";
+  const isIdle = status?.state === "idle";
+
   return (
-    <div className="p-6 h-full flex flex-col pt-12">
+    <div className="p-6 h-full flex flex-col pt-8 space-y-8 relative overflow-x-hidden">
+      
+      {/* Reward Splash Overlay */}
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 1.5, y: -50 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          >
+            <div className="flex flex-col items-center text-center">
+              <motion.div 
+                initial={{ rotate: -45 }}
+                animate={{ rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                className="w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-600 rounded-full flex items-center justify-center border-4 border-yellow-300 shadow-[0_0_80px_rgba(255,170,0,0.6)] mb-6"
+              >
+                <Check className="w-16 h-16 text-black" strokeWidth={3} />
+              </motion.div>
+              <h2 className="text-3xl font-display font-bold text-white mb-2">Rewards Claimed!</h2>
+              <div className="text-5xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-500 shadow-sm drop-shadow-lg">
+                +{splashReward.toLocaleString()} HP
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top Bar Stats */}
-      <div className="flex items-center justify-between mb-12">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 bg-card/80 px-4 py-2 rounded-full border border-border/50">
           <Flame className="w-5 h-5 text-orange-500" />
-          <span className="font-display font-bold text-sm" data-testid="text-streak">{stats?.streak || 0}</span>
+          <span className="font-display font-bold text-sm" data-testid="text-streak">{status?.streak || 0}</span>
         </div>
         <div className="flex items-center gap-2 bg-card/80 px-4 py-2 rounded-full border border-border/50">
-          <Trophy className="w-5 h-5 text-yellow-500" />
-          <span className="font-display font-bold text-sm" data-testid="text-rank">#{stats?.globalRank || '---'}</span>
+          <History className="w-5 h-5 text-primary" />
+          <span className="font-display font-bold text-sm">Mines: {status?.totalMines || 0}</span>
         </div>
       </div>
 
       {/* Center Balance */}
-      <div className="flex-1 flex flex-col items-center justify-center mb-12">
-        <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative mb-6"
-        >
-          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-          <div className="w-32 h-32 bg-gradient-to-br from-primary to-orange-600 rounded-full flex items-center justify-center border-4 border-primary/30 shadow-[0_0_40px_rgba(255,170,0,0.3)] relative z-10">
-            <span className="font-display text-5xl font-black text-black">HC</span>
-          </div>
-        </motion.div>
-        
-        <div className="text-center">
-          <h2 className="text-muted-foreground text-sm tracking-widest font-display uppercase mb-2">Total Balance</h2>
-          <div className="text-5xl font-display font-bold text-white tracking-tight" data-testid="text-balance">
-            {stats?.balance?.toLocaleString() || '0'}
-          </div>
+      <div className="flex flex-col items-center justify-center">
+        <h2 className="text-muted-foreground text-xs tracking-widest font-display uppercase mb-2">Total Balance</h2>
+        <div className="text-5xl font-display font-bold text-white tracking-tight" data-testid="text-balance">
+          {status?.balance?.toLocaleString() || '0'} <span className="text-primary text-3xl">HP</span>
         </div>
       </div>
 
-      {/* Mine Button */}
-      <div className="pb-8">
-        <button
-          onClick={handleMine}
-          disabled={!stats?.canMineNow || isMining}
-          className={`w-full relative group overflow-hidden rounded-2xl p-1 transition-all ${
-            stats?.canMineNow 
-              ? 'bg-gradient-to-r from-primary to-orange-500 cursor-pointer shadow-[0_0_20px_rgba(255,170,0,0.3)] hover:shadow-[0_0_30px_rgba(255,170,0,0.5)]' 
-              : 'bg-muted cursor-not-allowed opacity-80'
-          }`}
-          data-testid="button-mine"
+      {/* Main Mining Card */}
+      <div className="w-full relative bg-card border border-border/50 rounded-3xl p-6 flex flex-col items-center shadow-lg overflow-hidden">
+        {/* Glow Effects */}
+        {isMining && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 blur-[80px] rounded-full pointer-events-none" />
+        )}
+        {isClaimable && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-yellow-500/20 blur-[80px] rounded-full pointer-events-none" />
+        )}
+
+        {/* Status Indicator */}
+        <div 
+          className="flex items-center gap-2 mb-8 bg-black/40 px-3 py-1.5 rounded-full border border-white/5 backdrop-blur-md relative z-10"
+          data-testid="mining-state"
         >
-          <div className="bg-background w-full h-full rounded-xl py-5 flex items-center justify-center gap-3 relative z-10 transition-colors group-hover:bg-background/90">
-            {isMining ? (
-              <Loader2 className="w-6 h-6 text-primary animate-spin" />
-            ) : (
-              <>
-                <Zap className={`w-6 h-6 ${stats?.canMineNow ? 'text-primary' : 'text-muted-foreground'}`} />
-                <span className={`font-display font-bold text-lg tracking-wide ${stats?.canMineNow ? 'text-white' : 'text-muted-foreground'}`}>
-                  {stats?.canMineNow ? 'MINE NOW' : 'COOLDOWN'}
-                </span>
-              </>
-            )}
-          </div>
-          {stats?.canMineNow && (
-            <div className="absolute inset-0 bg-white/20 blur-md group-hover:opacity-100 opacity-0 transition-opacity" />
+          {isMining && (
+            <>
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-pulse" />
+              <span className="text-xs font-medium text-green-400 uppercase tracking-wider font-display">Mining in Progress</span>
+            </>
           )}
-        </button>
+          {isClaimable && (
+            <>
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
+              <span className="text-xs font-medium text-yellow-400 uppercase tracking-wider font-display">Ready to Claim!</span>
+            </>
+          )}
+          {isIdle && (
+            <>
+              <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider font-display">Idle</span>
+            </>
+          )}
+        </div>
+
+        {/* The Coin */}
+        <motion.div 
+          animate={
+            isMining ? { rotateY: 360 } : 
+            isClaimable ? { scale: [1, 1.05, 1], filter: ["drop-shadow(0 0 20px rgba(255,170,0,0.5))", "drop-shadow(0 0 40px rgba(255,200,0,0.8))", "drop-shadow(0 0 20px rgba(255,170,0,0.5))"] } : 
+            {}
+          }
+          transition={
+            isMining ? { repeat: Infinity, duration: 4, ease: "linear" } : 
+            isClaimable ? { repeat: Infinity, duration: 2, ease: "easeInOut" } : 
+            {}
+          }
+          className="relative mb-8 z-10 perspective-[1000px] transform-style-3d"
+        >
+          <div className={`w-40 h-40 rounded-full flex items-center justify-center border-[6px] relative ${
+            isClaimable ? 'bg-gradient-to-br from-yellow-300 via-orange-500 to-red-600 border-yellow-200' :
+            isMining ? 'bg-gradient-to-br from-primary via-orange-600 to-primary border-primary/50' : 
+            'bg-muted border-muted-foreground/30'
+          }`}>
+            <span className={`font-display text-6xl font-black ${isIdle ? 'text-muted-foreground/50' : 'text-black'}`}>HC</span>
+            {/* Inner ring for 3D effect */}
+            <div className="absolute inset-2 rounded-full border border-white/20" />
+            <div className="absolute inset-4 rounded-full border border-white/10" />
+          </div>
+        </motion.div>
+
+        {/* Timer / Info */}
+        <div className="text-center mb-8 relative z-10">
+          {(isMining || isClaimable) ? (
+            <div className="text-4xl font-display font-bold text-white tracking-widest tabular-nums" data-testid="countdown-timer">
+              {isClaimable ? "00:00:00" : formatCountdown(countdown)}
+            </div>
+          ) : (
+            <div className="text-2xl font-display font-medium text-muted-foreground" data-testid="countdown-timer">
+              READY TO MINE
+            </div>
+          )}
+        </div>
+
+        {/* Session Stats Grid */}
+        <div className="grid grid-cols-2 gap-4 w-full mb-8 relative z-10">
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Mining Rate</span>
+            <span className="font-display font-bold text-primary" data-testid="text-mining-rate">
+              {status?.miningRate || 0} HP/hr
+            </span>
+          </div>
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Est. Reward</span>
+            <span className="font-display font-bold text-primary" data-testid="text-estimated-reward">
+              {status?.estimatedReward || 0} HP
+            </span>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <div className="w-full relative z-10">
+          {isIdle && (
+            <button
+              onClick={handleStartMining}
+              disabled={startMining.isPending}
+              className="w-full relative group overflow-hidden rounded-2xl p-1 transition-all bg-gradient-to-r from-primary to-orange-500 shadow-[0_0_20px_rgba(255,170,0,0.3)] hover:shadow-[0_0_30px_rgba(255,170,0,0.5)] cursor-pointer"
+              data-testid="button-start-mining"
+            >
+              <div className="bg-background w-full h-full rounded-xl py-4 flex items-center justify-center gap-3 relative z-10 transition-colors group-hover:bg-background/90">
+                {startMining.isPending ? (
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                ) : (
+                  <>
+                    <Zap className="w-6 h-6 text-primary animate-pulse" />
+                    <span className="font-display font-bold text-lg tracking-wide text-white">
+                      START MINING
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="absolute inset-0 bg-white/20 blur-md group-hover:opacity-100 opacity-0 transition-opacity" />
+            </button>
+          )}
+
+          {isMining && (
+            <button
+              disabled
+              className="w-full relative overflow-hidden rounded-2xl p-1 transition-all bg-muted opacity-80 cursor-not-allowed"
+            >
+              <div className="bg-background w-full h-full rounded-xl py-4 flex items-center justify-center gap-3 relative z-10">
+                <ShieldCheck className="w-6 h-6 text-muted-foreground" />
+                <span className="font-display font-bold text-lg tracking-wide text-muted-foreground">
+                  MINING...
+                </span>
+              </div>
+            </button>
+          )}
+
+          {isClaimable && (
+            <button
+              onClick={handleClaimRewards}
+              disabled={claimMining.isPending}
+              className="w-full relative group overflow-hidden rounded-2xl p-1 transition-all bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 shadow-[0_0_30px_rgba(255,170,0,0.6)] hover:shadow-[0_0_40px_rgba(255,200,0,0.8)] cursor-pointer animate-pulse"
+              data-testid="button-claim-rewards"
+            >
+              <div className="bg-background/80 w-full h-full rounded-xl py-4 flex items-center justify-center gap-3 relative z-10 transition-colors group-hover:bg-background/60">
+                {claimMining.isPending ? (
+                  <Loader2 className="w-6 h-6 text-yellow-400 animate-spin" />
+                ) : (
+                  <>
+                    <Zap className="w-6 h-6 text-yellow-400" />
+                    <span className="font-display font-bold text-xl tracking-wide text-yellow-400 drop-shadow-sm">
+                      CLAIM REWARDS
+                    </span>
+                  </>
+                )}
+              </div>
+            </button>
+          )}
+        </div>
+        
+        {/* Last Claimed Info */}
+        {isIdle && status?.lastClaimedAt && (
+          <div className="mt-4 text-xs text-muted-foreground text-center flex items-center gap-1.5 justify-center opacity-70">
+            <Clock className="w-3 h-3" />
+            Last claimed: {format(new Date(status.lastClaimedAt), "MMM d, h:mm a")}
+          </div>
+        )}
       </div>
+
+      {/* Mining History Section */}
+      <div className="flex flex-col gap-4 pb-8 relative z-10">
+        <h3 className="font-display font-bold text-lg text-white flex items-center gap-2">
+          <History className="w-5 h-5 text-primary" />
+          Mining History
+        </h3>
+        
+        <div className="flex flex-col gap-3" data-testid="mining-history-list">
+          {isHistoryLoading ? (
+            Array(3).fill(0).map((_, i) => (
+              <div key={i} className="w-full h-16 bg-card rounded-xl border border-border/50 animate-pulse" />
+            ))
+          ) : history?.entries && history.entries.length > 0 ? (
+            history.entries.map((entry) => (
+              <div key={entry.id} className="bg-card border border-border/50 rounded-xl p-4 flex items-center justify-between hover:bg-card/80 transition-colors">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-white">{format(new Date(entry.minedAt), "MMM d, yyyy")}</span>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">{format(new Date(entry.minedAt), "h:mm a")}</span>
+                    {entry.streak > 1 && (
+                      <span className="text-orange-400 flex items-center gap-0.5 bg-orange-400/10 px-1.5 py-0.5 rounded text-[10px]">
+                        <Flame className="w-3 h-3" /> Day {entry.streak}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="font-display font-bold text-primary">+{entry.totalHp} HP</span>
+                  {entry.bonusHp > 0 && (
+                    <span className="text-[10px] text-yellow-500">includes {entry.bonusHp} bonus</span>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="bg-card border border-border/50 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-2">
+              <Clock className="w-8 h-8 text-muted-foreground/50 mb-2" />
+              <p className="text-sm font-medium text-white">No mining history yet</p>
+              <p className="text-xs text-muted-foreground">Start your first mining session to earn HP!</p>
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }

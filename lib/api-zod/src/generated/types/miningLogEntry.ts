@@ -6,8 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface TelegramAuthInput {
-  initData: string;
-  /** @nullable */
-  referralCode?: string | null;
+export interface MiningLogEntry {
+  id: number;
+  hpEarned: number;
+  bonusHp: number;
+  totalHp: number;
+  streak: number;
+  minedAt: string;
 }

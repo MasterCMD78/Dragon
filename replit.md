@@ -45,6 +45,8 @@ A Telegram Mini App where users earn HP (HustleCoin Points) through daily mining
 
 Phase 1 complete: Telegram auth, user creation/login, session management, home screen (HP balance, mining streak, rank, Mine Now button), and profile screen.
 
+Phase 2 complete: Mining module — 24h mining sessions, streak bonuses (base 100 HP, +10 at streak 2-6, +50 at streak 7+), 4 API endpoints (GET /api/mining/status, POST /api/mining/start, POST /api/mining/claim, GET /api/mining/history), full mining UI with three states (idle/mining/claimable), live countdown timer, reward splash animation, and mining history list.
+
 ## User preferences
 
 - Build in phases; stop after each phase for approval before continuing.

@@ -8,7 +8,13 @@
 
 export * from './authResult';
 export * from './errorResponse';
+export * from './getMiningHistoryParams';
 export * from './healthStatus';
+export * from './miningClaimResult';
+export * from './miningHistoryResponse';
+export * from './miningLogEntry';
+export * from './miningStatus';
+export * from './miningStatusState';
 export * from './successResponse';
 export * from './telegramAuthInput';
 export * from './user';
