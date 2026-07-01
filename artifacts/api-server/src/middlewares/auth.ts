@@ -1,0 +1,31 @@
+import { type Request, type Response, type NextFunction } from "express";
+import { db, usersTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+
+export async function requireAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const userId = req.session?.userId;
+  if (!userId) {
+    res.status(401).json({ error: "Not authenticated" });
+    return;
+  }
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
+
+  if (!user) {
+    req.session.destroy(() => {});
+    res.status(401).json({ error: "User not found" });
+    return;
+  }
+
+  // Attach user to request for downstream handlers
+  (req as Request & { currentUser: typeof user }).currentUser = user;
+  next();
+}

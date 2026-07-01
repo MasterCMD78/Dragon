@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: HustleCoin V2 API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Telegram authentication
+  - name: users
+    description: User management
 paths:
   /healthz:
     get:
@@ -24,13 +28,223 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/telegram:
+    post:
+      operationId: telegramAuth
+      tags: [auth]
+      summary: Authenticate via Telegram Mini App
+      description: Validate Telegram initData and create or retrieve a user session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelegramAuthInput"
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          description: Invalid Telegram data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      description: Returns the current user from the session
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out current session
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /users/me:
+    get:
+      operationId: getUserProfile
+      tags: [users]
+      summary: Get full user profile with stats
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/stats:
+    get:
+      operationId: getUserStats
+      tags: [users]
+      summary: Get user statistics summary
+      description: Returns HP balance, mining streak, referral count, and ranking info
+      responses:
+        "200":
+          description: User stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStats"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+
+    TelegramAuthInput:
+      type: object
+      required: [initData]
+      properties:
+        initData:
+          type: string
+          description: Raw Telegram initData string from window.Telegram.WebApp.initData
+        referralCode:
+          type: ["string", "null"]
+          description: Optional referral code from the Telegram start parameter
+
+    User:
+      type: object
+      required: [id, telegramId, username, firstName, createdAt]
+      properties:
+        id:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: string
+        lastName:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        hpBalance:
+          type: number
+        totalMined:
+          type: number
+        referralCode:
+          type: string
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+
+    AuthResult:
+      type: object
+      required: [user, isNewUser]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        isNewUser:
+          type: boolean
+
+    UserProfile:
+      type: object
+      required: [id, telegramId, username, firstName, hpBalance, totalMined, referralCode, miningStreak, totalReferrals, createdAt]
+      properties:
+        id:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: string
+        lastName:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        hpBalance:
+          type: number
+        totalMined:
+          type: number
+        referralCode:
+          type: string
+        miningStreak:
+          type: integer
+        totalReferrals:
+          type: integer
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+        lastMinedAt:
+          type: ["string", "null"]
+
+    UserStats:
+      type: object
+      required: [hpBalance, totalMined, miningStreak, totalReferrals, globalRank, canMineNow]
+      properties:
+        hpBalance:
+          type: number
+        totalMined:
+          type: number
+        miningStreak:
+          type: integer
+        totalReferrals:
+          type: integer
+        globalRank:
+          type: ["integer", "null"]
+        canMineNow:
+          type: boolean
+        nextMineAt:
+          type: ["string", "null"]

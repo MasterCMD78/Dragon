@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "HustleCoin V2"
+version = "1.0.0"
+id = "artifacts/hustlecoin"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21494
+
+[services.development]
+run = "pnpm --filter @workspace/hustlecoin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hustlecoin", "run", "build" ]
+publicDir = "artifacts/hustlecoin/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21494"
+BASE_PATH = "/"

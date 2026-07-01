@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { sessionMiddleware } from "./middlewares/session";
 
 const app: Express = express();
 
@@ -25,9 +26,20 @@ app.use(
     },
   }),
 );
-app.use(cors());
+
+const allowedOrigins = process.env.REPLIT_DOMAINS
+  ? process.env.REPLIT_DOMAINS.split(",").map((d) => `https://${d.trim()}`)
+  : [];
+
+app.use(
+  cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(sessionMiddleware);
 
 app.use("/api", router);
 
