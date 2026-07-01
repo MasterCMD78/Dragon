@@ -28,6 +28,10 @@ if (!basePath) {
 
 export default defineConfig({
   base: basePath,
+  define: {
+    __TELEGRAM_BOT_USERNAME__: JSON.stringify(process.env.TELEGRAM_BOT_USERNAME ?? ""),
+    __TELEGRAM_APP_SHORTNAME__: JSON.stringify(process.env.TELEGRAM_APP_SHORTNAME ?? ""),
+  },
   plugins: [
     react(),
     tailwindcss(),

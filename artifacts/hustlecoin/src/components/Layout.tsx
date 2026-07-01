@@ -1,22 +1,52 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User as UserIcon } from "lucide-react";
+import { Home, User as UserIcon, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+
+function buildTelegramLink(): string {
+  const bot = __TELEGRAM_BOT_USERNAME__;
+  const app = __TELEGRAM_APP_SHORTNAME__;
+  if (bot && app) {
+    return `https://t.me/${bot}/${app}`;
+  }
+  if (bot) {
+    return `https://t.me/${bot}`;
+  }
+  return "https://t.me";
+}
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location] = useLocation();
   const { isLoading, isTelegramAvailable, isAuthenticated } = useAuth();
 
   if (!isTelegramAvailable) {
+    const link = buildTelegramLink();
     return (
       <div className="min-h-[100dvh] w-full flex items-center justify-center bg-black">
-        <div className="w-full max-w-[430px] h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center border-x border-border/50">
-          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6">
+        <div className="w-full max-w-[430px] h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center border-x border-border/50 gap-6">
+          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center">
             <span className="text-primary font-display text-4xl font-bold">HC</span>
           </div>
-          <h1 className="text-2xl font-display font-bold text-white mb-2" data-testid="text-open-telegram">Open in Telegram</h1>
-          <p className="text-muted-foreground">This app is designed to be played inside Telegram.</p>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-display font-bold text-white" data-testid="text-open-telegram">
+              Open in Telegram
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              HustleCoin is a Telegram Mini App. Tap the button below to open it.
+            </p>
+          </div>
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="button-open-telegram"
+            className="flex items-center justify-center gap-2 w-full max-w-xs rounded-2xl py-4 px-6 bg-gradient-to-r from-primary to-orange-500 text-black font-display font-bold text-lg shadow-[0_0_20px_rgba(255,170,0,0.3)] hover:shadow-[0_0_30px_rgba(255,170,0,0.5)] transition-shadow"
+          >
+            <ExternalLink className="w-5 h-5" />
+            Open HustleCoin
+          </a>
+          <p className="text-muted-foreground/50 text-xs font-mono break-all">{link}</p>
         </div>
       </div>
     );
