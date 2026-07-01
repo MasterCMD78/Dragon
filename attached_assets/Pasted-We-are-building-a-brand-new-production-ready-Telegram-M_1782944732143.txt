@@ -1,0 +1,199 @@
+We are building a brand-new production-ready Telegram Mini App called HustleCoin V2.
+
+This is a complete rebuild from scratch using a clean architecture.
+
+Important:
+
+* Do NOT copy code from the previous project.
+* Do NOT recreate previous bugs.
+* Build everything using best practices.
+* Use the existing PostgreSQL database (Neon) and existing Telegram Bot.
+* Keep all existing user data intact.
+
+⸻
+
+Existing Resources
+
+I already have:
+
+* PostgreSQL Database URL
+* Telegram Bot Token
+* Telegram Bot Username
+* Existing Neon database with all users
+* Existing referrals
+* Existing transactions
+* Existing mining logs
+* Existing achievements
+* Existing leaderboard
+
+Do NOT recreate or reset the database.
+
+⸻
+
+Technical Stack
+
+Use:
+
+* React
+* TypeScript
+* Vite
+* TailwindCSS
+* Node.js
+* Express
+* PostgreSQL
+* Drizzle ORM
+* Telegram Mini App SDK
+
+⸻
+
+Application Modules
+
+The application must include:
+
+Authentication
+
+* Telegram Login
+* Automatic account creation
+* Existing account detection
+* Secure authentication
+
+Mining
+
+* Daily mining
+* Cooldown
+* Mining streak
+* HP rewards
+* Mining history
+
+Referrals
+
+* Referral registration
+* Duplicate protection
+* Referral rewards
+* Referral statistics
+* Referral history
+
+Wallet
+
+* Current HP
+* Total mined
+* Referral earnings
+* Transaction history
+
+Tasks
+
+* Automatic tasks
+* Manual tasks
+* Verification
+* Rewards
+
+Quests
+
+* Daily quests
+* Weekly quests
+* Progress tracking
+* Rewards
+
+Achievements
+
+* Achievement unlocks
+* Reward claiming
+* Progress
+
+Leaderboard
+
+* Global ranking
+* Referral ranking
+* Mining ranking
+
+Notifications
+
+* In-app notifications
+* Announcement system
+* Notification history
+
+Feedback
+
+* Feedback form
+* Bug reports
+* Suggestions
+
+Admin Panel
+
+* Dashboard
+* User management
+* HP grants
+* Broadcast announcements
+* Task management
+* Quest management
+* Statistics
+* Logs
+
+⸻
+
+UI Requirements
+
+Modern crypto design.
+
+Mobile-first.
+
+Fast.
+
+Smooth animations.
+
+Dark mode.
+
+Telegram-native feel.
+
+⸻
+
+Security
+
+Secure authentication.
+
+Rate limiting.
+
+Input validation.
+
+SQL injection protection.
+
+XSS protection.
+
+Proper error handling.
+
+⸻
+
+Build Rules
+
+DO NOT build everything in one step.
+
+Work in phases.
+
+Complete one phase.
+
+Test it.
+
+Fix every issue.
+
+Wait for my approval before starting the next phase.
+
+⸻
+
+Phase 1
+
+Build ONLY:
+
+* Project structure
+* Database connection
+* Telegram authentication
+* User login
+* User session
+* Home page skeleton
+
+Stop after Phase 1.
+
+Test everything.
+
+Produce a report.
+
+Wait for my approval before continuing.
