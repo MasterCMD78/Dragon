@@ -51,6 +51,14 @@ Phase 1 complete: Telegram auth, user creation/login, session management, home s
 - Do NOT recreate or reset the existing Neon database.
 - Do NOT copy code from previous project versions.
 
+## Production database rules (enforced every phase)
+
+- **Never run `db push` or `db migrate`** against the production database.
+- **Never recreate production tables.** All 16 tables belong to the existing Neon DB.
+- **Always adapt code to the existing schema** — read columns first, then write routes/serializers to match.
+- **If a schema mismatch is found, STOP and ask** before making any database changes.
+- **Protect all production data.** No destructive writes, no column drops, no truncates.
+
 ## Gotchas
 
 - After changing `lib/db/src/schema/`, run `pnpm run typecheck:libs` before typechecking artifacts — stale declarations cause false "no exported member" errors.

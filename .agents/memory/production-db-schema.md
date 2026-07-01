@@ -3,6 +3,14 @@ name: Production DB schema
 description: Column name differences between production DB and what you might assume; critical for routes and serialization.
 ---
 
+## Hard rules — apply before every phase, no exceptions
+
+1. **Never run `db push` or `db migrate`** against the production database.
+2. **Never recreate production tables.** All 16 tables are owned by the existing Neon DB.
+3. **Always adapt code to the existing schema.** Read the table columns first, then write routes and serializers to match.
+4. **If a schema mismatch is found, STOP and ask** before making any database changes.
+5. **Protect all production data.** No destructive writes, no column drops, no truncates.
+
 ## Production schema is already set — never run `db push` or `db migrate` against it
 
 The production Neon DB has 16 tables. All are mapped to Drizzle in `lib/db/src/schema/`.
