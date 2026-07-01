@@ -6,14 +6,7 @@ import { Loader2 } from "lucide-react";
 
 function buildTelegramLink(): string {
   const bot = __TELEGRAM_BOT_USERNAME__;
-  const app = __TELEGRAM_APP_SHORTNAME__;
-  if (bot && app) {
-    return `https://t.me/${bot}/${app}`;
-  }
-  if (bot) {
-    return `https://t.me/${bot}`;
-  }
-  return "https://t.me";
+  return bot ? `https://t.me/${bot}` : "https://t.me";
 }
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -33,7 +26,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               Open in Telegram
             </h1>
             <p className="text-muted-foreground text-sm">
-              HustleCoin is a Telegram Mini App. Tap the button below to open it.
+              After opening the bot, tap the{" "}
+              <span className="text-white font-medium">Menu button</span>{" "}
+              to launch HustleCoin.
             </p>
           </div>
           <a
@@ -44,9 +39,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             className="flex items-center justify-center gap-2 w-full max-w-xs rounded-2xl py-4 px-6 bg-gradient-to-r from-primary to-orange-500 text-black font-display font-bold text-lg shadow-[0_0_20px_rgba(255,170,0,0.3)] hover:shadow-[0_0_30px_rgba(255,170,0,0.5)] transition-shadow"
           >
             <ExternalLink className="w-5 h-5" />
-            Open HustleCoin
+            Open in Telegram
           </a>
-          <p className="text-muted-foreground/50 text-xs font-mono break-all">{link}</p>
         </div>
       </div>
     );
