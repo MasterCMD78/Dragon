@@ -31,7 +31,7 @@ export default function Home() {
       <div className="flex items-center justify-between mb-12">
         <div className="flex items-center gap-2 bg-card/80 px-4 py-2 rounded-full border border-border/50">
           <Flame className="w-5 h-5 text-orange-500" />
-          <span className="font-display font-bold text-sm" data-testid="text-streak">{stats?.miningStreak || 0}</span>
+          <span className="font-display font-bold text-sm" data-testid="text-streak">{stats?.streak || 0}</span>
         </div>
         <div className="flex items-center gap-2 bg-card/80 px-4 py-2 rounded-full border border-border/50">
           <Trophy className="w-5 h-5 text-yellow-500" />
@@ -56,7 +56,7 @@ export default function Home() {
         <div className="text-center">
           <h2 className="text-muted-foreground text-sm tracking-widest font-display uppercase mb-2">Total Balance</h2>
           <div className="text-5xl font-display font-bold text-white tracking-tight" data-testid="text-balance">
-            {stats?.hpBalance?.toLocaleString() || '0'}
+            {stats?.balance?.toLocaleString() || '0'}
           </div>
         </div>
       </div>

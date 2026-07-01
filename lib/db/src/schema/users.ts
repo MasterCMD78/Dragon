@@ -2,7 +2,6 @@ import {
   pgTable,
   serial,
   text,
-  numeric,
   integer,
   boolean,
   timestamp,
@@ -16,36 +15,35 @@ export const usersTable = pgTable(
   {
     id: serial("id").primaryKey(),
     telegramId: text("telegram_id").notNull(),
-    username: text("username"),
+    username: text("username").notNull().default(""),
     firstName: text("first_name").notNull(),
     lastName: text("last_name"),
-    photoUrl: text("photo_url"),
-    hpBalance: numeric("hp_balance", { precision: 20, scale: 4 })
-      .notNull()
-      .default("0"),
-    totalMined: numeric("total_mined", { precision: 20, scale: 4 })
-      .notNull()
-      .default("0"),
-    referralCode: text("referral_code").notNull(),
-    referredById: integer("referred_by_id"),
-    miningStreak: integer("mining_streak").notNull().default(0),
-    lastMinedAt: timestamp("last_mined_at", { withTimezone: true }),
+    balance: integer("balance").notNull().default(0),
+    level: integer("level").notNull().default(1),
+    streak: integer("streak").notNull().default(0),
+    totalMines: integer("total_mines").notNull().default(0),
+    lastMine: timestamp("last_mine", { withTimezone: true }),
+    referredBy: text("referred_by"),
     isAdmin: boolean("is_admin").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    lastActive: timestamp("last_active", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
+    joinDate: timestamp("join_date", { withTimezone: true })
       .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
+      .defaultNow(),
+    languageCode: text("language_code"),
+    isBanned: boolean("is_banned").notNull().default(false),
+    miningSessionStart: timestamp("mining_session_start", {
+      withTimezone: true,
+    }),
   },
-  (table) => [uniqueIndex("users_telegram_id_idx").on(table.telegramId), uniqueIndex("users_referral_code_idx").on(table.referralCode)],
+  (table) => [uniqueIndex("users_telegram_id_idx").on(table.telegramId)],
 );
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
+  joinDate: true,
+  lastActive: true,
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof usersTable.$inferSelect;

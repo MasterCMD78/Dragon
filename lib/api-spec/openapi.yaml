@@ -20,7 +20,6 @@ paths:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -34,7 +33,6 @@ paths:
       operationId: telegramAuth
       tags: [auth]
       summary: Authenticate via Telegram Mini App
-      description: Validate Telegram initData and create or retrieve a user session
       requestBody:
         required: true
         content:
@@ -60,7 +58,6 @@ paths:
       operationId: getMe
       tags: [auth]
       summary: Get current authenticated user
-      description: Returns the current user from the session
       responses:
         "200":
           description: Current user
@@ -112,7 +109,6 @@ paths:
       operationId: getUserStats
       tags: [users]
       summary: Get user statistics summary
-      description: Returns HP balance, mining streak, referral count, and ranking info
       responses:
         "200":
           description: User stats
@@ -159,34 +155,47 @@ components:
           description: Raw Telegram initData string from window.Telegram.WebApp.initData
         referralCode:
           type: ["string", "null"]
-          description: Optional referral code from the Telegram start parameter
+          description: Referrer's Telegram ID passed as the start_param
 
     User:
       type: object
-      required: [id, telegramId, username, firstName, createdAt]
+      required: [id, telegramId, username, firstName, balance, level, streak, totalMines, isAdmin, isBanned, joinDate]
       properties:
         id:
           type: integer
         telegramId:
           type: string
         username:
-          type: ["string", "null"]
+          type: string
         firstName:
           type: string
         lastName:
           type: ["string", "null"]
-        photoUrl:
+        balance:
+          type: integer
+          description: Current HP balance
+        level:
+          type: integer
+        streak:
+          type: integer
+          description: Mining streak in days
+        totalMines:
+          type: integer
+          description: Total number of times mined
+        referredBy:
           type: ["string", "null"]
-        hpBalance:
-          type: number
-        totalMined:
-          type: number
+          description: Telegram ID of the user who referred them
         referralCode:
           type: string
+          description: This user's referral code (their telegram ID)
         isAdmin:
           type: boolean
-        createdAt:
+        isBanned:
+          type: boolean
+        joinDate:
           type: string
+        lastMine:
+          type: ["string", "null"]
 
     AuthResult:
       type: object
@@ -199,51 +208,56 @@ components:
 
     UserProfile:
       type: object
-      required: [id, telegramId, username, firstName, hpBalance, totalMined, referralCode, miningStreak, totalReferrals, createdAt]
+      required: [id, telegramId, username, firstName, balance, level, streak, totalMines, referralCode, totalReferrals, isAdmin, isBanned, joinDate]
       properties:
         id:
           type: integer
         telegramId:
           type: string
         username:
-          type: ["string", "null"]
+          type: string
         firstName:
           type: string
         lastName:
           type: ["string", "null"]
-        photoUrl:
-          type: ["string", "null"]
-        hpBalance:
-          type: number
-        totalMined:
-          type: number
+        balance:
+          type: integer
+        level:
+          type: integer
+        streak:
+          type: integer
+        totalMines:
+          type: integer
         referralCode:
           type: string
-        miningStreak:
-          type: integer
+          description: Telegram ID used as the referral code
+        referredBy:
+          type: ["string", "null"]
         totalReferrals:
           type: integer
         isAdmin:
           type: boolean
-        createdAt:
+        isBanned:
+          type: boolean
+        joinDate:
           type: string
-        lastMinedAt:
+        lastMine:
           type: ["string", "null"]
 
     UserStats:
       type: object
-      required: [hpBalance, totalMined, miningStreak, totalReferrals, globalRank, canMineNow]
+      required: [balance, streak, totalMines, totalReferrals, globalRank, canMineNow]
       properties:
-        hpBalance:
-          type: number
-        totalMined:
-          type: number
-        miningStreak:
+        balance:
+          type: integer
+        streak:
+          type: integer
+        totalMines:
           type: integer
         totalReferrals:
           type: integer
         globalRank:
-          type: ["integer", "null"]
+          type: integer
         canMineNow:
           type: boolean
         nextMineAt:

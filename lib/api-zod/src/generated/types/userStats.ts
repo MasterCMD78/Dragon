@@ -7,12 +7,11 @@
  */
 
 export interface UserStats {
-  hpBalance: number;
-  totalMined: number;
-  miningStreak: number;
+  balance: number;
+  streak: number;
+  totalMines: number;
   totalReferrals: number;
-  /** @nullable */
-  globalRank: number | null;
+  globalRank: number;
   canMineNow: boolean;
   /** @nullable */
   nextMineAt?: string | null;

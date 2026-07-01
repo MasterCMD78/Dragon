@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, referralsTable } from "@workspace/db";
 import { eq, count, gt } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 import { serializeUser } from "./auth";
@@ -14,16 +14,14 @@ router.get(
       req as Request & { currentUser: typeof usersTable.$inferSelect }
     ).currentUser;
 
-    const [{ referralCount }] = await db
-      .select({ referralCount: count() })
-      .from(usersTable)
-      .where(eq(usersTable.referredById, user.id));
+    const [{ totalReferrals }] = await db
+      .select({ totalReferrals: count() })
+      .from(referralsTable)
+      .where(eq(referralsTable.referrerTelegramId, user.telegramId));
 
     res.json({
       ...serializeUser(user),
-      miningStreak: user.miningStreak,
-      totalReferrals: Number(referralCount),
-      lastMinedAt: user.lastMinedAt?.toISOString() ?? null,
+      totalReferrals: Number(totalReferrals),
     });
   },
 );
@@ -36,17 +34,16 @@ router.get(
       req as Request & { currentUser: typeof usersTable.$inferSelect }
     ).currentUser;
 
-    // Count referrals
-    const [{ referralCount }] = await db
-      .select({ referralCount: count() })
-      .from(usersTable)
-      .where(eq(usersTable.referredById, user.id));
+    const [{ totalReferrals }] = await db
+      .select({ totalReferrals: count() })
+      .from(referralsTable)
+      .where(eq(referralsTable.referrerTelegramId, user.telegramId));
 
-    // Rank = number of users with more HP than current user + 1
+    // Rank = users with a higher balance + 1
     const [{ usersAhead }] = await db
       .select({ usersAhead: count() })
       .from(usersTable)
-      .where(gt(usersTable.hpBalance, user.hpBalance));
+      .where(gt(usersTable.balance, user.balance));
 
     const globalRank = Number(usersAhead) + 1;
 
@@ -54,9 +51,9 @@ router.get(
     let canMineNow = true;
     let nextMineAt: string | null = null;
 
-    if (user.lastMinedAt) {
+    if (user.lastMine) {
       const cooldownMs = 24 * 60 * 60 * 1000;
-      const nextMine = new Date(user.lastMinedAt.getTime() + cooldownMs);
+      const nextMine = new Date(user.lastMine.getTime() + cooldownMs);
       if (nextMine > new Date()) {
         canMineNow = false;
         nextMineAt = nextMine.toISOString();
@@ -64,10 +61,10 @@ router.get(
     }
 
     res.json({
-      hpBalance: Number(user.hpBalance),
-      totalMined: Number(user.totalMined),
-      miningStreak: user.miningStreak,
-      totalReferrals: Number(referralCount),
+      balance: user.balance,
+      streak: user.streak,
+      totalMines: user.totalMines,
+      totalReferrals: Number(totalReferrals),
       globalRank,
       canMineNow,
       nextMineAt,

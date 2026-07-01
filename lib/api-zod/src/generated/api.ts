@@ -9,7 +9,6 @@ import * as zod from 'zod';
 
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -18,48 +17,54 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Validate Telegram initData and create or retrieve a user session
  * @summary Authenticate via Telegram Mini App
  */
 export const TelegramAuthBody = zod.object({
   "initData": zod.string().describe('Raw Telegram initData string from window.Telegram.WebApp.initData'),
-  "referralCode": zod.string().nullish().describe('Optional referral code from the Telegram start parameter')
+  "referralCode": zod.string().nullish().describe('Referrer\'s Telegram ID passed as the start_param')
 })
 
 export const TelegramAuthResponse = zod.object({
   "user": zod.object({
   "id": zod.number(),
   "telegramId": zod.string(),
-  "username": zod.string().nullable(),
+  "username": zod.string(),
   "firstName": zod.string(),
   "lastName": zod.string().nullish(),
-  "photoUrl": zod.string().nullish(),
-  "hpBalance": zod.number().optional(),
-  "totalMined": zod.number().optional(),
-  "referralCode": zod.string().optional(),
-  "isAdmin": zod.boolean().optional(),
-  "createdAt": zod.string()
+  "balance": zod.number().describe('Current HP balance'),
+  "level": zod.number(),
+  "streak": zod.number().describe('Mining streak in days'),
+  "totalMines": zod.number().describe('Total number of times mined'),
+  "referredBy": zod.string().nullish().describe('Telegram ID of the user who referred them'),
+  "referralCode": zod.string().optional().describe('This user\'s referral code (their telegram ID)'),
+  "isAdmin": zod.boolean(),
+  "isBanned": zod.boolean(),
+  "joinDate": zod.string(),
+  "lastMine": zod.string().nullish()
 }),
   "isNewUser": zod.boolean()
 })
 
 
 /**
- * Returns the current user from the session
  * @summary Get current authenticated user
  */
 export const GetMeResponse = zod.object({
   "id": zod.number(),
   "telegramId": zod.string(),
-  "username": zod.string().nullable(),
+  "username": zod.string(),
   "firstName": zod.string(),
   "lastName": zod.string().nullish(),
-  "photoUrl": zod.string().nullish(),
-  "hpBalance": zod.number().optional(),
-  "totalMined": zod.number().optional(),
-  "referralCode": zod.string().optional(),
-  "isAdmin": zod.boolean().optional(),
-  "createdAt": zod.string()
+  "balance": zod.number().describe('Current HP balance'),
+  "level": zod.number(),
+  "streak": zod.number().describe('Mining streak in days'),
+  "totalMines": zod.number().describe('Total number of times mined'),
+  "referredBy": zod.string().nullish().describe('Telegram ID of the user who referred them'),
+  "referralCode": zod.string().optional().describe('This user\'s referral code (their telegram ID)'),
+  "isAdmin": zod.boolean(),
+  "isBanned": zod.boolean(),
+  "joinDate": zod.string(),
+  "lastMine": zod.string().nullish()
 })
 
 
@@ -77,31 +82,32 @@ export const LogoutResponse = zod.object({
 export const GetUserProfileResponse = zod.object({
   "id": zod.number(),
   "telegramId": zod.string(),
-  "username": zod.string().nullable(),
+  "username": zod.string(),
   "firstName": zod.string(),
   "lastName": zod.string().nullish(),
-  "photoUrl": zod.string().nullish(),
-  "hpBalance": zod.number(),
-  "totalMined": zod.number(),
-  "referralCode": zod.string(),
-  "miningStreak": zod.number(),
+  "balance": zod.number(),
+  "level": zod.number(),
+  "streak": zod.number(),
+  "totalMines": zod.number(),
+  "referralCode": zod.string().describe('Telegram ID used as the referral code'),
+  "referredBy": zod.string().nullish(),
   "totalReferrals": zod.number(),
-  "isAdmin": zod.boolean().optional(),
-  "createdAt": zod.string(),
-  "lastMinedAt": zod.string().nullish()
+  "isAdmin": zod.boolean(),
+  "isBanned": zod.boolean(),
+  "joinDate": zod.string(),
+  "lastMine": zod.string().nullish()
 })
 
 
 /**
- * Returns HP balance, mining streak, referral count, and ranking info
  * @summary Get user statistics summary
  */
 export const GetUserStatsResponse = zod.object({
-  "hpBalance": zod.number(),
-  "totalMined": zod.number(),
-  "miningStreak": zod.number(),
+  "balance": zod.number(),
+  "streak": zod.number(),
+  "totalMines": zod.number(),
   "totalReferrals": zod.number(),
-  "globalRank": zod.number().nullable(),
+  "globalRank": zod.number(),
   "canMineNow": zod.boolean(),
   "nextMineAt": zod.string().nullish()
 })

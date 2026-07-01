@@ -21,7 +21,7 @@ export interface TelegramAuthInput {
   /** Raw Telegram initData string from window.Telegram.WebApp.initData */
   initData: string;
   /**
-     * Optional referral code from the Telegram start parameter
+     * Referrer's Telegram ID passed as the start_param
      * @nullable
      */
   referralCode?: string | null;
@@ -30,18 +30,29 @@ export interface TelegramAuthInput {
 export interface User {
   id: number;
   telegramId: string;
-  /** @nullable */
-  username: string | null;
+  username: string;
   firstName: string;
   /** @nullable */
   lastName?: string | null;
-  /** @nullable */
-  photoUrl?: string | null;
-  hpBalance?: number;
-  totalMined?: number;
+  /** Current HP balance */
+  balance: number;
+  level: number;
+  /** Mining streak in days */
+  streak: number;
+  /** Total number of times mined */
+  totalMines: number;
+  /**
+     * Telegram ID of the user who referred them
+     * @nullable
+     */
+  referredBy?: string | null;
+  /** This user's referral code (their telegram ID) */
   referralCode?: string;
-  isAdmin?: boolean;
-  createdAt: string;
+  isAdmin: boolean;
+  isBanned: boolean;
+  joinDate: string;
+  /** @nullable */
+  lastMine?: string | null;
 }
 
 export interface AuthResult {
@@ -52,31 +63,32 @@ export interface AuthResult {
 export interface UserProfile {
   id: number;
   telegramId: string;
-  /** @nullable */
-  username: string | null;
+  username: string;
   firstName: string;
   /** @nullable */
   lastName?: string | null;
-  /** @nullable */
-  photoUrl?: string | null;
-  hpBalance: number;
-  totalMined: number;
+  balance: number;
+  level: number;
+  streak: number;
+  totalMines: number;
+  /** Telegram ID used as the referral code */
   referralCode: string;
-  miningStreak: number;
-  totalReferrals: number;
-  isAdmin?: boolean;
-  createdAt: string;
   /** @nullable */
-  lastMinedAt?: string | null;
+  referredBy?: string | null;
+  totalReferrals: number;
+  isAdmin: boolean;
+  isBanned: boolean;
+  joinDate: string;
+  /** @nullable */
+  lastMine?: string | null;
 }
 
 export interface UserStats {
-  hpBalance: number;
-  totalMined: number;
-  miningStreak: number;
+  balance: number;
+  streak: number;
+  totalMines: number;
   totalReferrals: number;
-  /** @nullable */
-  globalRank: number | null;
+  globalRank: number;
   canMineNow: boolean;
   /** @nullable */
   nextMineAt?: string | null;

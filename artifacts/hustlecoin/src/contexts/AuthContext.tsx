@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useTelegramAuth, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
-import type { User } from "@workspace/api-client-react/src/generated/api.schemas";
+import { useTelegramAuth, useGetMe, getGetMeQueryKey, type User } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface AuthContextType {

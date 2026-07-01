@@ -9,20 +9,22 @@
 export interface UserProfile {
   id: number;
   telegramId: string;
-  /** @nullable */
-  username: string | null;
+  username: string;
   firstName: string;
   /** @nullable */
   lastName?: string | null;
-  /** @nullable */
-  photoUrl?: string | null;
-  hpBalance: number;
-  totalMined: number;
+  balance: number;
+  level: number;
+  streak: number;
+  totalMines: number;
+  /** Telegram ID used as the referral code */
   referralCode: string;
-  miningStreak: number;
-  totalReferrals: number;
-  isAdmin?: boolean;
-  createdAt: string;
   /** @nullable */
-  lastMinedAt?: string | null;
+  referredBy?: string | null;
+  totalReferrals: number;
+  isAdmin: boolean;
+  isBanned: boolean;
+  joinDate: string;
+  /** @nullable */
+  lastMine?: string | null;
 }

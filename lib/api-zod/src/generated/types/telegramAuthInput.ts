@@ -10,7 +10,7 @@ export interface TelegramAuthInput {
   /** Raw Telegram initData string from window.Telegram.WebApp.initData */
   initData: string;
   /**
-     * Optional referral code from the Telegram start parameter
+     * Referrer's Telegram ID passed as the start_param
      * @nullable
      */
   referralCode?: string | null;

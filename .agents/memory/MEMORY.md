@@ -1,0 +1,1 @@
+- [Production DB schema](production-db-schema.md) — production users table uses different column names than typical schema; all 16 tables mapped to Drizzle exactly.

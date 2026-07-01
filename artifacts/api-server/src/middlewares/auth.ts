@@ -25,7 +25,6 @@ export async function requireAuth(
     return;
   }
 
-  // Attach user to request for downstream handlers
   (req as Request & { currentUser: typeof user }).currentUser = user;
   next();
 }

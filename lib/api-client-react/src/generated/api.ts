@@ -66,7 +66,6 @@ export const getHealthCheckUrl = () => {
 }
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const healthCheck = async ( options?: RequestInit): Promise<HealthStatus> => {
@@ -144,7 +143,6 @@ export const getTelegramAuthUrl = () => {
 }
 
 /**
- * Validate Telegram initData and create or retrieve a user session
  * @summary Authenticate via Telegram Mini App
  */
 export const telegramAuth = async (telegramAuthInput: TelegramAuthInput, options?: RequestInit): Promise<AuthResult> => {
@@ -215,7 +213,6 @@ export const getGetMeUrl = () => {
 }
 
 /**
- * Returns the current user from the session
  * @summary Get current authenticated user
  */
 export const getMe = async ( options?: RequestInit): Promise<User> => {
@@ -440,7 +437,6 @@ export const getGetUserStatsUrl = () => {
 }
 
 /**
- * Returns HP balance, mining streak, referral count, and ranking info
  * @summary Get user statistics summary
  */
 export const getUserStats = async ( options?: RequestInit): Promise<UserStats> => {
