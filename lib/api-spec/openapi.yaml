@@ -18,6 +18,8 @@ tags:
     description: Mining operations
   - name: referrals
     description: Referral system
+  - name: leaderboard
+    description: Leaderboard rankings
 paths:
   /healthz:
     get:
@@ -305,6 +307,115 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /leaderboard/global:
+    get:
+      operationId: getLeaderboardGlobal
+      tags: [leaderboard]
+      summary: Get global leaderboard ranked by HP balance
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Global leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardGlobalResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /leaderboard/mining:
+    get:
+      operationId: getLeaderboardMining
+      tags: [leaderboard]
+      summary: Get mining leaderboard ranked by total mines and streak
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Mining leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardMiningResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /leaderboard/referrals:
+    get:
+      operationId: getLeaderboardReferrals
+      tags: [leaderboard]
+      summary: Get referral leaderboard ranked by referral count and HP
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Referral leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardReferralsResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /leaderboard/me:
+    get:
+      operationId: getLeaderboardMe
+      tags: [leaderboard]
+      summary: Get the current user's rank on all leaderboards
+      responses:
+        "200":
+          description: User's leaderboard ranks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardMyRank"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -584,4 +695,109 @@ components:
           items:
             $ref: "#/components/schemas/ReferralRewardEntry"
         total:
+          type: integer
+
+    LeaderboardGlobalEntry:
+      type: object
+      required: [rank, telegramId, username, firstName, level, balance]
+      properties:
+        rank:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: string
+        firstName:
+          type: string
+        level:
+          type: integer
+        balance:
+          type: integer
+
+    LeaderboardGlobalResponse:
+      type: object
+      required: [entries, total]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardGlobalEntry"
+        total:
+          type: integer
+
+    LeaderboardMiningEntry:
+      type: object
+      required: [rank, telegramId, username, firstName, totalMines, streak]
+      properties:
+        rank:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: string
+        firstName:
+          type: string
+        totalMines:
+          type: integer
+        streak:
+          type: integer
+
+    LeaderboardMiningResponse:
+      type: object
+      required: [entries, total]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardMiningEntry"
+        total:
+          type: integer
+
+    LeaderboardReferralEntry:
+      type: object
+      required: [rank, telegramId, username, firstName, totalReferrals, totalReferralHp]
+      properties:
+        rank:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: string
+        firstName:
+          type: string
+        totalReferrals:
+          type: integer
+        totalReferralHp:
+          type: integer
+
+    LeaderboardReferralsResponse:
+      type: object
+      required: [entries, total]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardReferralEntry"
+        total:
+          type: integer
+
+    LeaderboardMyRank:
+      type: object
+      required: [globalRank, miningRank, referralRank, balance, totalMines, streak, totalReferrals, totalReferralHp]
+      properties:
+        globalRank:
+          type: integer
+        miningRank:
+          type: integer
+        referralRank:
+          type: integer
+        balance:
+          type: integer
+        totalMines:
+          type: integer
+        streak:
+          type: integer
+        totalReferrals:
+          type: integer
+        totalReferralHp:
           type: integer
