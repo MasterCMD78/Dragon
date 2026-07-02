@@ -47,6 +47,10 @@ Phase 1 complete: Telegram auth, user creation/login, session management, home s
 
 Phase 2 complete: Mining module — 24h mining sessions, streak bonuses (base 100 HP, +10 at streak 2-6, +50 at streak 7+), 4 API endpoints (GET /api/mining/status, POST /api/mining/start, POST /api/mining/claim, GET /api/mining/history), full mining UI with three states (idle/mining/claimable), live countdown timer, reward splash animation, and mining history list.
 
+Phase 3 complete: Referral Engine — referral code generation/lookup, referral tracking, and reward payouts, with a full frontend screen showing referral link/code, share action, and list of referred users.
+
+Phase 5 complete: Leaderboards — 4 API endpoints (GET /api/leaderboard/global, /mining, /referrals, /me), and a full frontend Leaderboards screen with Global/Mining/Referrals tabs, medal styling for top 3, skeleton loading states, pull-to-refresh, and a pinned "Your Rank" footer when the current user is outside the visible top list.
+
 ## User preferences
 
 - Build in phases; stop after each phase for approval before continuing.

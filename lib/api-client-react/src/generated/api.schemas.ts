@@ -184,6 +184,59 @@ export interface ReferralRewardsResponse {
   total: number;
 }
 
+export interface LeaderboardGlobalEntry {
+  rank: number;
+  telegramId: string;
+  username: string;
+  firstName: string;
+  level: number;
+  balance: number;
+}
+
+export interface LeaderboardGlobalResponse {
+  entries: LeaderboardGlobalEntry[];
+  total: number;
+}
+
+export interface LeaderboardMiningEntry {
+  rank: number;
+  telegramId: string;
+  username: string;
+  firstName: string;
+  totalMines: number;
+  streak: number;
+}
+
+export interface LeaderboardMiningResponse {
+  entries: LeaderboardMiningEntry[];
+  total: number;
+}
+
+export interface LeaderboardReferralEntry {
+  rank: number;
+  telegramId: string;
+  username: string;
+  firstName: string;
+  totalReferrals: number;
+  totalReferralHp: number;
+}
+
+export interface LeaderboardReferralsResponse {
+  entries: LeaderboardReferralEntry[];
+  total: number;
+}
+
+export interface LeaderboardMyRank {
+  globalRank: number;
+  miningRank: number;
+  referralRank: number;
+  balance: number;
+  totalMines: number;
+  streak: number;
+  totalReferrals: number;
+  totalReferralHp: number;
+}
+
 export type GetMiningHistoryParams = {
 limit?: number;
 offset?: number;
@@ -195,6 +248,21 @@ offset?: number;
 };
 
 export type GetReferralRewardsParams = {
+limit?: number;
+offset?: number;
+};
+
+export type GetLeaderboardGlobalParams = {
+limit?: number;
+offset?: number;
+};
+
+export type GetLeaderboardMiningParams = {
+limit?: number;
+offset?: number;
+};
+
+export type GetLeaderboardReferralsParams = {
 limit?: number;
 offset?: number;
 };

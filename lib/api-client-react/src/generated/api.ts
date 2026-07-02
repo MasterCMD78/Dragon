@@ -22,10 +22,17 @@ import type {
 import type {
   AuthResult,
   ErrorResponse,
+  GetLeaderboardGlobalParams,
+  GetLeaderboardMiningParams,
+  GetLeaderboardReferralsParams,
   GetMiningHistoryParams,
   GetReferralRewardsParams,
   GetReferralUsersParams,
   HealthStatus,
+  LeaderboardGlobalResponse,
+  LeaderboardMiningResponse,
+  LeaderboardMyRank,
+  LeaderboardReferralsResponse,
   MiningClaimResult,
   MiningHistoryResponse,
   MiningStatus,
@@ -1048,6 +1055,335 @@ export function useGetReferralRewards<TData = Awaited<ReturnType<typeof getRefer
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetReferralRewardsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetLeaderboardGlobalUrl = (params?: GetLeaderboardGlobalParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/leaderboard/global?${stringifiedParams}` : `/api/leaderboard/global`
+}
+
+/**
+ * @summary Get global leaderboard ranked by HP balance
+ */
+export const getLeaderboardGlobal = async (params?: GetLeaderboardGlobalParams, options?: RequestInit): Promise<LeaderboardGlobalResponse> => {
+
+  return customFetch<LeaderboardGlobalResponse>(getGetLeaderboardGlobalUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLeaderboardGlobalQueryKey = (params?: GetLeaderboardGlobalParams,) => {
+    return [
+    `/api/leaderboard/global`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetLeaderboardGlobalQueryOptions = <TData = Awaited<ReturnType<typeof getLeaderboardGlobal>>, TError = ErrorType<ErrorResponse>>(params?: GetLeaderboardGlobalParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardGlobal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLeaderboardGlobalQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeaderboardGlobal>>> = ({ signal }) => getLeaderboardGlobal(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardGlobal>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLeaderboardGlobalQueryResult = NonNullable<Awaited<ReturnType<typeof getLeaderboardGlobal>>>
+export type GetLeaderboardGlobalQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get global leaderboard ranked by HP balance
+ */
+
+export function useGetLeaderboardGlobal<TData = Awaited<ReturnType<typeof getLeaderboardGlobal>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetLeaderboardGlobalParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardGlobal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLeaderboardGlobalQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetLeaderboardMiningUrl = (params?: GetLeaderboardMiningParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/leaderboard/mining?${stringifiedParams}` : `/api/leaderboard/mining`
+}
+
+/**
+ * @summary Get mining leaderboard ranked by total mines and streak
+ */
+export const getLeaderboardMining = async (params?: GetLeaderboardMiningParams, options?: RequestInit): Promise<LeaderboardMiningResponse> => {
+
+  return customFetch<LeaderboardMiningResponse>(getGetLeaderboardMiningUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLeaderboardMiningQueryKey = (params?: GetLeaderboardMiningParams,) => {
+    return [
+    `/api/leaderboard/mining`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetLeaderboardMiningQueryOptions = <TData = Awaited<ReturnType<typeof getLeaderboardMining>>, TError = ErrorType<ErrorResponse>>(params?: GetLeaderboardMiningParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardMining>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLeaderboardMiningQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeaderboardMining>>> = ({ signal }) => getLeaderboardMining(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardMining>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLeaderboardMiningQueryResult = NonNullable<Awaited<ReturnType<typeof getLeaderboardMining>>>
+export type GetLeaderboardMiningQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get mining leaderboard ranked by total mines and streak
+ */
+
+export function useGetLeaderboardMining<TData = Awaited<ReturnType<typeof getLeaderboardMining>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetLeaderboardMiningParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardMining>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLeaderboardMiningQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetLeaderboardReferralsUrl = (params?: GetLeaderboardReferralsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/leaderboard/referrals?${stringifiedParams}` : `/api/leaderboard/referrals`
+}
+
+/**
+ * @summary Get referral leaderboard ranked by referral count and HP
+ */
+export const getLeaderboardReferrals = async (params?: GetLeaderboardReferralsParams, options?: RequestInit): Promise<LeaderboardReferralsResponse> => {
+
+  return customFetch<LeaderboardReferralsResponse>(getGetLeaderboardReferralsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLeaderboardReferralsQueryKey = (params?: GetLeaderboardReferralsParams,) => {
+    return [
+    `/api/leaderboard/referrals`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetLeaderboardReferralsQueryOptions = <TData = Awaited<ReturnType<typeof getLeaderboardReferrals>>, TError = ErrorType<ErrorResponse>>(params?: GetLeaderboardReferralsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardReferrals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLeaderboardReferralsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeaderboardReferrals>>> = ({ signal }) => getLeaderboardReferrals(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardReferrals>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLeaderboardReferralsQueryResult = NonNullable<Awaited<ReturnType<typeof getLeaderboardReferrals>>>
+export type GetLeaderboardReferralsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get referral leaderboard ranked by referral count and HP
+ */
+
+export function useGetLeaderboardReferrals<TData = Awaited<ReturnType<typeof getLeaderboardReferrals>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetLeaderboardReferralsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardReferrals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLeaderboardReferralsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetLeaderboardMeUrl = () => {
+
+
+
+
+  return `/api/leaderboard/me`
+}
+
+/**
+ * @summary Get the current user's rank on all leaderboards
+ */
+export const getLeaderboardMe = async ( options?: RequestInit): Promise<LeaderboardMyRank> => {
+
+  return customFetch<LeaderboardMyRank>(getGetLeaderboardMeUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLeaderboardMeQueryKey = () => {
+    return [
+    `/api/leaderboard/me`
+    ] as const;
+    }
+
+
+export const getGetLeaderboardMeQueryOptions = <TData = Awaited<ReturnType<typeof getLeaderboardMe>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardMe>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLeaderboardMeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeaderboardMe>>> = ({ signal }) => getLeaderboardMe({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardMe>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLeaderboardMeQueryResult = NonNullable<Awaited<ReturnType<typeof getLeaderboardMe>>>
+export type GetLeaderboardMeQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get the current user's rank on all leaderboards
+ */
+
+export function useGetLeaderboardMe<TData = Awaited<ReturnType<typeof getLeaderboardMe>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboardMe>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLeaderboardMeQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

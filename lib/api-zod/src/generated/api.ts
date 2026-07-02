@@ -243,3 +243,90 @@ export const GetReferralRewardsResponse = zod.object({
 })
 
 
+/**
+ * @summary Get global leaderboard ranked by HP balance
+ */
+export const getLeaderboardGlobalQueryLimitDefault = 50;
+export const getLeaderboardGlobalQueryOffsetDefault = 0;
+
+export const GetLeaderboardGlobalQueryParams = zod.object({
+  "limit": zod.coerce.number().default(getLeaderboardGlobalQueryLimitDefault),
+  "offset": zod.coerce.number().default(getLeaderboardGlobalQueryOffsetDefault)
+})
+
+export const GetLeaderboardGlobalResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "rank": zod.number(),
+  "telegramId": zod.string(),
+  "username": zod.string(),
+  "firstName": zod.string(),
+  "level": zod.number(),
+  "balance": zod.number()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Get mining leaderboard ranked by total mines and streak
+ */
+export const getLeaderboardMiningQueryLimitDefault = 50;
+export const getLeaderboardMiningQueryOffsetDefault = 0;
+
+export const GetLeaderboardMiningQueryParams = zod.object({
+  "limit": zod.coerce.number().default(getLeaderboardMiningQueryLimitDefault),
+  "offset": zod.coerce.number().default(getLeaderboardMiningQueryOffsetDefault)
+})
+
+export const GetLeaderboardMiningResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "rank": zod.number(),
+  "telegramId": zod.string(),
+  "username": zod.string(),
+  "firstName": zod.string(),
+  "totalMines": zod.number(),
+  "streak": zod.number()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Get referral leaderboard ranked by referral count and HP
+ */
+export const getLeaderboardReferralsQueryLimitDefault = 50;
+export const getLeaderboardReferralsQueryOffsetDefault = 0;
+
+export const GetLeaderboardReferralsQueryParams = zod.object({
+  "limit": zod.coerce.number().default(getLeaderboardReferralsQueryLimitDefault),
+  "offset": zod.coerce.number().default(getLeaderboardReferralsQueryOffsetDefault)
+})
+
+export const GetLeaderboardReferralsResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "rank": zod.number(),
+  "telegramId": zod.string(),
+  "username": zod.string(),
+  "firstName": zod.string(),
+  "totalReferrals": zod.number(),
+  "totalReferralHp": zod.number()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Get the current user's rank on all leaderboards
+ */
+export const GetLeaderboardMeResponse = zod.object({
+  "globalRank": zod.number(),
+  "miningRank": zod.number(),
+  "referralRank": zod.number(),
+  "balance": zod.number(),
+  "totalMines": zod.number(),
+  "streak": zod.number(),
+  "totalReferrals": zod.number(),
+  "totalReferralHp": zod.number()
+})
+
+
