@@ -3,6 +3,7 @@ import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { validateTelegramInitData } from "../lib/telegram";
 import { requireAuth } from "../middlewares/auth";
+import { processReferralInTx } from "../lib/referral-engine";
 
 const router: IRouter = Router();
 
@@ -31,12 +32,16 @@ router.post(
     let startParam: string | undefined;
 
     try {
-      if (IS_DEV && initData === "dev_bypass") {
+      if (IS_DEV && initData.startsWith("dev_bypass")) {
+        // dev_bypass            → standard dev user 999999999
+        // dev_bypass:123456789  → custom ID for testing
+        const parts = initData.split(":");
+        const userId = parts[1] ? parseInt(parts[1], 10) : 999999999;
         telegramUser = {
-          id: 999999999,
-          first_name: "Dev",
+          id: userId,
+          first_name: `Test_${userId}`,
           last_name: "User",
-          username: "devuser",
+          username: `testuser_${userId}`,
         };
       } else {
         const parsed = validateTelegramInitData(initData, BOT_TOKEN);
@@ -51,7 +56,7 @@ router.post(
 
     const telegramId = String(telegramUser.id);
 
-    // Find existing user
+    // ── Existing user fast-path (no referral logic) ──────────────────────────
     let [user] = await db
       .select()
       .from(usersTable)
@@ -60,41 +65,8 @@ router.post(
 
     let isNewUser = false;
 
-    if (!user) {
-      isNewUser = true;
-
-      // referralCode param OR start_param from Telegram is the referrer's telegram_id
-      const referrerTelegramId = referralCode ?? startParam ?? null;
-
-      // Validate the referrer exists and is not the same user
-      let verifiedReferrer: string | null = null;
-      if (referrerTelegramId && referrerTelegramId !== telegramId) {
-        const [referrer] = await db
-          .select({ telegramId: usersTable.telegramId })
-          .from(usersTable)
-          .where(eq(usersTable.telegramId, referrerTelegramId))
-          .limit(1);
-        if (referrer) {
-          verifiedReferrer = referrer.telegramId;
-        }
-      }
-
-      const [created] = await db
-        .insert(usersTable)
-        .values({
-          telegramId,
-          firstName: telegramUser.first_name,
-          lastName: telegramUser.last_name ?? null,
-          username: telegramUser.username ?? "",
-          languageCode: telegramUser.language_code ?? null,
-          referredBy: verifiedReferrer,
-        })
-        .returning();
-
-      user = created;
-      req.log.info({ userId: user.id, telegramId }, "New user registered");
-    } else {
-      // Update profile fields in case they changed in Telegram
+    if (user) {
+      // Update mutable profile fields in case they changed in Telegram
       const [updated] = await db
         .update(usersTable)
         .set({
@@ -107,6 +79,65 @@ router.post(
         .returning();
       user = updated;
       req.log.info({ userId: user.id, telegramId }, "Existing user logged in");
+    } else {
+      // ── New user — resolve referrer, then run everything in one transaction ─
+      isNewUser = true;
+
+      // The referral payload comes from:
+      //   1. Telegram deep-link start_param (e.g. t.me/Bot?start=<telegramId>)
+      //   2. Explicit referralCode field in request body (fallback)
+      const candidateReferrerId = startParam ?? referralCode ?? null;
+
+      // Validate: referrer must exist and must not be the joining user
+      let verifiedReferrerId: string | null = null;
+      if (candidateReferrerId && candidateReferrerId !== telegramId) {
+        const [referrer] = await db
+          .select({ telegramId: usersTable.telegramId })
+          .from(usersTable)
+          .where(eq(usersTable.telegramId, candidateReferrerId))
+          .limit(1);
+        if (referrer) {
+          verifiedReferrerId = referrer.telegramId;
+        }
+      }
+
+      // Atomic: create user + award referral rewards (if any) in one transaction
+      user = await db.transaction(async (tx) => {
+        const [created] = await tx
+          .insert(usersTable)
+          .values({
+            telegramId,
+            firstName: telegramUser.first_name,
+            lastName: telegramUser.last_name ?? null,
+            username: telegramUser.username ?? "",
+            languageCode: telegramUser.language_code ?? null,
+            referredBy: verifiedReferrerId,
+          })
+          .returning();
+
+        if (verifiedReferrerId) {
+          await processReferralInTx(tx, verifiedReferrerId, {
+            id: created.id,
+            telegramId: created.telegramId,
+            balance: created.balance,
+          });
+
+          // Re-read the user so the returned balance reflects the +250 bonus
+          const [withBonus] = await tx
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.id, created.id))
+            .limit(1);
+          return withBonus;
+        }
+
+        return created;
+      });
+
+      req.log.info(
+        { userId: user.id, telegramId, referredBy: verifiedReferrerId },
+        "New user registered",
+      );
     }
 
     req.session.userId = user.id;
