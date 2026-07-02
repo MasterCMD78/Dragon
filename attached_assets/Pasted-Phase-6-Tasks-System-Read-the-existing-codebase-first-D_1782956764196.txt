@@ -1,0 +1,165 @@
+Phase 6 – Tasks System
+
+Read the existing codebase first.
+
+Do not modify:
+
+* Authentication
+* Mining
+* Referral Engine
+* Leaderboards
+* Database schema
+* OpenAPI paths unrelated to Tasks
+
+Do not run:
+
+* db push
+* db migrate
+
+Use the existing production database and existing tasks and related tables.
+
+⸻
+
+Build the complete Tasks module
+
+Create a dedicated /tasks page.
+
+Support two categories:
+
+✅ Daily Tasks
+
+Examples:
+
+* Daily Login
+* Mine Today
+* Visit Leaderboard
+* Visit Referral Page
+
+Daily tasks should reset every 24 hours.
+
+⸻
+
+⭐ One-Time Tasks
+
+Examples:
+
+* Join Telegram Channel
+* Join Telegram Group
+* Follow X (Twitter)
+* Share HustleCoin
+* Invite Friends
+* Connect Wallet (placeholder)
+
+Completed once only.
+
+⸻
+
+Task Types
+
+Support:
+
+* Automatic tasks
+* Manual tasks
+
+Automatic tasks complete instantly when conditions are met.
+
+Manual tasks require admin approval.
+
+⸻
+
+Rewards
+
+Each task should display:
+
+* Task name
+* Description
+* Reward (HP)
+* Status:
+    * Available
+    * In Progress
+    * Completed
+    * Pending Approval
+
+⸻
+
+Backend
+
+Implement only Tasks endpoints.
+
+Support:
+
+* List tasks
+* Task details
+* Start task
+* Complete task
+* Claim reward
+
+Update:
+
+* User balance
+* Transactions
+* Task completion history
+
+Use atomic database transactions.
+
+⸻
+
+Frontend
+
+Create:
+
+* Beautiful task cards
+* Reward badges
+* Progress indicators
+* Skeleton loading
+* Pull-to-refresh
+* Empty states
+* Mobile-first UI matching the HustleCoin theme
+
+⸻
+
+Security
+
+Never trust frontend task completion.
+
+All rewards must be validated on the backend.
+
+Prevent:
+
+* Duplicate claims
+* Double rewards
+* Reward exploits
+
+⸻
+
+Testing
+
+Verify:
+
+1. Daily task completion
+2. Daily task reset
+3. One-time task completion
+4. Manual task flow
+5. Automatic task flow
+6. Duplicate completion prevention
+7. Reward distribution
+8. Transaction recording
+
+⸻
+
+Documentation
+
+Update replit.md to mark Phase 6 – Tasks as complete.
+
+⸻
+
+Important
+
+Do not build:
+
+* Quests
+* Achievements
+* Notifications
+* Admin Panel
+
+Wait for my approval before starting the next phase.
