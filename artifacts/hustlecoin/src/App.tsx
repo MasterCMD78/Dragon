@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
+import Referrals from "@/pages/referrals";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "@/types/telegram.d.ts";
@@ -17,6 +18,7 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/referrals" component={Referrals} />
         <Route path="/profile" component={Profile} />
         <Route component={NotFound} />
       </Switch>

@@ -149,7 +149,52 @@ export interface MiningHistoryResponse {
   total: number;
 }
 
+export interface ReferralStats {
+  totalReferred: number;
+  totalHpEarned: number;
+  referralCode: string;
+  referralLink: string;
+}
+
+export interface ReferralUserEntry {
+  id: number;
+  refereeTelegramId: string;
+  firstName: string;
+  username: string;
+  hpEarned: number;
+  joinedAt: string;
+}
+
+export interface ReferralUsersResponse {
+  entries: ReferralUserEntry[];
+  total: number;
+}
+
+export interface ReferralRewardEntry {
+  id: number;
+  refereeTelegramId: string;
+  firstName: string;
+  username: string;
+  hpEarned: number;
+  earnedAt: string;
+}
+
+export interface ReferralRewardsResponse {
+  entries: ReferralRewardEntry[];
+  total: number;
+}
+
 export type GetMiningHistoryParams = {
+limit?: number;
+offset?: number;
+};
+
+export type GetReferralUsersParams = {
+limit?: number;
+offset?: number;
+};
+
+export type GetReferralRewardsParams = {
 limit?: number;
 offset?: number;
 };

@@ -184,3 +184,62 @@ export const GetMiningHistoryResponse = zod.object({
 })
 
 
+/**
+ * @summary Get referral statistics for the current user
+ */
+export const GetReferralStatsResponse = zod.object({
+  "totalReferred": zod.number(),
+  "totalHpEarned": zod.number(),
+  "referralCode": zod.string(),
+  "referralLink": zod.string()
+})
+
+
+/**
+ * @summary Get list of users referred by the current user
+ */
+export const getReferralUsersQueryLimitDefault = 20;
+export const getReferralUsersQueryOffsetDefault = 0;
+
+export const GetReferralUsersQueryParams = zod.object({
+  "limit": zod.coerce.number().default(getReferralUsersQueryLimitDefault),
+  "offset": zod.coerce.number().default(getReferralUsersQueryOffsetDefault)
+})
+
+export const GetReferralUsersResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "refereeTelegramId": zod.string(),
+  "firstName": zod.string(),
+  "username": zod.string(),
+  "hpEarned": zod.number(),
+  "joinedAt": zod.string()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Get referral reward history for the current user
+ */
+export const getReferralRewardsQueryLimitDefault = 20;
+export const getReferralRewardsQueryOffsetDefault = 0;
+
+export const GetReferralRewardsQueryParams = zod.object({
+  "limit": zod.coerce.number().default(getReferralRewardsQueryLimitDefault),
+  "offset": zod.coerce.number().default(getReferralRewardsQueryOffsetDefault)
+})
+
+export const GetReferralRewardsResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "refereeTelegramId": zod.string(),
+  "firstName": zod.string(),
+  "username": zod.string(),
+  "hpEarned": zod.number(),
+  "earnedAt": zod.string()
+})),
+  "total": zod.number()
+})
+
+

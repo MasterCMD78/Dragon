@@ -23,10 +23,15 @@ import type {
   AuthResult,
   ErrorResponse,
   GetMiningHistoryParams,
+  GetReferralRewardsParams,
+  GetReferralUsersParams,
   HealthStatus,
   MiningClaimResult,
   MiningHistoryResponse,
   MiningStatus,
+  ReferralRewardsResponse,
+  ReferralStats,
+  ReferralUsersResponse,
   SuccessResponse,
   TelegramAuthInput,
   User,
@@ -798,6 +803,251 @@ export function useGetMiningHistory<TData = Awaited<ReturnType<typeof getMiningH
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetMiningHistoryQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetReferralStatsUrl = () => {
+
+
+
+
+  return `/api/referrals/stats`
+}
+
+/**
+ * @summary Get referral statistics for the current user
+ */
+export const getReferralStats = async ( options?: RequestInit): Promise<ReferralStats> => {
+
+  return customFetch<ReferralStats>(getGetReferralStatsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReferralStatsQueryKey = () => {
+    return [
+    `/api/referrals/stats`
+    ] as const;
+    }
+
+
+export const getGetReferralStatsQueryOptions = <TData = Awaited<ReturnType<typeof getReferralStats>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferralStatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferralStats>>> = ({ signal }) => getReferralStats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReferralStats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReferralStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getReferralStats>>>
+export type GetReferralStatsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get referral statistics for the current user
+ */
+
+export function useGetReferralStats<TData = Awaited<ReturnType<typeof getReferralStats>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReferralStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetReferralUsersUrl = (params?: GetReferralUsersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/referrals/users?${stringifiedParams}` : `/api/referrals/users`
+}
+
+/**
+ * @summary Get list of users referred by the current user
+ */
+export const getReferralUsers = async (params?: GetReferralUsersParams, options?: RequestInit): Promise<ReferralUsersResponse> => {
+
+  return customFetch<ReferralUsersResponse>(getGetReferralUsersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReferralUsersQueryKey = (params?: GetReferralUsersParams,) => {
+    return [
+    `/api/referrals/users`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetReferralUsersQueryOptions = <TData = Awaited<ReturnType<typeof getReferralUsers>>, TError = ErrorType<ErrorResponse>>(params?: GetReferralUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferralUsersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferralUsers>>> = ({ signal }) => getReferralUsers(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReferralUsers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReferralUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getReferralUsers>>>
+export type GetReferralUsersQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get list of users referred by the current user
+ */
+
+export function useGetReferralUsers<TData = Awaited<ReturnType<typeof getReferralUsers>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetReferralUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReferralUsersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetReferralRewardsUrl = (params?: GetReferralRewardsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/referrals/rewards?${stringifiedParams}` : `/api/referrals/rewards`
+}
+
+/**
+ * @summary Get referral reward history for the current user
+ */
+export const getReferralRewards = async (params?: GetReferralRewardsParams, options?: RequestInit): Promise<ReferralRewardsResponse> => {
+
+  return customFetch<ReferralRewardsResponse>(getGetReferralRewardsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReferralRewardsQueryKey = (params?: GetReferralRewardsParams,) => {
+    return [
+    `/api/referrals/rewards`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetReferralRewardsQueryOptions = <TData = Awaited<ReturnType<typeof getReferralRewards>>, TError = ErrorType<ErrorResponse>>(params?: GetReferralRewardsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralRewards>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferralRewardsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferralRewards>>> = ({ signal }) => getReferralRewards(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReferralRewards>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReferralRewardsQueryResult = NonNullable<Awaited<ReturnType<typeof getReferralRewards>>>
+export type GetReferralRewardsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get referral reward history for the current user
+ */
+
+export function useGetReferralRewards<TData = Awaited<ReturnType<typeof getReferralRewards>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetReferralRewardsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralRewards>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReferralRewardsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

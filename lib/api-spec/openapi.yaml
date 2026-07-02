@@ -16,6 +16,8 @@ tags:
     description: User management
   - name: mining
     description: Mining operations
+  - name: referrals
+    description: Referral system
 paths:
   /healthz:
     get:
@@ -217,6 +219,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MiningHistoryResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /referrals/stats:
+    get:
+      operationId: getReferralStats
+      tags: [referrals]
+      summary: Get referral statistics for the current user
+      responses:
+        "200":
+          description: Referral stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralStats"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /referrals/users:
+    get:
+      operationId: getReferralUsers
+      tags: [referrals]
+      summary: Get list of users referred by the current user
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Referred users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralUsersResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /referrals/rewards:
+    get:
+      operationId: getReferralRewards
+      tags: [referrals]
+      summary: Get referral reward history for the current user
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Referral rewards
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralRewardsResponse"
         "401":
           description: Not authenticated
           content:
@@ -433,5 +514,74 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/MiningLogEntry"
+        total:
+          type: integer
+
+    ReferralStats:
+      type: object
+      required: [totalReferred, totalHpEarned, referralCode, referralLink]
+      properties:
+        totalReferred:
+          type: integer
+        totalHpEarned:
+          type: integer
+        referralCode:
+          type: string
+        referralLink:
+          type: string
+
+    ReferralUserEntry:
+      type: object
+      required: [id, refereeTelegramId, firstName, username, hpEarned, joinedAt]
+      properties:
+        id:
+          type: integer
+        refereeTelegramId:
+          type: string
+        firstName:
+          type: string
+        username:
+          type: string
+        hpEarned:
+          type: integer
+        joinedAt:
+          type: string
+
+    ReferralUsersResponse:
+      type: object
+      required: [entries, total]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferralUserEntry"
+        total:
+          type: integer
+
+    ReferralRewardEntry:
+      type: object
+      required: [id, refereeTelegramId, firstName, username, hpEarned, earnedAt]
+      properties:
+        id:
+          type: integer
+        refereeTelegramId:
+          type: string
+        firstName:
+          type: string
+        username:
+          type: string
+        hpEarned:
+          type: integer
+        earnedAt:
+          type: string
+
+    ReferralRewardsResponse:
+      type: object
+      required: [entries, total]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferralRewardEntry"
         total:
           type: integer
