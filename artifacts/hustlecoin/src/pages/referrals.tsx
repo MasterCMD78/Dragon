@@ -68,7 +68,7 @@ export default function Referrals() {
       {/* Header */}
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-display font-bold text-white">Referrals</h1>
-        <p className="text-muted-foreground text-sm">Invite friends and earn 50 HP per referral</p>
+        <p className="text-muted-foreground text-sm">Invite friends and earn 500 HP per referral</p>
       </div>
 
       {/* Stats Row */}
@@ -138,9 +138,9 @@ export default function Referrals() {
       <div className="bg-primary/10 border border-primary/20 rounded-2xl p-3 flex items-start gap-3">
         <Gift className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div className="text-sm">
-          <span className="text-white font-medium">You earn 50 HP</span>
+          <span className="text-white font-medium">You earn 500 HP</span>
           <span className="text-muted-foreground"> for each friend who joins. </span>
-          <span className="text-white font-medium">They earn 25 HP</span>
+          <span className="text-white font-medium">They earn 250 HP</span>
           <span className="text-muted-foreground"> as a welcome bonus.</span>
         </div>
       </div>
