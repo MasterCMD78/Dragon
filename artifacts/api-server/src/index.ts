@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { ensureSeedTasks } from "./lib/tasks";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,8 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  ensureSeedTasks().catch((seedErr) => {
+    logger.error({ err: seedErr }, "Failed to seed tasks");
+  });
 });
