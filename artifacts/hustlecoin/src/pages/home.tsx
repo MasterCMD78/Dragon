@@ -120,7 +120,7 @@ export default function Home() {
   const isIdle = status?.state === "idle";
 
   return (
-    <div className="p-6 h-full flex flex-col pt-8 space-y-8 relative overflow-x-hidden">
+    <div className="p-6 flex flex-col pt-8 space-y-8 relative">
       
       {/* Reward Splash Overlay */}
       <AnimatePresence>
@@ -171,7 +171,7 @@ export default function Home() {
       </div>
 
       {/* Main Mining Card */}
-      <div className="w-full relative bg-card border border-border/50 rounded-3xl p-6 flex flex-col items-center shadow-lg overflow-hidden">
+      <div className="w-full relative bg-card border border-border/50 rounded-3xl p-6 flex flex-col items-center shadow-lg overflow-hidden flex-shrink-0">
         {/* Glow Effects */}
         {isMining && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 blur-[80px] rounded-full pointer-events-none" />
