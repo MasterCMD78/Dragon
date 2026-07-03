@@ -9,6 +9,7 @@ import Profile from "@/pages/profile";
 import Referrals from "@/pages/referrals";
 import Leaderboard from "@/pages/leaderboard";
 import Tasks from "@/pages/tasks";
+import Quests from "@/pages/quests";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "@/types/telegram.d.ts";
@@ -23,6 +24,7 @@ function Router() {
         <Route path="/referrals" component={Referrals} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/tasks" component={Tasks} />
+        <Route path="/quests" component={Quests} />
         <Route path="/profile" component={Profile} />
         <Route component={NotFound} />
       </Switch>

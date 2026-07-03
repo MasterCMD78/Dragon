@@ -331,6 +331,110 @@ export const GetLeaderboardMeResponse = zod.object({
 
 
 /**
+ * @summary List all quests with current user's progress
+ */
+export const GetQuestsResponse = zod.object({
+  "quests": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reward": zod.number(),
+  "questType": zod.string(),
+  "category": zod.enum(['daily', 'weekly']),
+  "target": zod.number(),
+  "progress": zod.number(),
+  "completed": zod.boolean(),
+  "claimed": zod.boolean(),
+  "periodKey": zod.string(),
+  "progressId": zod.number().nullish()
+}))
+})
+
+
+/**
+ * @summary Get a single quest with current user's progress
+ */
+export const GetQuestByIdParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetQuestByIdResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reward": zod.number(),
+  "questType": zod.string(),
+  "category": zod.enum(['daily', 'weekly']),
+  "target": zod.number(),
+  "progress": zod.number(),
+  "completed": zod.boolean(),
+  "claimed": zod.boolean(),
+  "periodKey": zod.string(),
+  "progressId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Ensure a progress row exists for the current period
+ */
+export const StartQuestParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const StartQuestResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reward": zod.number(),
+  "questType": zod.string(),
+  "category": zod.enum(['daily', 'weekly']),
+  "target": zod.number(),
+  "progress": zod.number(),
+  "completed": zod.boolean(),
+  "claimed": zod.boolean(),
+  "periodKey": zod.string(),
+  "progressId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Recompute and persist current progress for a quest
+ */
+export const UpdateQuestProgressParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateQuestProgressResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reward": zod.number(),
+  "questType": zod.string(),
+  "category": zod.enum(['daily', 'weekly']),
+  "target": zod.number(),
+  "progress": zod.number(),
+  "completed": zod.boolean(),
+  "claimed": zod.boolean(),
+  "periodKey": zod.string(),
+  "progressId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Atomically claim reward for a completed quest
+ */
+export const ClaimQuestRewardParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ClaimQuestRewardResponse = zod.object({
+  "status": zod.enum(['claimed']),
+  "reward": zod.number(),
+  "newBalance": zod.number()
+})
+
+
+/**
  * @summary List all active tasks with the current user's status
  */
 export const GetTasksResponse = zod.object({

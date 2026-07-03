@@ -22,6 +22,8 @@ tags:
     description: Leaderboard rankings
   - name: tasks
     description: Tasks and rewards
+  - name: quests
+    description: Quests and progress tracking
 paths:
   /healthz:
     get:
@@ -418,6 +420,155 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /quests:
+    get:
+      operationId: getQuests
+      tags: [quests]
+      summary: List all quests with current user's progress
+      responses:
+        "200":
+          description: Quest list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestsListResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quests/{id}:
+    get:
+      operationId: getQuestById
+      tags: [quests]
+      summary: Get a single quest with current user's progress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quest detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestItem"
+        "404":
+          description: Quest not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quests/{id}/start:
+    post:
+      operationId: startQuest
+      tags: [quests]
+      summary: Ensure a progress row exists for the current period
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quest started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestItem"
+        "404":
+          description: Quest not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quests/{id}/progress:
+    post:
+      operationId: updateQuestProgress
+      tags: [quests]
+      summary: Recompute and persist current progress for a quest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated quest progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestItem"
+        "404":
+          description: Quest not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quests/{id}/claim:
+    post:
+      operationId: claimQuestReward
+      tags: [quests]
+      summary: Atomically claim reward for a completed quest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reward claimed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestClaimResult"
+        "400":
+          description: Quest not completed or reward already claimed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Quest not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /tasks:
     get:
       operationId: getTasks
@@ -587,6 +738,57 @@ components:
       properties:
         status:
           type: string
+
+    QuestItem:
+      type: object
+      required: [id, title, description, reward, questType, category, target, progress, completed, claimed, periodKey]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        reward:
+          type: integer
+        questType:
+          type: string
+        category:
+          type: string
+          enum: [daily, weekly]
+        target:
+          type: integer
+        progress:
+          type: integer
+        completed:
+          type: boolean
+        claimed:
+          type: boolean
+        periodKey:
+          type: string
+        progressId:
+          type: ["integer", "null"]
+
+    QuestsListResponse:
+      type: object
+      required: [quests]
+      properties:
+        quests:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestItem"
+
+    QuestClaimResult:
+      type: object
+      required: [status, reward, newBalance]
+      properties:
+        status:
+          type: string
+          enum: [claimed]
+        reward:
+          type: integer
+        newBalance:
+          type: integer
 
     TaskItem:
       type: object

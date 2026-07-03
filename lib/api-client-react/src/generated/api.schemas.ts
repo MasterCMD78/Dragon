@@ -9,6 +9,47 @@ export interface HealthStatus {
   status: string;
 }
 
+export type QuestItemCategory = typeof QuestItemCategory[keyof typeof QuestItemCategory];
+
+
+export const QuestItemCategory = {
+  daily: 'daily',
+  weekly: 'weekly',
+} as const;
+
+export interface QuestItem {
+  id: number;
+  title: string;
+  description: string;
+  reward: number;
+  questType: string;
+  category: QuestItemCategory;
+  target: number;
+  progress: number;
+  completed: boolean;
+  claimed: boolean;
+  periodKey: string;
+  /** @nullable */
+  progressId?: number | null;
+}
+
+export interface QuestsListResponse {
+  quests: QuestItem[];
+}
+
+export type QuestClaimResultStatus = typeof QuestClaimResultStatus[keyof typeof QuestClaimResultStatus];
+
+
+export const QuestClaimResultStatus = {
+  claimed: 'claimed',
+} as const;
+
+export interface QuestClaimResult {
+  status: QuestClaimResultStatus;
+  reward: number;
+  newBalance: number;
+}
+
 export type TaskItemTaskType = typeof TaskItemTaskType[keyof typeof TaskItemTaskType];
 
 

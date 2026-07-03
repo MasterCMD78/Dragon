@@ -6,6 +6,7 @@ import miningRouter from "./mining";
 import referralsRouter from "./referrals";
 import leaderboardRouter from "./leaderboard";
 import tasksRouter from "./tasks";
+import questsRouter from "./quests";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(miningRouter);
 router.use(referralsRouter);
 router.use(leaderboardRouter);
 router.use(tasksRouter);
+router.use(questsRouter);
 
 export default router;

@@ -36,6 +36,9 @@ import type {
   MiningClaimResult,
   MiningHistoryResponse,
   MiningStatus,
+  QuestClaimResult,
+  QuestItem,
+  QuestsListResponse,
   ReferralRewardsResponse,
   ReferralStats,
   ReferralUsersResponse,
@@ -1398,6 +1401,370 @@ export function useGetLeaderboardMe<TData = Awaited<ReturnType<typeof getLeaderb
 
 
 
+
+export const getGetQuestsUrl = () => {
+
+
+
+
+  return `/api/quests`
+}
+
+/**
+ * @summary List all quests with current user's progress
+ */
+export const getQuests = async ( options?: RequestInit): Promise<QuestsListResponse> => {
+
+  return customFetch<QuestsListResponse>(getGetQuestsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetQuestsQueryKey = () => {
+    return [
+    `/api/quests`
+    ] as const;
+    }
+
+
+export const getGetQuestsQueryOptions = <TData = Awaited<ReturnType<typeof getQuests>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQuests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetQuestsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getQuests>>> = ({ signal }) => getQuests({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getQuests>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetQuestsQueryResult = NonNullable<Awaited<ReturnType<typeof getQuests>>>
+export type GetQuestsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List all quests with current user's progress
+ */
+
+export function useGetQuests<TData = Awaited<ReturnType<typeof getQuests>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQuests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetQuestsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetQuestByIdUrl = (id: number,) => {
+
+
+
+
+  return `/api/quests/${id}`
+}
+
+/**
+ * @summary Get a single quest with current user's progress
+ */
+export const getQuestById = async (id: number, options?: RequestInit): Promise<QuestItem> => {
+
+  return customFetch<QuestItem>(getGetQuestByIdUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetQuestByIdQueryKey = (id: number,) => {
+    return [
+    `/api/quests/${id}`
+    ] as const;
+    }
+
+
+export const getGetQuestByIdQueryOptions = <TData = Awaited<ReturnType<typeof getQuestById>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQuestById>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetQuestByIdQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getQuestById>>> = ({ signal }) => getQuestById(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getQuestById>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetQuestByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getQuestById>>>
+export type GetQuestByIdQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a single quest with current user's progress
+ */
+
+export function useGetQuestById<TData = Awaited<ReturnType<typeof getQuestById>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQuestById>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetQuestByIdQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getStartQuestUrl = (id: number,) => {
+
+
+
+
+  return `/api/quests/${id}/start`
+}
+
+/**
+ * @summary Ensure a progress row exists for the current period
+ */
+export const startQuest = async (id: number, options?: RequestInit): Promise<QuestItem> => {
+
+  return customFetch<QuestItem>(getStartQuestUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getStartQuestMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startQuest>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startQuest>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['startQuest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startQuest>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  startQuest(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartQuestMutationResult = NonNullable<Awaited<ReturnType<typeof startQuest>>>
+
+    export type StartQuestMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Ensure a progress row exists for the current period
+ */
+export const useStartQuest = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startQuest>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof startQuest>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getStartQuestMutationOptions(options));
+    }
+
+export const getUpdateQuestProgressUrl = (id: number,) => {
+
+
+
+
+  return `/api/quests/${id}/progress`
+}
+
+/**
+ * @summary Recompute and persist current progress for a quest
+ */
+export const updateQuestProgress = async (id: number, options?: RequestInit): Promise<QuestItem> => {
+
+  return customFetch<QuestItem>(getUpdateQuestProgressUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getUpdateQuestProgressMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateQuestProgress>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateQuestProgress>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['updateQuestProgress'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateQuestProgress>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  updateQuestProgress(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateQuestProgressMutationResult = NonNullable<Awaited<ReturnType<typeof updateQuestProgress>>>
+
+    export type UpdateQuestProgressMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Recompute and persist current progress for a quest
+ */
+export const useUpdateQuestProgress = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateQuestProgress>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateQuestProgress>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getUpdateQuestProgressMutationOptions(options));
+    }
+
+export const getClaimQuestRewardUrl = (id: number,) => {
+
+
+
+
+  return `/api/quests/${id}/claim`
+}
+
+/**
+ * @summary Atomically claim reward for a completed quest
+ */
+export const claimQuestReward = async (id: number, options?: RequestInit): Promise<QuestClaimResult> => {
+
+  return customFetch<QuestClaimResult>(getClaimQuestRewardUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getClaimQuestRewardMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimQuestReward>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof claimQuestReward>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['claimQuestReward'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof claimQuestReward>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  claimQuestReward(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClaimQuestRewardMutationResult = NonNullable<Awaited<ReturnType<typeof claimQuestReward>>>
+
+    export type ClaimQuestRewardMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Atomically claim reward for a completed quest
+ */
+export const useClaimQuestReward = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimQuestReward>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof claimQuestReward>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getClaimQuestRewardMutationOptions(options));
+    }
 
 export const getGetTasksUrl = () => {
 
