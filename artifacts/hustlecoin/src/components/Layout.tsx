@@ -1,17 +1,31 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User as UserIcon, ExternalLink, Users, Trophy, ListChecks, Swords, Award } from "lucide-react";
+import { Home, User as UserIcon, ExternalLink, Users, Trophy, ListChecks, Swords, Award, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { useGetNotificationsUnreadCount } from "@workspace/api-client-react";
 
 function buildTelegramLink(): string {
   const bot = __TELEGRAM_BOT_USERNAME__;
   return bot ? `https://t.me/${bot}` : "https://t.me";
 }
 
+function UnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-primary text-black text-[8px] font-bold leading-none border border-background">
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
+
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location] = useLocation();
   const { isLoading, isTelegramAvailable, isAuthenticated } = useAuth();
+  const { data: unreadData } = useGetNotificationsUnreadCount({
+    query: { refetchInterval: 30000, enabled: isAuthenticated },
+  });
+  const unreadCount = unreadData?.count ?? 0;
 
   if (!isTelegramAvailable) {
     const link = buildTelegramLink();
@@ -69,40 +83,46 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </main>
 
         {/* Bottom Tab Bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-card border-t border-border/50 flex items-center justify-around px-6 z-50">
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-card border-t border-border/50 flex items-center justify-around px-2 z-50">
           <Link href="/" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-home">
-              <Home className="w-6 h-6 mb-1" />
+              <Home className="w-5 h-5" />
             </div>
           </Link>
           <Link href="/referrals" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/referrals' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-referrals">
-              <Users className="w-6 h-6 mb-1" />
+              <Users className="w-5 h-5" />
             </div>
           </Link>
           <Link href="/leaderboard" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/leaderboard' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-leaderboard">
-              <Trophy className="w-6 h-6 mb-1" />
+              <Trophy className="w-5 h-5" />
             </div>
           </Link>
           <Link href="/tasks" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/tasks' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-tasks">
-              <ListChecks className="w-5 h-5 mb-1" />
+              <ListChecks className="w-5 h-5" />
             </div>
           </Link>
           <Link href="/quests" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/quests' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-quests">
-              <Swords className="w-5 h-5 mb-1" />
+              <Swords className="w-5 h-5" />
             </div>
           </Link>
           <Link href="/achievements" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/achievements' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-achievements">
-              <Award className="w-5 h-5 mb-1" />
+              <Award className="w-5 h-5" />
+            </div>
+          </Link>
+          <Link href="/notifications" className="flex-1 flex justify-center">
+            <div className={`relative flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/notifications' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-notifications">
+              <Bell className="w-5 h-5" />
+              <UnreadBadge count={unreadCount} />
             </div>
           </Link>
           <Link href="/profile" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/profile' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-profile">
-              <UserIcon className="w-6 h-6 mb-1" />
+              <UserIcon className="w-5 h-5" />
             </div>
           </Link>
         </div>

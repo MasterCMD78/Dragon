@@ -580,3 +580,57 @@ export const GetAchievementByIdResponse = zod.object({
 })
 
 
+/**
+ * @summary Get unread notification count for the current user
+ */
+export const GetNotificationsUnreadCountResponse = zod.object({
+  "count": zod.number()
+})
+
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Get paginated notification inbox with optional type filter
+ */
+export const getNotificationsQueryLimitDefault = 20;
+
+export const GetNotificationsQueryParams = zod.object({
+  "type": zod.enum(['mining', 'referral', 'task', 'quest', 'achievement', 'system']).optional(),
+  "cursor": zod.coerce.number().optional(),
+  "limit": zod.coerce.number().default(getNotificationsQueryLimitDefault)
+})
+
+export const GetNotificationsResponse = zod.object({
+  "notifications": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "type": zod.enum(['mining', 'referral', 'task', 'quest', 'achievement', 'system']),
+  "read": zod.boolean(),
+  "relatedEntity": zod.string().nullish(),
+  "createdAt": zod.string()
+})),
+  "hasMore": zod.boolean(),
+  "nextCursor": zod.number().nullish()
+})
+
+
+/**
+ * @summary Mark a single notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const MarkNotificationReadResponse = zod.object({
+  "success": zod.boolean()
+})
+
+

@@ -389,6 +389,40 @@ export interface AchievementCheckResult {
   newUnlocks: NewUnlock[];
 }
 
+export type NotificationItemType = typeof NotificationItemType[keyof typeof NotificationItemType];
+
+
+export const NotificationItemType = {
+  mining: 'mining',
+  referral: 'referral',
+  task: 'task',
+  quest: 'quest',
+  achievement: 'achievement',
+  system: 'system',
+} as const;
+
+export interface NotificationItem {
+  id: number;
+  title: string;
+  message: string;
+  type: NotificationItemType;
+  read: boolean;
+  /** @nullable */
+  relatedEntity?: string | null;
+  createdAt: string;
+}
+
+export interface NotificationsListResponse {
+  notifications: NotificationItem[];
+  hasMore: boolean;
+  /** @nullable */
+  nextCursor?: number | null;
+}
+
+export interface NotificationsUnreadCount {
+  count: number;
+}
+
 export type GetMiningHistoryParams = {
 limit?: number;
 offset?: number;
@@ -418,4 +452,22 @@ export type GetLeaderboardReferralsParams = {
 limit?: number;
 offset?: number;
 };
+
+export type GetNotificationsParams = {
+type?: GetNotificationsType;
+cursor?: number;
+limit?: number;
+};
+
+export type GetNotificationsType = typeof GetNotificationsType[keyof typeof GetNotificationsType];
+
+
+export const GetNotificationsType = {
+  mining: 'mining',
+  referral: 'referral',
+  task: 'task',
+  quest: 'quest',
+  achievement: 'achievement',
+  system: 'system',
+} as const;
 

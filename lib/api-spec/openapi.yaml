@@ -26,6 +26,8 @@ tags:
     description: Quests and progress tracking
   - name: achievements
     description: Achievements and milestone tracking
+  - name: notifications
+    description: Notification inbox and read state management
 paths:
   /healthz:
     get:
@@ -801,6 +803,112 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /notifications/unread-count:
+    get:
+      operationId: getNotificationsUnreadCount
+      tags: [notifications]
+      summary: Get unread notification count for the current user
+      responses:
+        "200":
+          description: Unread count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationsUnreadCount"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: Get paginated notification inbox with optional type filter
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [mining, referral, task, quest, achievement, system]
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationsListResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a single notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -1350,3 +1458,43 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/NewUnlock"
+
+    NotificationItem:
+      type: object
+      required: [id, title, message, type, read, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [mining, referral, task, quest, achievement, system]
+        read:
+          type: boolean
+        relatedEntity:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    NotificationsListResponse:
+      type: object
+      required: [notifications, hasMore]
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotificationItem"
+        hasMore:
+          type: boolean
+        nextCursor:
+          type: ["integer", "null"]
+
+    NotificationsUnreadCount:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
