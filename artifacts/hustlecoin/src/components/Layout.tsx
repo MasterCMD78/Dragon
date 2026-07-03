@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User as UserIcon, ExternalLink, Users, Trophy, ListChecks, Swords } from "lucide-react";
+import { Home, User as UserIcon, ExternalLink, Users, Trophy, ListChecks, Swords, Award } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -93,6 +93,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <Link href="/quests" className="flex-1 flex justify-center">
             <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/quests' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-quests">
               <Swords className="w-5 h-5 mb-1" />
+            </div>
+          </Link>
+          <Link href="/achievements" className="flex-1 flex justify-center">
+            <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/achievements' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-achievements">
+              <Award className="w-5 h-5 mb-1" />
             </div>
           </Link>
           <Link href="/profile" className="flex-1 flex justify-center">

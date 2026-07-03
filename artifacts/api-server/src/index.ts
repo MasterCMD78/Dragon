@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { ensureSeedTasks } from "./lib/tasks";
 import { ensureSeedQuests } from "./lib/quests";
+import { ensureSeedAchievements } from "./lib/achievement-seed";
 
 const rawPort = process.env["PORT"];
 
@@ -31,5 +32,9 @@ app.listen(port, (err) => {
 
   ensureSeedQuests().catch((seedErr) => {
     logger.error({ err: seedErr }, "Failed to seed quests");
+  });
+
+  ensureSeedAchievements().catch((seedErr) => {
+    logger.error({ err: seedErr }, "Failed to seed achievements");
   });
 });

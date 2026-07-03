@@ -523,3 +523,60 @@ export const ClaimTaskRewardResponse = zod.object({
 })
 
 
+/**
+ * @summary List all achievements with the current user's status
+ */
+export const GetAchievementsResponse = zod.object({
+  "achievements": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "icon": zod.string(),
+  "tier": zod.enum(['bronze', 'silver', 'gold', 'diamond']),
+  "reward": zod.number(),
+  "unlocked": zod.boolean(),
+  "unlockedAt": zod.string().nullish(),
+  "rewarded": zod.boolean(),
+  "progress": zod.number(),
+  "target": zod.number()
+}))
+})
+
+
+/**
+ * @summary Run a full achievement sweep for the current user and unlock any newly eligible achievements
+ */
+export const CheckAchievementsResponse = zod.object({
+  "totalChecked": zod.number(),
+  "newUnlocks": zod.array(zod.object({
+  "achievementId": zod.number(),
+  "title": zod.string(),
+  "icon": zod.string(),
+  "tier": zod.enum(['bronze', 'silver', 'gold', 'diamond']),
+  "reward": zod.number()
+}))
+})
+
+
+/**
+ * @summary Get a single achievement with the current user's status
+ */
+export const GetAchievementByIdParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetAchievementByIdResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "icon": zod.string(),
+  "tier": zod.enum(['bronze', 'silver', 'gold', 'diamond']),
+  "reward": zod.number(),
+  "unlocked": zod.boolean(),
+  "unlockedAt": zod.string().nullish(),
+  "rewarded": zod.boolean(),
+  "progress": zod.number(),
+  "target": zod.number()
+})
+
+

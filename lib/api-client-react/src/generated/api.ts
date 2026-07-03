@@ -20,6 +20,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AchievementCheckResult,
+  AchievementItem,
+  AchievementsListResponse,
   AuthResult,
   ErrorResponse,
   GetLeaderboardGlobalParams,
@@ -2129,4 +2132,228 @@ export const useClaimTaskReward = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getClaimTaskRewardMutationOptions(options));
     }
+
+export const getGetAchievementsUrl = () => {
+
+
+
+
+  return `/api/achievements`
+}
+
+/**
+ * @summary List all achievements with the current user's status
+ */
+export const getAchievements = async ( options?: RequestInit): Promise<AchievementsListResponse> => {
+
+  return customFetch<AchievementsListResponse>(getGetAchievementsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAchievementsQueryKey = () => {
+    return [
+    `/api/achievements`
+    ] as const;
+    }
+
+
+export const getGetAchievementsQueryOptions = <TData = Awaited<ReturnType<typeof getAchievements>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAchievements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAchievementsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAchievements>>> = ({ signal }) => getAchievements({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAchievements>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAchievementsQueryResult = NonNullable<Awaited<ReturnType<typeof getAchievements>>>
+export type GetAchievementsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List all achievements with the current user's status
+ */
+
+export function useGetAchievements<TData = Awaited<ReturnType<typeof getAchievements>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAchievements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAchievementsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCheckAchievementsUrl = () => {
+
+
+
+
+  return `/api/achievements/check`
+}
+
+/**
+ * @summary Run a full achievement sweep for the current user and unlock any newly eligible achievements
+ */
+export const checkAchievements = async ( options?: RequestInit): Promise<AchievementCheckResult> => {
+
+  return customFetch<AchievementCheckResult>(getCheckAchievementsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCheckAchievementsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkAchievements>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkAchievements>>, TError,void, TContext> => {
+
+const mutationKey = ['checkAchievements'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkAchievements>>, void> = () => {
+
+
+          return  checkAchievements(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckAchievementsMutationResult = NonNullable<Awaited<ReturnType<typeof checkAchievements>>>
+
+    export type CheckAchievementsMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Run a full achievement sweep for the current user and unlock any newly eligible achievements
+ */
+export const useCheckAchievements = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkAchievements>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof checkAchievements>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCheckAchievementsMutationOptions(options));
+    }
+
+export const getGetAchievementByIdUrl = (id: number,) => {
+
+
+
+
+  return `/api/achievements/${id}`
+}
+
+/**
+ * @summary Get a single achievement with the current user's status
+ */
+export const getAchievementById = async (id: number, options?: RequestInit): Promise<AchievementItem> => {
+
+  return customFetch<AchievementItem>(getGetAchievementByIdUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAchievementByIdQueryKey = (id: number,) => {
+    return [
+    `/api/achievements/${id}`
+    ] as const;
+    }
+
+
+export const getGetAchievementByIdQueryOptions = <TData = Awaited<ReturnType<typeof getAchievementById>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAchievementById>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAchievementByIdQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAchievementById>>> = ({ signal }) => getAchievementById(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAchievementById>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAchievementByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAchievementById>>>
+export type GetAchievementByIdQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a single achievement with the current user's status
+ */
+
+export function useGetAchievementById<TData = Awaited<ReturnType<typeof getAchievementById>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAchievementById>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAchievementByIdQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

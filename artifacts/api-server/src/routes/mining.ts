@@ -9,6 +9,7 @@ import {
   secondsRemaining,
   SESSION_DURATION_MS,
 } from "../lib/mining";
+import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
 const router: IRouter = Router();
 
@@ -173,6 +174,12 @@ router.post(
       newBalance: updated.balance,
       newStreak: updated.streak,
       newTotalMines: updated.totalMines,
+    });
+
+    // Fire-and-forget — must run after res.json so the DB already reflects the
+    // updated balance, streak, and totalMines written in the transaction above.
+    void checkAchievementsAfterEvent(user.telegramId, "mine").catch((err) => {
+      req.log.warn({ err }, "Achievement check failed after mining claim");
     });
   },
 );

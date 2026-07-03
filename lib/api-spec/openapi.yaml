@@ -24,6 +24,8 @@ tags:
     description: Tasks and rewards
   - name: quests
     description: Quests and progress tracking
+  - name: achievements
+    description: Achievements and milestone tracking
 paths:
   /healthz:
     get:
@@ -730,6 +732,75 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /achievements:
+    get:
+      operationId: getAchievements
+      tags: [achievements]
+      summary: List all achievements with the current user's status
+      responses:
+        "200":
+          description: Achievement list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AchievementsListResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /achievements/check:
+    post:
+      operationId: checkAchievements
+      tags: [achievements]
+      summary: Run a full achievement sweep for the current user and unlock any newly eligible achievements
+      responses:
+        "200":
+          description: Check result with any new unlocks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AchievementCheckResult"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /achievements/{id}:
+    get:
+      operationId: getAchievementById
+      tags: [achievements]
+      summary: Get a single achievement with the current user's status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Achievement detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AchievementItem"
+        "404":
+          description: Achievement not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -1215,3 +1286,67 @@ components:
           type: integer
         totalReferralHp:
           type: integer
+
+    AchievementItem:
+      type: object
+      required: [id, title, description, icon, tier, reward, unlocked, rewarded, progress, target]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        tier:
+          type: string
+          enum: [bronze, silver, gold, diamond]
+        reward:
+          type: integer
+        unlocked:
+          type: boolean
+        unlockedAt:
+          type: ["string", "null"]
+        rewarded:
+          type: boolean
+        progress:
+          type: integer
+        target:
+          type: integer
+
+    AchievementsListResponse:
+      type: object
+      required: [achievements]
+      properties:
+        achievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/AchievementItem"
+
+    NewUnlock:
+      type: object
+      required: [achievementId, title, icon, tier, reward]
+      properties:
+        achievementId:
+          type: integer
+        title:
+          type: string
+        icon:
+          type: string
+        tier:
+          type: string
+          enum: [bronze, silver, gold, diamond]
+        reward:
+          type: integer
+
+    AchievementCheckResult:
+      type: object
+      required: [totalChecked, newUnlocks]
+      properties:
+        totalChecked:
+          type: integer
+        newUnlocks:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewUnlock"

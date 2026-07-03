@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './achievementCheckResult';
+export * from './achievementItem';
+export * from './achievementItemTier';
+export * from './achievementsListResponse';
 export * from './authResult';
 export * from './errorResponse';
 export * from './getLeaderboardGlobalParams';
@@ -27,6 +31,8 @@ export * from './miningHistoryResponse';
 export * from './miningLogEntry';
 export * from './miningStatus';
 export * from './miningStatusState';
+export * from './newUnlock';
+export * from './newUnlockTier';
 export * from './questClaimResult';
 export * from './questClaimResultStatus';
 export * from './questItem';

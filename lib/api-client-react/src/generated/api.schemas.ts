@@ -337,6 +337,58 @@ export interface LeaderboardMyRank {
   totalReferralHp: number;
 }
 
+export type AchievementItemTier = typeof AchievementItemTier[keyof typeof AchievementItemTier];
+
+
+export const AchievementItemTier = {
+  bronze: 'bronze',
+  silver: 'silver',
+  gold: 'gold',
+  diamond: 'diamond',
+} as const;
+
+export interface AchievementItem {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  tier: AchievementItemTier;
+  reward: number;
+  unlocked: boolean;
+  /** @nullable */
+  unlockedAt?: string | null;
+  rewarded: boolean;
+  progress: number;
+  target: number;
+}
+
+export interface AchievementsListResponse {
+  achievements: AchievementItem[];
+}
+
+export type NewUnlockTier = typeof NewUnlockTier[keyof typeof NewUnlockTier];
+
+
+export const NewUnlockTier = {
+  bronze: 'bronze',
+  silver: 'silver',
+  gold: 'gold',
+  diamond: 'diamond',
+} as const;
+
+export interface NewUnlock {
+  achievementId: number;
+  title: string;
+  icon: string;
+  tier: NewUnlockTier;
+  reward: number;
+}
+
+export interface AchievementCheckResult {
+  totalChecked: number;
+  newUnlocks: NewUnlock[];
+}
+
 export type GetMiningHistoryParams = {
 limit?: number;
 offset?: number;

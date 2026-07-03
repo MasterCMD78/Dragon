@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { validateTelegramInitData } from "../lib/telegram";
 import { requireAuth } from "../middlewares/auth";
 import { processReferralInTx } from "../lib/referral-engine";
+import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
 const router: IRouter = Router();
 
@@ -79,6 +80,10 @@ router.post(
         .returning();
       user = updated;
       req.log.info({ userId: user.id, telegramId }, "Existing user logged in");
+
+      void checkAchievementsAfterEvent(user.telegramId, "login").catch((err) => {
+        req.log.warn({ err }, "Achievement check failed after login");
+      });
     } else {
       // ── New user — resolve referrer, then run everything in one transaction ─
       isNewUser = true;
@@ -138,6 +143,16 @@ router.post(
         { userId: user.id, telegramId, referredBy: verifiedReferrerId },
         "New user registered",
       );
+
+      void checkAchievementsAfterEvent(user.telegramId, "login").catch((err) => {
+        req.log.warn({ err }, "Achievement check failed after new user registration");
+      });
+
+      if (verifiedReferrerId) {
+        void checkAchievementsAfterEvent(verifiedReferrerId, "referral").catch((err) => {
+          req.log.warn({ err }, "Achievement check failed for referrer");
+        });
+      }
     }
 
     req.session.userId = user.id;

@@ -15,6 +15,7 @@ import {
   isProgressClaimed,
   type QuestCategory,
 } from "../lib/quests";
+import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
 const router: IRouter = Router();
 
@@ -378,6 +379,10 @@ router.post(
 
       req.log.info({ userId: authedUser.id, questId }, "Quest reward claimed");
       res.json(result);
+
+      void checkAchievementsAfterEvent(authedUser.telegramId, "quest").catch((err) => {
+        req.log.warn({ err }, "Achievement check failed after quest claim");
+      });
     } catch (err) {
       req.log.error({ err, questId }, "Failed to claim quest reward");
       res.status(500).json({ error: "Failed to claim quest reward" });

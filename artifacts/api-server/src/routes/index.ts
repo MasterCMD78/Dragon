@@ -7,6 +7,7 @@ import referralsRouter from "./referrals";
 import leaderboardRouter from "./leaderboard";
 import tasksRouter from "./tasks";
 import questsRouter from "./quests";
+import achievementsRouter from "./achievements";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(referralsRouter);
 router.use(leaderboardRouter);
 router.use(tasksRouter);
 router.use(questsRouter);
+router.use(achievementsRouter);
 
 export default router;

@@ -9,6 +9,7 @@ import {
 import { eq, and, desc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 import { classifyTask, DAY_MS, FEATURE_LAUNCH_AT, type TaskCategory, type TaskStatus } from "../lib/tasks";
+import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
 const router: IRouter = Router();
 
@@ -367,6 +368,12 @@ router.post(
       );
 
       res.json(result);
+
+      if (result.status === "completed") {
+        void checkAchievementsAfterEvent(authedUser.telegramId, "task").catch((err) => {
+          req.log.warn({ err }, "Achievement check failed after task completion");
+        });
+      }
     } catch (err) {
       req.log.error({ err, taskId: task.id }, "Failed to complete task");
       res.status(500).json({ error: "Failed to complete task" });
@@ -460,6 +467,10 @@ router.post(
 
       req.log.info({ userId: authedUser.id, taskId: task.id }, "Task reward claimed");
       res.json(result);
+
+      void checkAchievementsAfterEvent(authedUser.telegramId, "task").catch((err) => {
+        req.log.warn({ err }, "Achievement check failed after task claim");
+      });
     } catch (err) {
       req.log.error({ err, taskId: task.id }, "Failed to claim task reward");
       res.status(500).json({ error: "Failed to claim task reward" });
