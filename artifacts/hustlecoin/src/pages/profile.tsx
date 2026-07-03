@@ -1,10 +1,13 @@
 import React from "react";
 import { useGetUserProfile } from "@workspace/api-client-react";
-import { Loader2, Users, Calendar, Coins, Flame } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "wouter";
+import { Loader2, Users, Calendar, Coins, Flame, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Profile() {
   const { data: profile, isLoading } = useGetUserProfile();
+  const { user } = useAuth();
 
   if (isLoading) {
     return (
@@ -54,6 +57,19 @@ export default function Profile() {
           </span>
         </div>
       </div>
+
+      {/* Admin Panel Entry — only visible to admins */}
+      {user?.isAdmin && (
+        <Link href="/admin">
+          <button
+            className="w-full flex items-center justify-center gap-3 rounded-2xl py-4 px-6 bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-colors"
+            data-testid="button-admin-panel"
+          >
+            <ShieldCheck className="w-5 h-5 text-primary" />
+            <span className="font-display font-bold text-primary tracking-wide">ADMIN PANEL</span>
+          </button>
+        </Link>
+      )}
 
     </div>
   );
