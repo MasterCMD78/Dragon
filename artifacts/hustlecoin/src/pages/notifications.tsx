@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   getNotifications,
   useMarkNotificationRead,

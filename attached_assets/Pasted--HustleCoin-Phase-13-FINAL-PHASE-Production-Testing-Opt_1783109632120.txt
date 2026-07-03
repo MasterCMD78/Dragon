@@ -1,0 +1,281 @@
+🚀 HustleCoin – Phase 13 (FINAL PHASE)
+
+Production Testing, Optimization & Deployment Verification
+
+We are continuing the existing HustleCoin project in the same Replit.
+
+Phase 12 is COMPLETE.
+
+Before making any changes:
+
+1. Read the existing project.
+2. Verify every current feature still works.
+3. Do NOT rebuild existing systems.
+4. Do NOT redesign completed pages.
+5. Do NOT add new features.
+6. Do NOT change the database schema unless fixing a critical production bug.
+7. Preserve all APIs and existing functionality.
+
+⸻
+
+Existing Features (Must Remain Working)
+
+* Telegram Authentication
+* Mining System
+* Countdown Timer
+* Claim Rewards
+* Automatic Mining Restart
+* Referrals
+* Leaderboard
+* Tasks
+* Quests
+* Achievements
+* Notifications
+* Wallet
+* Transaction History
+* Admin Panel
+* User Management
+* Broadcasts
+* Announcements
+
+These are considered COMPLETE.
+
+Only fix bugs if discovered.
+
+⸻
+
+BEGIN PHASE 13
+
+1. Full Production Testing
+
+Perform a complete end-to-end audit of the application.
+
+Test every user flow:
+
+Authentication
+
+* Telegram login
+* Session persistence
+* Logout
+* Refresh handling
+
+Mining
+
+* Start Mining
+* Countdown
+* Claim Rewards
+* Automatic restart
+* Mining history
+* HP calculations
+
+Wallet
+
+* Balance updates
+* Transaction history
+* Filters
+* Search
+* Pagination
+
+Referrals
+
+* Referral tracking
+* Referral rewards
+* Leaderboard updates
+
+Tasks
+
+* Completion
+* Reward claiming
+* Progress updates
+
+Quests
+
+* Progress
+* Rewards
+* Completion
+
+Achievements
+
+* Unlocking
+* Reward distribution
+* Display
+
+Notifications
+
+* Read
+* Unread
+* Broadcast delivery
+
+Leaderboard
+
+* Ranking
+* HP totals
+* Updates
+
+Admin Panel
+
+Verify every admin feature:
+
+* User search
+* User details
+* Ban / Unban
+* Make Admin
+* HP adjustments
+* Transactions
+* Broadcast
+* Announcements
+* Tasks CRUD
+* Quests CRUD
+* Achievements CRUD
+
+No broken pages.
+
+No broken routes.
+
+No 404s.
+
+No crashes.
+
+⸻
+
+2. Performance Audit
+
+Check:
+
+* Slow renders
+* Duplicate API calls
+* Memory leaks
+* React Query cache
+* Lazy loading
+* Bundle size
+* Animation performance
+
+Optimize only if needed.
+
+⸻
+
+3. Security Audit
+
+Verify:
+
+* Authentication
+* Authorization
+* Admin-only routes
+* Session handling
+* Cookies
+* Protected APIs
+* Input validation
+* SQL safety
+* Rate limiting (if present)
+
+Remove any remaining development-only bypasses.
+
+Ensure:
+
+* ALLOW_DEV_BYPASS is disabled for production.
+* No debug endpoints remain enabled.
+
+⸻
+
+4. Mobile Testing
+
+Verify on:
+
+* Telegram Android
+* Telegram iPhone
+
+Check:
+
+* Scrolling
+* Safe areas
+* Keyboard
+* Modals
+* Animations
+* Navigation
+* Wallet
+* Admin Panel
+
+⸻
+
+5. UI Audit
+
+Check every page for:
+
+* Alignment
+* Overflow
+* Clipping
+* Button visibility
+* Loading states
+* Error states
+* Empty states
+
+Fix only if necessary.
+
+⸻
+
+6. Final Bug Sweep
+
+Search for:
+
+* Console errors
+* Network errors
+* Runtime errors
+* TypeScript issues
+* Broken imports
+* Unused code
+* Duplicate logic
+
+Remove dead code where safe.
+
+⸻
+
+7. Production Build
+
+Run:
+
+* TypeScript validation
+* Production build
+
+Confirm:
+
+* Zero TypeScript errors
+* Zero build errors
+* Zero runtime console errors
+
+⸻
+
+8. Final Verification Report
+
+When complete, provide a detailed report including:
+
+* Features tested
+* Bugs found
+* Bugs fixed
+* Performance improvements
+* Security improvements
+* Build status
+* Production readiness
+
+Do NOT say the app is production-ready unless every verification passes successfully.
+
+⸻
+
+IMPORTANT
+
+DO NOT:
+
+* Add blockchain.
+* Add withdrawals.
+* Add deposits.
+* Add staking.
+* Add NFT features.
+* Add chat.
+* Add marketplace.
+* Add new pages.
+* Add new APIs.
+* Add new gameplay mechanics.
+
+Only stabilize, verify, optimize, and prepare the existing application for production.
+
+This is the FINAL planned phase. The goal is to deliver a polished, stable, production-ready Telegram Mini App.
+:::

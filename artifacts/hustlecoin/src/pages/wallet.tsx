@@ -218,7 +218,7 @@ function TxDetailModal({
 const LIMIT = 20;
 
 export default function WalletPage() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const [dateFilter, setDateFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("");
