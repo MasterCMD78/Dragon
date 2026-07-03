@@ -9,6 +9,7 @@ import tasksRouter from "./tasks";
 import questsRouter from "./quests";
 import achievementsRouter from "./achievements";
 import notificationsRouter from "./notifications";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(tasksRouter);
 router.use(questsRouter);
 router.use(achievementsRouter);
 router.use(notificationsRouter);
+router.use(adminRouter);
 
 export default router;

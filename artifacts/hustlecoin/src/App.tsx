@@ -12,6 +12,7 @@ import Tasks from "@/pages/tasks";
 import Quests from "@/pages/quests";
 import Achievements from "@/pages/achievements";
 import Notifications from "@/pages/notifications";
+import AdminPanel from "@/pages/admin/index";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "@/types/telegram.d.ts";
@@ -20,19 +21,25 @@ const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/referrals" component={Referrals} />
-        <Route path="/leaderboard" component={Leaderboard} />
-        <Route path="/tasks" component={Tasks} />
-        <Route path="/quests" component={Quests} />
-        <Route path="/achievements" component={Achievements} />
-        <Route path="/notifications" component={Notifications} />
-        <Route path="/profile" component={Profile} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      <Route path="/admin/:rest*" component={AdminPanel} />
+      <Route path="/admin" component={AdminPanel} />
+      <Route>
+        <Layout>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/referrals" component={Referrals} />
+            <Route path="/leaderboard" component={Leaderboard} />
+            <Route path="/tasks" component={Tasks} />
+            <Route path="/quests" component={Quests} />
+            <Route path="/achievements" component={Achievements} />
+            <Route path="/notifications" component={Notifications} />
+            <Route path="/profile" component={Profile} />
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 

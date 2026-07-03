@@ -1,0 +1,293 @@
+👨‍💼 Phase 10 — Complete Admin Panel
+
+1. Dashboard
+
+When the admin logs in, they should see an overview:
+
+* 👥 Total users
+* 🟢 Active users today
+* ⛏ Total mines today
+* 💰 Total HP in circulation
+* 🤝 Total referrals
+* 📋 Pending task approvals
+* 🏆 Total achievements unlocked
+* 🔔 Notifications sent today
+
+⸻
+
+2. User Management
+
+Search users by:
+
+* Telegram ID
+* Username
+* First name
+* Last name
+
+Display:
+
+* Telegram ID (with Copy button)
+* Username
+* Full name
+* Join date
+* Last active
+* Level
+* HP balance
+* Mining streak
+* Total mines
+* Total referrals
+* Total achievements
+* Ban status
+* Admin status
+* Referred by
+
+⸻
+
+3. User Profile
+
+When opening a user:
+
+Basic Info
+
+* Avatar (if available)
+* Full profile
+
+Statistics
+
+* HP
+* Level
+* Streak
+* Mines
+* Referrals
+* Tasks completed
+* Quests completed
+* Achievements unlocked
+
+Actions
+
+✅ Add HP
+
+✅ Remove HP
+
+Enter amount
+
+Reason
+
+Creates a transaction record
+
+Creates a notification
+
+Admin log written
+
+⸻
+
+4. User Controls
+
+Buttons:
+
+* Ban
+* Unban
+* Make Admin
+* Remove Admin
+* Reset Mining
+* Reset Streak
+* Reset Daily Tasks
+* Reset Quests
+
+Every action should:
+
+* Ask for confirmation
+* Write to admin_logs
+* Notify the user when appropriate
+
+⸻
+
+5. Task Management
+
+Create task
+
+Edit task
+
+Delete task
+
+Activate
+
+Deactivate
+
+Manual/Automatic
+
+Reward
+
+Link
+
+Type
+
+View submissions
+
+Approve
+
+Reject
+
+Bulk approve
+
+Bulk reject
+
+⸻
+
+6. Quest Management
+
+Create quest
+
+Edit quest
+
+Activate
+
+Deactivate
+
+Reward
+
+Target
+
+Quest type
+
+Daily/Weekly
+
+⸻
+
+7. Achievement Management
+
+View achievements
+
+Create achievements
+
+Edit rewards
+
+Enable
+
+Disable
+
+View who unlocked them
+
+Force unlock
+
+Remove unlock
+
+⸻
+
+8. Notifications Center (Admin)
+
+Broadcast to:
+
+* Everyone
+* Active users
+* Top miners
+* Top referrers
+* Individual user
+
+Support:
+
+* Scheduled notifications (future enhancement)
+* Instant notifications
+
+⸻
+
+9. Announcement Management
+
+Create announcement
+
+Edit
+
+Delete
+
+Pin
+
+Unpin
+
+Expiry date
+
+⸻
+
+10. User Search Filters
+
+Filter by:
+
+* HP
+* Level
+* Joined today
+* Joined this week
+* Active today
+* Inactive
+* Banned
+* Admin
+* Referred users
+* High miners
+
+⸻
+
+11. Transaction Viewer
+
+View every HP movement:
+
+* Mining
+* Referral
+* Task
+* Quest
+* Achievement
+* Manual grant
+* Manual deduction
+
+Search by:
+
+* User
+* Type
+* Date
+
+⸻
+
+12. Economy Controls
+
+Admin can:
+
+* Grant HP
+* Deduct HP
+* Give bonus to everyone
+* Reward selected users
+* View total HP circulation
+* View daily HP generated
+
+⸻
+
+13. Security
+
+Every admin action should write to an admin_logs table (or the existing production table if available), including:
+
+* Admin Telegram ID
+* Action
+* Target user
+* Amount (if applicable)
+* Timestamp
+* Reason
+
+This gives you a full audit trail.
+
+⸻
+
+14. Future Moderation Tools
+
+* Suspend user
+* Unsuspend user
+* Delete spam task submissions
+* Reset referral abuse
+* Flag suspicious accounts
+
+⸻
+
+Safety Rules
+
+The admin panel should:
+
+* Require is_admin = true on every endpoint.
+* Never expose admin routes to regular users.
+* Require confirmation for destructive actions.
+* Never modify data directly outside the normal application flow.
+* Record every sensitive action in the audit log.
