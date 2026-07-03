@@ -51,6 +51,8 @@ Phase 3 complete: Referral Engine — referral code generation/lookup, referral 
 
 Phase 5 complete: Leaderboards — 4 API endpoints (GET /api/leaderboard/global, /mining, /referrals, /me), and a full frontend Leaderboards screen with Global/Mining/Referrals tabs, medal styling for top 3, skeleton loading states, pull-to-refresh, and a pinned "Your Rank" footer when the current user is outside the visible top list.
 
+Phase 6 complete: Tasks System — 5 backend endpoints (GET /tasks, GET /tasks/:id, POST /tasks/:id/start, POST /tasks/:id/complete, POST /tasks/:id/claim), atomic reward transactions with row-level locking to prevent double-claims, task categorisation (daily vs one-time) via server-side registry, server-side condition verifiers for Daily Login / Mine Today / Visit Leaderboard / Visit Referral Page / Invite Friends, idempotent seed of the 5 canonical daily tasks on server startup, legacy-safe claim logic (only tasks completed after server launch eligible for reward), full /tasks frontend page with Daily/One-Time tabs, progress bar, skeleton loading, pull-to-refresh, empty states, and a Tasks icon added to the bottom nav.
+
 ## User preferences
 
 - Build in phases; stop after each phase for approval before continuing.

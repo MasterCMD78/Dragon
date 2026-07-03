@@ -147,7 +147,7 @@ router.get(
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const user = (req as AuthedRequest).currentUser;
-    const taskId = parseInt(req.params.id, 10);
+    const taskId = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(taskId)) {
       res.status(400).json({ error: "Invalid task id" });
       return;
@@ -176,7 +176,7 @@ router.post(
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const user = (req as AuthedRequest).currentUser;
-    const taskId = parseInt(req.params.id, 10);
+    const taskId = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(taskId)) {
       res.status(400).json({ error: "Invalid task id" });
       return;
@@ -228,7 +228,7 @@ router.post(
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const authedUser = (req as AuthedRequest).currentUser;
-    const taskId = parseInt(req.params.id, 10);
+    const taskId = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(taskId)) {
       res.status(400).json({ error: "Invalid task id" });
       return;
@@ -380,7 +380,7 @@ router.post(
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const authedUser = (req as AuthedRequest).currentUser;
-    const taskId = parseInt(req.params.id, 10);
+    const taskId = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(taskId)) {
       res.status(400).json({ error: "Invalid task id" });
       return;

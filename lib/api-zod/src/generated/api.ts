@@ -330,3 +330,92 @@ export const GetLeaderboardMeResponse = zod.object({
 })
 
 
+/**
+ * @summary List all active tasks with the current user's status
+ */
+export const GetTasksResponse = zod.object({
+  "tasks": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reward": zod.number(),
+  "link": zod.string().nullish(),
+  "taskType": zod.enum(['automatic', 'manual']),
+  "category": zod.enum(['daily', 'one_time']),
+  "status": zod.enum(['available', 'in_progress', 'pending_approval', 'completed']),
+  "canClaim": zod.boolean(),
+  "lastCompletedAt": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Get a single task with the current user's status
+ */
+export const GetTaskByIdParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetTaskByIdResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reward": zod.number(),
+  "link": zod.string().nullish(),
+  "taskType": zod.enum(['automatic', 'manual']),
+  "category": zod.enum(['daily', 'one_time']),
+  "status": zod.enum(['available', 'in_progress', 'pending_approval', 'completed']),
+  "canClaim": zod.boolean(),
+  "lastCompletedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Mark a task as in progress
+ */
+export const StartTaskParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const StartTaskResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reward": zod.number(),
+  "link": zod.string().nullish(),
+  "taskType": zod.enum(['automatic', 'manual']),
+  "category": zod.enum(['daily', 'one_time']),
+  "status": zod.enum(['available', 'in_progress', 'pending_approval', 'completed']),
+  "canClaim": zod.boolean(),
+  "lastCompletedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Complete a task. Automatic tasks grant reward immediately; manual tasks go to pending approval.
+ */
+export const CompleteTaskParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CompleteTaskResponse = zod.object({
+  "status": zod.enum(['completed', 'pending_approval']),
+  "reward": zod.number(),
+  "newBalance": zod.number()
+})
+
+
+/**
+ * @summary Claim reward for a manually approved task
+ */
+export const ClaimTaskRewardParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ClaimTaskRewardResponse = zod.object({
+  "status": zod.enum(['completed', 'pending_approval']),
+  "reward": zod.number(),
+  "newBalance": zod.number()
+})
+
+

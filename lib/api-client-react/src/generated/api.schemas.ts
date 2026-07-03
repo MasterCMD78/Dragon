@@ -9,6 +9,65 @@ export interface HealthStatus {
   status: string;
 }
 
+export type TaskItemTaskType = typeof TaskItemTaskType[keyof typeof TaskItemTaskType];
+
+
+export const TaskItemTaskType = {
+  automatic: 'automatic',
+  manual: 'manual',
+} as const;
+
+export type TaskItemCategory = typeof TaskItemCategory[keyof typeof TaskItemCategory];
+
+
+export const TaskItemCategory = {
+  daily: 'daily',
+  one_time: 'one_time',
+} as const;
+
+export type TaskItemStatus = typeof TaskItemStatus[keyof typeof TaskItemStatus];
+
+
+export const TaskItemStatus = {
+  available: 'available',
+  in_progress: 'in_progress',
+  pending_approval: 'pending_approval',
+  completed: 'completed',
+} as const;
+
+export interface TaskItem {
+  id: number;
+  title: string;
+  description: string;
+  reward: number;
+  /** @nullable */
+  link?: string | null;
+  taskType: TaskItemTaskType;
+  category: TaskItemCategory;
+  status: TaskItemStatus;
+  canClaim: boolean;
+  /** @nullable */
+  lastCompletedAt?: string | null;
+}
+
+export interface TasksListResponse {
+  tasks: TaskItem[];
+}
+
+export type TaskActionResultStatus = typeof TaskActionResultStatus[keyof typeof TaskActionResultStatus];
+
+
+export const TaskActionResultStatus = {
+  completed: 'completed',
+  pending_approval: 'pending_approval',
+} as const;
+
+export interface TaskActionResult {
+  status: TaskActionResultStatus;
+  reward: number;
+  newBalance: number;
+}
+
 export interface ErrorResponse {
   error: string;
 }

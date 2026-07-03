@@ -40,6 +40,9 @@ import type {
   ReferralStats,
   ReferralUsersResponse,
   SuccessResponse,
+  TaskActionResult,
+  TaskItem,
+  TasksListResponse,
   TelegramAuthInput,
   User,
   UserProfile,
@@ -1395,4 +1398,368 @@ export function useGetLeaderboardMe<TData = Awaited<ReturnType<typeof getLeaderb
 
 
 
+
+export const getGetTasksUrl = () => {
+
+
+
+
+  return `/api/tasks`
+}
+
+/**
+ * @summary List all active tasks with the current user's status
+ */
+export const getTasks = async ( options?: RequestInit): Promise<TasksListResponse> => {
+
+  return customFetch<TasksListResponse>(getGetTasksUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTasksQueryKey = () => {
+    return [
+    `/api/tasks`
+    ] as const;
+    }
+
+
+export const getGetTasksQueryOptions = <TData = Awaited<ReturnType<typeof getTasks>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTasks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTasksQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTasks>>> = ({ signal }) => getTasks({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTasks>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTasksQueryResult = NonNullable<Awaited<ReturnType<typeof getTasks>>>
+export type GetTasksQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List all active tasks with the current user's status
+ */
+
+export function useGetTasks<TData = Awaited<ReturnType<typeof getTasks>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTasks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTasksQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetTaskByIdUrl = (id: number,) => {
+
+
+
+
+  return `/api/tasks/${id}`
+}
+
+/**
+ * @summary Get a single task with the current user's status
+ */
+export const getTaskById = async (id: number, options?: RequestInit): Promise<TaskItem> => {
+
+  return customFetch<TaskItem>(getGetTaskByIdUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTaskByIdQueryKey = (id: number,) => {
+    return [
+    `/api/tasks/${id}`
+    ] as const;
+    }
+
+
+export const getGetTaskByIdQueryOptions = <TData = Awaited<ReturnType<typeof getTaskById>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTaskById>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTaskByIdQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTaskById>>> = ({ signal }) => getTaskById(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTaskById>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTaskByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getTaskById>>>
+export type GetTaskByIdQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a single task with the current user's status
+ */
+
+export function useGetTaskById<TData = Awaited<ReturnType<typeof getTaskById>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTaskById>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTaskByIdQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getStartTaskUrl = (id: number,) => {
+
+
+
+
+  return `/api/tasks/${id}/start`
+}
+
+/**
+ * @summary Mark a task as in progress
+ */
+export const startTask = async (id: number, options?: RequestInit): Promise<TaskItem> => {
+
+  return customFetch<TaskItem>(getStartTaskUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getStartTaskMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startTask>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startTask>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['startTask'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startTask>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  startTask(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartTaskMutationResult = NonNullable<Awaited<ReturnType<typeof startTask>>>
+
+    export type StartTaskMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Mark a task as in progress
+ */
+export const useStartTask = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startTask>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof startTask>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getStartTaskMutationOptions(options));
+    }
+
+export const getCompleteTaskUrl = (id: number,) => {
+
+
+
+
+  return `/api/tasks/${id}/complete`
+}
+
+/**
+ * @summary Complete a task. Automatic tasks grant reward immediately; manual tasks go to pending approval.
+ */
+export const completeTask = async (id: number, options?: RequestInit): Promise<TaskActionResult> => {
+
+  return customFetch<TaskActionResult>(getCompleteTaskUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCompleteTaskMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeTask>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeTask>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['completeTask'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeTask>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  completeTask(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteTaskMutationResult = NonNullable<Awaited<ReturnType<typeof completeTask>>>
+
+    export type CompleteTaskMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Complete a task. Automatic tasks grant reward immediately; manual tasks go to pending approval.
+ */
+export const useCompleteTask = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeTask>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof completeTask>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getCompleteTaskMutationOptions(options));
+    }
+
+export const getClaimTaskRewardUrl = (id: number,) => {
+
+
+
+
+  return `/api/tasks/${id}/claim`
+}
+
+/**
+ * @summary Claim reward for a manually approved task
+ */
+export const claimTaskReward = async (id: number, options?: RequestInit): Promise<TaskActionResult> => {
+
+  return customFetch<TaskActionResult>(getClaimTaskRewardUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getClaimTaskRewardMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimTaskReward>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof claimTaskReward>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['claimTaskReward'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof claimTaskReward>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  claimTaskReward(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClaimTaskRewardMutationResult = NonNullable<Awaited<ReturnType<typeof claimTaskReward>>>
+
+    export type ClaimTaskRewardMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Claim reward for a manually approved task
+ */
+export const useClaimTaskReward = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimTaskReward>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof claimTaskReward>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getClaimTaskRewardMutationOptions(options));
+    }
 
