@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useTelegramAuth, useGetMe, getGetMeQueryKey, type User } from "@workspace/api-client-react";
+import {
+  useTelegramAuth,
+  useGetMe,
+  getGetMeQueryKey,
+  getGetMiningStatusQueryKey,
+  type User,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface AuthContextType {
@@ -22,40 +28,48 @@ const DEV_BYPASS = import.meta.env.VITE_ALLOW_DEV_BYPASS === "true";
 const DEV_USER_ID = import.meta.env.VITE_DEV_USER_ID || "999888777";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isTelegramAvailable, setIsTelegramAvailable] = useState(DEV_BYPASS ? true : true);
+  const [isTelegramAvailable, setIsTelegramAvailable] = useState(true);
   const queryClient = useQueryClient();
   const { data: user, isLoading: isMeLoading } = useGetMe();
   const authMutation = useTelegramAuth();
 
   useEffect(() => {
-    if (DEV_BYPASS) {
+    const webApp = window.Telegram?.WebApp;
+
+    if (webApp && webApp.initData) {
+      webApp.ready();
+      webApp.expand();
+
       if (!user && !isMeLoading) {
-        authMutation.mutate({ data: { initData: `dev_bypass:${DEV_USER_ID}` } }, {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-          }
-        });
+        authMutation.mutate(
+          { data: { initData: webApp.initData } },
+          {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+              queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+            },
+          },
+        );
       }
       return;
     }
 
-    const webApp = window.Telegram?.WebApp;
-    
-    if (!webApp || !webApp.initData) {
-      setIsTelegramAvailable(false);
+    if (DEV_BYPASS) {
+      if (!user && !isMeLoading) {
+        authMutation.mutate(
+          { data: { initData: `dev_bypass:${DEV_USER_ID}` } },
+          {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+              queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+            },
+          },
+        );
+      }
       return;
     }
 
-    webApp.ready();
-    webApp.expand();
-
-    if (!user && !isMeLoading) {
-      authMutation.mutate({ data: { initData: webApp.initData } }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-        }
-      });
-    }
+    setIsTelegramAvailable(false);
   }, [user, isMeLoading, queryClient]);
 
   const isLoading = isMeLoading || authMutation.isPending;
