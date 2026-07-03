@@ -29,13 +29,16 @@ app.use(
   }),
 );
 
+const IS_DEV = process.env.NODE_ENV !== "production";
 const allowedOrigins = process.env.REPLIT_DOMAINS
   ? process.env.REPLIT_DOMAINS.split(",").map((d) => `https://${d.trim()}`)
   : [];
 
+// In production, fail-closed: reject credentialed requests if REPLIT_DOMAINS is missing.
+// In development, allow all origins for local testing.
 app.use(
   cors({
-    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    origin: IS_DEV || allowedOrigins.length > 0 ? (allowedOrigins.length > 0 ? allowedOrigins : true) : false,
     credentials: true,
   }),
 );

@@ -25,6 +25,12 @@ export async function requireAuth(
     return;
   }
 
+  if (user.isBanned) {
+    req.session.destroy(() => {});
+    res.status(403).json({ error: "Account suspended" });
+    return;
+  }
+
   (req as Request & { currentUser: typeof user }).currentUser = user;
   next();
 }

@@ -11,8 +11,11 @@ export const sessionMiddleware = session({
   proxy: true,
   cookie: {
     httpOnly: true,
-    secure: "auto",
-    sameSite: "auto",
+    // "auto" is a valid runtime value that express-session uses with proxy:true
+    // to automatically set secure/sameSite based on the request protocol.
+    // Required for Telegram WebApp (cross-origin WebView) in production.
+    secure: "auto" as unknown as boolean,
+    sameSite: "auto" as unknown as boolean,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },
 });

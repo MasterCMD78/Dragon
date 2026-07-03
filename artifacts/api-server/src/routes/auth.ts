@@ -9,7 +9,9 @@ import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 const router: IRouter = Router();
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const IS_DEV = process.env.NODE_ENV !== "production";
+// dev_bypass is only available when explicitly opted-in via ALLOW_DEV_BYPASS=true,
+// regardless of NODE_ENV — prevents accidental auth bypass from config drift.
+const ALLOW_DEV_BYPASS = process.env.ALLOW_DEV_BYPASS === "true";
 
 router.post(
   "/auth/telegram",
@@ -33,7 +35,7 @@ router.post(
     let startParam: string | undefined;
 
     try {
-      if (IS_DEV && initData.startsWith("dev_bypass")) {
+      if (ALLOW_DEV_BYPASS && initData.startsWith("dev_bypass")) {
         // dev_bypass            → standard dev user 999999999
         // dev_bypass:123456789  → custom ID for testing
         const parts = initData.split(":");
