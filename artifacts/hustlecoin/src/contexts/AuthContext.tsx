@@ -32,12 +32,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    webApp.ready();
+    webApp.expand();
+
     if (!user && !isMeLoading) {
       authMutation.mutate({ data: { initData: webApp.initData } }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-          webApp.ready();
-          webApp.expand();
         }
       });
     }
