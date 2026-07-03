@@ -170,10 +170,10 @@ function SubmissionsPanel({ task, onClose }: { task: Task; onClose: () => void }
                   <div className={`w-4 h-4 rounded border-2 shrink-0 ${selected.has(s.id) ? "bg-primary border-primary" : "border-border"}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white font-medium">
-                      {s.firstName} {s.lastName ?? ""}
+                      {[s.firstName, s.lastName].filter(Boolean).join(" ") || (s.username && s.username !== "user" ? `@${s.username}` : s.telegramId)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {s.username ? `@${s.username}` : s.telegramId} · {new Date(s.completedAt).toLocaleDateString()}
+                      {s.username && s.username !== "user" ? `@${s.username}` : s.telegramId} · {new Date(s.completedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex gap-1">

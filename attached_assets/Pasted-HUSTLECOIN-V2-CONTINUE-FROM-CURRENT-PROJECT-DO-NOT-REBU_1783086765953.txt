@@ -1,0 +1,189 @@
+HUSTLECOIN V2 — CONTINUE FROM CURRENT PROJECT (DO NOT REBUILD)
+
+Read the entire project before making any code changes.
+
+This project is already feature-complete through Phase 10.
+
+Do NOT rebuild existing systems.
+
+First tasks (NO CODE CHANGES)
+
+1. Read the complete project structure.
+2. Verify all imported secrets are configured:
+    * DATABASE_URL
+    * SESSION_SECRET
+    * TELEGRAM_BOT_TOKEN
+    * TELEGRAM_BOT_USERNAME
+3. Install dependencies.
+4. Start all workflows.
+5. Verify:
+    * API server starts successfully.
+    * Frontend starts successfully.
+    * PostgreSQL connection is healthy.
+    * Telegram authentication works.
+6. Confirm the deployed Mini App behaves exactly like production before making changes.
+
+⸻
+
+PREVIOUSLY FIXED (DO NOT REPEAT)
+
+These issues are already fixed:
+
+* Telegram SDK loading
+* Session authentication
+* trust proxy
+* express-session configuration
+* Admin authentication
+* Admin permission pipeline
+* Admin Panel routing
+* User Detail page routing
+* Admin panel access
+
+Do not spend time investigating these again unless you find evidence they are broken.
+
+⸻
+
+REMAINING BUGS TO FIX
+
+BUG 1 — Mining UI
+
+The backend already returns the mining session correctly.
+
+The frontend shows:
+
+READY TO CLAIM!
+
+This proves the backend marks the session as claimable.
+
+However:
+
+* no Claim button is rendered
+* tapping READY TO CLAIM does absolutely nothing
+
+Expected behaviour:
+
+When claimable == false
+
+* show countdown
+* hide Claim button
+
+When claimable == true
+
+* show READY TO CLAIM
+* render Claim button
+* Claim button must call the mining claim endpoint
+* after successful claim:
+    * update HP
+    * refresh mining history
+    * immediately start the next mining session (if that is the intended design)
+
+Audit the mining React component only.
+
+Do not assume the backend is wrong until you verify the frontend rendering.
+
+⸻
+
+BUG 2 — Some users still see “Idle”
+
+Some users report:
+
+Idle
+
+instead of an active mining session.
+
+Verify:
+
+GET /api/mining/status
+
+returns
+
+* state
+* sessionStartedAt
+* secondsRemaining
+* claimable
+
+for affected users.
+
+Determine whether this is
+
+* backend state
+    or
+* frontend rendering.
+
+⸻
+
+BUG 3 — Countdown
+
+The countdown should be computed from
+
+sessionStartedAt + 24h - Date.now()
+
+instead of relying only on local decrementing timers.
+
+It must stay accurate after:
+
+* app backgrounding
+* reopening Telegram
+* phone sleep
+
+⸻
+
+BUG 4 — User names
+
+Some admin pages still display
+
+User
+
+or
+
+@user
+
+instead of actual Telegram names.
+
+Display priority:
+
+1. first_name + last_name
+2. username (if not placeholder “user”)
+3. telegramId
+
+Never display the placeholder username.
+
+⸻
+
+IMPORTANT
+
+Before changing anything:
+
+Trace the entire execution flow.
+
+For every bug provide:
+
+* root cause
+* affected files
+* proposed fix
+
+Only then implement.
+
+⸻
+
+AFTER FIXING
+
+Do not stop until all of these are verified:
+
+✅ Admin Panel works
+
+✅ User Detail page opens
+
+✅ Mining countdown works
+
+✅ Claim button appears
+
+✅ Claim button successfully claims rewards
+
+✅ New mining session starts correctly
+
+✅ Idle issue resolved
+
+✅ User names display correctly
+
+Then build the production bundle, verify it compiles with zero errors, and prepare it for deployment.

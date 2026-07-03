@@ -163,7 +163,7 @@ export function UserDetail({ telegramId }: { telegramId: string }) {
           <ChevronLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <span className="text-white font-semibold truncate">
-          {user.firstName} {user.lastName ?? ""}
+          {[user.firstName, user.lastName].filter(Boolean).join(" ") || (user.username && user.username !== "user" ? `@${user.username}` : user.telegramId)}
         </span>
         {user.isAdmin && <Crown className="w-4 h-4 text-primary" />}
         {user.isBanned && <Ban className="w-4 h-4 text-destructive" />}
@@ -174,7 +174,7 @@ export function UserDetail({ telegramId }: { telegramId: string }) {
         <div className="rounded-2xl border border-border/40 bg-card/60 p-4">
           <div className="flex items-start justify-between gap-2 mb-3">
             <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center text-primary font-bold text-lg">
-              {user.firstName.charAt(0).toUpperCase()}
+              {(user.firstName || user.telegramId).charAt(0).toUpperCase()}
             </div>
             <div className="flex gap-1.5">
               {user.isBanned && (
@@ -188,8 +188,8 @@ export function UserDetail({ telegramId }: { telegramId: string }) {
 
           {[
             ["Telegram ID", user.telegramId],
-            ["Username", user.username ? `@${user.username}` : "—"],
-            ["Full name", `${user.firstName} ${user.lastName ?? ""}`.trim()],
+            ["Username", user.username && user.username !== "user" ? `@${user.username}` : "—"],
+            ["Full name", `${user.firstName} ${user.lastName ?? ""}`.trim() || user.telegramId],
             ["Referred by", user.referredBy ?? "—"],
             ["Language", user.languageCode ?? "—"],
             ["Joined", new Date(user.joinDate).toLocaleDateString()],
