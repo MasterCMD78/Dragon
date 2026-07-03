@@ -35,7 +35,7 @@ export default function Home() {
   const [splashReward, setSplashReward] = useState(0);
 
   useEffect(() => {
-    if (status?.state === "mining" && status?.secondsRemaining) {
+    if (status?.state === "mining" && typeof status.secondsRemaining === "number" && status.secondsRemaining > 0) {
       setCountdown(status.secondsRemaining);
       const interval = setInterval(() => {
         setCountdown(prev => {
@@ -49,9 +49,16 @@ export default function Home() {
       }, 1000);
       return () => clearInterval(interval);
     }
-    setCountdown(0);
+    if (status?.state !== "mining") {
+      setCountdown(0);
+    }
     return undefined;
-  }, [status?.sessionStartedAt, status?.state, status?.secondsRemaining, queryClient]);
+    // secondsRemaining intentionally omitted: only reinitialise the timer when a
+    // new session begins (sessionStartedAt changes) or state transitions.
+    // Including secondsRemaining would reset the local countdown on every
+    // background refetch (React Query refetches on window focus).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status?.sessionStartedAt, status?.state, queryClient]);
 
   const handleStartMining = () => {
     if (status?.state !== "idle" || startMining.isPending) return;
@@ -224,7 +231,7 @@ export default function Home() {
         <div className="text-center mb-8 relative z-10">
           {(isMining || isClaimable) ? (
             <div className="text-4xl font-display font-bold text-white tracking-widest tabular-nums" data-testid="countdown-timer">
-              {isClaimable ? "00:00:00" : formatCountdown(countdown)}
+              {isClaimable ? "READY TO CLAIM" : formatCountdown(countdown)}
             </div>
           ) : (
             <div className="text-2xl font-display font-medium text-muted-foreground" data-testid="countdown-timer">
