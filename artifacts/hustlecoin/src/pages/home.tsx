@@ -25,13 +25,14 @@ export default function Home() {
   const { toast } = useToast();
   
   const { data: status, isLoading: isStatusLoading } = useGetMiningStatus({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     query: {
       // Re-fetch every 30 s so the UI transitions to "claimable" automatically
       // when a session completes, and users returning from background get fresh
       // state without a manual refresh.
       refetchInterval: 30_000,
       refetchIntervalInBackground: false,
-    },
+    } as any,
   });
   const { data: history, isLoading: isHistoryLoading } = useGetMiningHistory({ limit: 5, offset: 0 });
   

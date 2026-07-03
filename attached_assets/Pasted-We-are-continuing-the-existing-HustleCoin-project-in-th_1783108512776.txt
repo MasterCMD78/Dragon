@@ -1,0 +1,146 @@
+We are continuing the existing HustleCoin project in the SAME Replit.
+
+Phase 11 (Wallet / Transaction History) is complete.
+
+Before making any changes:
+
+1. Read the existing codebase.
+2. Verify that Phase 11 still works.
+3. Do NOT rebuild or refactor existing systems.
+4. Do NOT change database schema unless absolutely necessary.
+5. Do NOT modify APIs that already work.
+6. Do NOT remove or rename components.
+
+The following features are already complete and must remain fully functional:
+
+* Authentication
+* Mining
+* Countdown
+* Claim Rewards
+* Automatic Mining Restart
+* Referrals
+* Leaderboard
+* Tasks
+* Quests
+* Achievements
+* Notifications
+* Wallet
+* Transaction History
+* Admin Panel
+* User Details
+* Broadcast
+* Announcements
+
+If any regression is found, fix it before continuing.
+
+⸻
+
+BEGIN ONLY PHASE 12
+
+🎨 UI Polishing, Animations & Performance Optimization
+
+Your goal is to make HustleCoin feel like a premium production Telegram Mini App.
+
+UI Improvements
+
+* Improve spacing throughout the app.
+* Improve typography consistency.
+* Improve button sizing and alignment.
+* Improve card styling.
+* Improve color consistency.
+* Improve responsive layout.
+* Improve dark mode appearance.
+* Improve mobile experience.
+* Improve empty states.
+* Improve loading states.
+* Improve error states.
+* Improve transaction list styling.
+* Improve leaderboard appearance.
+* Improve profile page layout.
+* Improve wallet page layout.
+
+Animations
+
+Add smooth, lightweight animations without affecting performance.
+
+Implement animations for:
+
+* Page transitions
+* Mining button
+* Claim reward button
+* HP balance increase
+* Achievement unlock
+* Notification appearance
+* Leaderboard updates
+* Cards entering viewport
+* Modal opening/closing
+* Button press feedback
+* Skeleton loading animations
+
+Use subtle animations only.
+
+Performance Optimization
+
+Optimize without changing existing functionality.
+
+Focus on:
+
+* Reduce unnecessary React re-renders.
+* Lazy load heavy pages where appropriate.
+* Optimize React Query usage.
+* Prevent unnecessary API requests.
+* Optimize large lists.
+* Optimize wallet transaction rendering.
+* Optimize leaderboard rendering.
+* Optimize images and icons.
+* Improve bundle performance.
+* Improve scrolling smoothness.
+
+Accessibility
+
+* Improve touch targets.
+* Improve keyboard accessibility where applicable.
+* Improve color contrast.
+* Improve focus states.
+
+DO NOT
+
+* Add blockchain features.
+* Add withdrawals.
+* Add deposits.
+* Add new gameplay mechanics.
+* Change database schema.
+* Break existing APIs.
+* Refactor unrelated code.
+* Rewrite working components.
+
+Only polish and optimize the existing application.
+
+⸻
+
+Before completing Phase 12, verify all of the following:
+
+✓ Authentication
+✓ Mining
+✓ Countdown
+✓ Claim Rewards
+✓ Automatic Mining Restart
+✓ Referrals
+✓ Leaderboard
+✓ Tasks
+✓ Quests
+✓ Achievements
+✓ Notifications
+✓ Wallet
+✓ Transaction History
+✓ Admin Panel
+
+Run a production build.
+
+Confirm there are no TypeScript errors.
+
+Confirm there are no console errors.
+
+Confirm all animations perform smoothly on mobile.
+
+After Phase 12 is fully completed and verified, STOP and wait for my approval before beginning Phase 13 (Production Testing & Deployment).

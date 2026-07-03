@@ -1,49 +1,69 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
-import Home from "@/pages/home";
-import Profile from "@/pages/profile";
-import Referrals from "@/pages/referrals";
-import Leaderboard from "@/pages/leaderboard";
-import Tasks from "@/pages/tasks";
-import Quests from "@/pages/quests";
-import Achievements from "@/pages/achievements";
-import Notifications from "@/pages/notifications";
-import WalletPage from "@/pages/wallet";
-import AdminPanel from "@/pages/admin/index";
+import { Loader2 } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "@/types/telegram.d.ts";
 
-const queryClient = new QueryClient();
+const Home = lazy(() => import("@/pages/home"));
+const Profile = lazy(() => import("@/pages/profile"));
+const Referrals = lazy(() => import("@/pages/referrals"));
+const Leaderboard = lazy(() => import("@/pages/leaderboard"));
+const Tasks = lazy(() => import("@/pages/tasks"));
+const Quests = lazy(() => import("@/pages/quests"));
+const Achievements = lazy(() => import("@/pages/achievements"));
+const Notifications = lazy(() => import("@/pages/notifications"));
+const WalletPage = lazy(() => import("@/pages/wallet"));
+const AdminPanel = lazy(() => import("@/pages/admin/index"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function PageLoader() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-primary animate-spin" />
+    </div>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      {/* Regex matches /admin, /admin/users, /admin/users/:id, etc.
-          regexparam v3 (:rest*) does NOT cross path separators, so
-          "/admin/:rest*" only matches one segment after /admin/. */}
-      <Route path={/^\/admin(\/.*)?$/} component={AdminPanel} />
-      <Route>
-        <Layout>
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/referrals" component={Referrals} />
-            <Route path="/leaderboard" component={Leaderboard} />
-            <Route path="/tasks" component={Tasks} />
-            <Route path="/quests" component={Quests} />
-            <Route path="/achievements" component={Achievements} />
-            <Route path="/notifications" component={Notifications} />
-            <Route path="/wallet" component={WalletPage} />
-            <Route path="/profile" component={Profile} />
-            <Route component={NotFound} />
-          </Switch>
-        </Layout>
-      </Route>
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path={/^\/admin(\/.*)?$/} component={AdminPanel} />
+        <Route>
+          <Layout>
+            <Suspense fallback={<PageLoader />}>
+              <Switch>
+                <Route path="/" component={Home} />
+                <Route path="/referrals" component={Referrals} />
+                <Route path="/leaderboard" component={Leaderboard} />
+                <Route path="/tasks" component={Tasks} />
+                <Route path="/quests" component={Quests} />
+                <Route path="/achievements" component={Achievements} />
+                <Route path="/notifications" component={Notifications} />
+                <Route path="/wallet" component={WalletPage} />
+                <Route path="/profile" component={Profile} />
+                <Route component={NotFound} />
+              </Switch>
+            </Suspense>
+          </Layout>
+        </Route>
+      </Switch>
+    </Suspense>
   );
 }
 

@@ -11,16 +11,19 @@ import {
   Copy,
   Check,
   Share2,
-  Loader2,
   UserPlus,
   Coins,
+  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
 
 function displayName(firstName: string, username: string): string {
   if (username) return `@${username}`;
   return firstName || "User";
 }
+
 
 export default function Referrals() {
   const { toast } = useToast();
@@ -63,24 +66,33 @@ export default function Referrals() {
   };
 
   return (
-    <div className="p-6 flex flex-col pt-8 space-y-6 pb-10">
+    <div className="flex flex-col gap-5 px-5 pt-6 pb-10">
 
       {/* Header */}
-      <div className="flex flex-col gap-1">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="flex flex-col gap-1"
+      >
         <h1 className="text-2xl font-display font-bold text-white">Referrals</h1>
         <p className="text-muted-foreground text-sm">Invite friends and earn 500 HP per referral</p>
-      </div>
+      </motion.div>
 
       {/* Stats Row */}
       {isStatsLoading ? (
         <div className="grid grid-cols-2 gap-3">
-          {[0, 1].map((i) => (
-            <div key={i} className="h-20 bg-card rounded-2xl border border-border/50 animate-pulse" />
-          ))}
+          <Skeleton className="h-20 rounded-2xl" />
+          <Skeleton className="h-20 rounded-2xl" />
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col gap-1">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25, delay: 0.05 }}
+            className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col gap-1"
+          >
             <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wider">
               <Users className="w-3.5 h-3.5" />
               Referred
@@ -88,8 +100,13 @@ export default function Referrals() {
             <div className="text-3xl font-display font-bold text-white" data-testid="stat-total-referred">
               {stats?.totalReferred ?? 0}
             </div>
-          </div>
-          <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col gap-1">
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
+            className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col gap-1"
+          >
             <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wider">
               <Coins className="w-3.5 h-3.5" />
               HP Earned
@@ -97,14 +114,19 @@ export default function Referrals() {
             <div className="text-3xl font-display font-bold text-primary" data-testid="stat-total-hp">
               {(stats?.totalHpEarned ?? 0).toLocaleString()}
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* Referral Link Card */}
-      <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: 0.15 }}
+        className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col gap-3"
+      >
         <p className="text-xs text-muted-foreground uppercase tracking-wider font-display">Your Referral Link</p>
-        <div className="flex items-center gap-2 bg-black/40 rounded-xl px-3 py-2 border border-white/5">
+        <div className="flex items-center gap-2 bg-black/40 rounded-xl px-3 py-2.5 border border-white/5">
           <span
             className="flex-1 text-sm text-white/80 font-mono truncate"
             data-testid="referral-link"
@@ -113,7 +135,8 @@ export default function Referrals() {
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={handleCopy}
             data-testid="button-copy-link"
             className="flex items-center justify-center gap-2 rounded-xl py-3 bg-muted hover:bg-muted/80 transition-colors text-white text-sm font-medium"
@@ -123,33 +146,39 @@ export default function Referrals() {
             ) : (
               <><Copy className="w-4 h-4" /> Copy Link</>
             )}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={handleShare}
             data-testid="button-share"
             className="flex items-center justify-center gap-2 rounded-xl py-3 bg-gradient-to-r from-primary to-orange-500 text-black text-sm font-display font-bold shadow-[0_0_15px_rgba(255,170,0,0.3)] hover:shadow-[0_0_25px_rgba(255,170,0,0.5)] transition-shadow"
           >
             <Share2 className="w-4 h-4" /> Share
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Reward info banner */}
-      <div className="bg-primary/10 border border-primary/20 rounded-2xl p-3 flex items-start gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: 0.2 }}
+        className="bg-primary/10 border border-primary/20 rounded-2xl p-3.5 flex items-start gap-3"
+      >
         <Gift className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div className="text-sm">
-          <span className="text-white font-medium">You earn 500 HP</span>
+          <span className="text-white font-semibold">You earn 500 HP</span>
           <span className="text-muted-foreground"> for each friend who joins. </span>
-          <span className="text-white font-medium">They earn 250 HP</span>
+          <span className="text-white font-semibold">They earn 250 HP</span>
           <span className="text-muted-foreground"> as a welcome bonus.</span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tab switcher */}
       <div className="flex gap-1 bg-black/40 rounded-xl p-1 border border-white/5">
         <button
           onClick={() => setTab("users")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
             tab === "users"
               ? "bg-card text-white shadow"
               : "text-muted-foreground hover:text-white"
@@ -160,7 +189,7 @@ export default function Referrals() {
         </button>
         <button
           onClick={() => setTab("rewards")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
             tab === "rewards"
               ? "bg-card text-white shadow"
               : "text-muted-foreground hover:text-white"
@@ -175,12 +204,20 @@ export default function Referrals() {
       {tab === "users" && (
         <div className="flex flex-col gap-3" data-testid="referred-users-list">
           {isUsersLoading ? (
-            Array(3).fill(0).map((_, i) => (
-              <div key={i} className="h-16 bg-card rounded-xl border border-border/50 animate-pulse" />
-            ))
+            <>
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
+            </>
           ) : usersData?.entries && usersData.entries.length > 0 ? (
-            usersData.entries.map((entry) => (
-              <div key={entry.id} className="bg-card border border-border/50 rounded-xl p-4 flex items-center justify-between">
+            usersData.entries.map((entry, i) => (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.05 }}
+                className="bg-card border border-border/50 rounded-xl p-4 flex items-center justify-between hover:border-border/80 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-primary font-display font-bold text-sm">
@@ -196,12 +233,17 @@ export default function Referrals() {
                     </span>
                   </div>
                 </div>
-                <span className="font-display font-bold text-primary text-sm">+{entry.hpEarned} HP</span>
-              </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-display font-bold text-primary text-sm">+{entry.hpEarned} HP</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40" />
+                </div>
+              </motion.div>
             ))
           ) : (
-            <div className="bg-card border border-border/50 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-2">
-              <Users className="w-8 h-8 text-muted-foreground/50 mb-2" />
+            <div className="bg-card border border-border/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="w-7 h-7 text-muted-foreground/50" />
+              </div>
               <p className="text-sm font-medium text-white">No referrals yet</p>
               <p className="text-xs text-muted-foreground">Share your link to invite friends!</p>
             </div>
@@ -213,12 +255,20 @@ export default function Referrals() {
       {tab === "rewards" && (
         <div className="flex flex-col gap-3" data-testid="referral-rewards-list">
           {isRewardsLoading ? (
-            Array(3).fill(0).map((_, i) => (
-              <div key={i} className="h-16 bg-card rounded-xl border border-border/50 animate-pulse" />
-            ))
+            <>
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
+            </>
           ) : rewardsData?.entries && rewardsData.entries.length > 0 ? (
-            rewardsData.entries.map((entry) => (
-              <div key={entry.id} className="bg-card border border-border/50 rounded-xl p-4 flex items-center justify-between">
+            rewardsData.entries.map((entry, i) => (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.05 }}
+                className="bg-card border border-border/50 rounded-xl p-4 flex items-center justify-between hover:border-border/80 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-yellow-500/20 flex items-center justify-center shrink-0">
                     <Gift className="w-4 h-4 text-yellow-500" />
@@ -233,11 +283,13 @@ export default function Referrals() {
                   </div>
                 </div>
                 <span className="font-display font-bold text-yellow-400 text-sm">+{entry.hpEarned} HP</span>
-              </div>
+              </motion.div>
             ))
           ) : (
-            <div className="bg-card border border-border/50 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-2">
-              <Gift className="w-8 h-8 text-muted-foreground/50 mb-2" />
+            <div className="bg-card border border-border/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                <Gift className="w-7 h-7 text-muted-foreground/50" />
+              </div>
               <p className="text-sm font-medium text-white">No rewards yet</p>
               <p className="text-xs text-muted-foreground">Invite friends to start earning HP!</p>
             </div>
