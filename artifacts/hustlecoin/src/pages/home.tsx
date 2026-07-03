@@ -104,7 +104,10 @@ export default function Home() {
     });
   };
 
-  if (isStatusLoading) {
+  const DEV_BYPASS = import.meta.env.VITE_ALLOW_DEV_BYPASS === "true";
+  const devState = DEV_BYPASS ? new URLSearchParams(window.location.search).get("dev_state") : null;
+
+  if (!devState && isStatusLoading) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center">
         <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center animate-pulse mb-8">
@@ -115,9 +118,9 @@ export default function Home() {
     );
   }
 
-  const isMining = status?.state === "mining";
-  const isClaimable = status?.state === "claimable";
-  const isIdle = status?.state === "idle";
+  const isMining = devState === "mining" || status?.state === "mining";
+  const isClaimable = devState === "claimable" || status?.state === "claimable";
+  const isIdle = !isMining && !isClaimable && (devState === "idle" || status?.state === "idle" || (!devState && !status?.state));
 
   return (
     <div className="p-6 flex flex-col pt-8 space-y-8 relative">

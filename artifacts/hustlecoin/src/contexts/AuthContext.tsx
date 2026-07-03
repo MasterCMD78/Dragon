@@ -18,13 +18,27 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const DEV_BYPASS = import.meta.env.VITE_ALLOW_DEV_BYPASS === "true";
+const DEV_USER_ID = import.meta.env.VITE_DEV_USER_ID || "999888777";
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isTelegramAvailable, setIsTelegramAvailable] = useState(true);
+  const [isTelegramAvailable, setIsTelegramAvailable] = useState(DEV_BYPASS ? true : true);
   const queryClient = useQueryClient();
   const { data: user, isLoading: isMeLoading } = useGetMe();
   const authMutation = useTelegramAuth();
 
   useEffect(() => {
+    if (DEV_BYPASS) {
+      if (!user && !isMeLoading) {
+        authMutation.mutate({ data: { initData: `dev_bypass:${DEV_USER_ID}` } }, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+          }
+        });
+      }
+      return;
+    }
+
     const webApp = window.Telegram?.WebApp;
     
     if (!webApp || !webApp.initData) {

@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { useGetNotificationsUnreadCount } from "@workspace/api-client-react";
 
+const DEV_BYPASS = import.meta.env.VITE_ALLOW_DEV_BYPASS === "true";
+
 function buildTelegramLink(): string {
   const bot = __TELEGRAM_BOT_USERNAME__;
   return bot ? `https://t.me/${bot}` : "https://t.me";
@@ -60,7 +62,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     );
   }
 
-  if (isLoading || !isAuthenticated) {
+  if (!DEV_BYPASS && (isLoading || !isAuthenticated)) {
     return (
       <div className="min-h-[100dvh] w-full flex items-center justify-center bg-black">
         <div className="w-full max-w-[430px] h-[100dvh] bg-background flex flex-col items-center justify-center border-x border-border/50">
