@@ -118,19 +118,21 @@ export function Users() {
               >
                 <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
                   <span className="text-primary font-bold text-sm">
-                    {u.firstName.charAt(0).toUpperCase()}
+                    {(u.firstName || u.telegramId).charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-white truncate">
-                      {u.firstName} {u.lastName ?? ""}
+                      {[u.firstName, u.lastName].filter(Boolean).join(" ") || u.telegramId}
                     </span>
                     {u.isAdmin && <Crown className="w-3 h-3 text-primary shrink-0" />}
                     {u.isBanned && <Ban className="w-3 h-3 text-destructive shrink-0" />}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {u.username ? `@${u.username}` : u.telegramId} · {u.balance.toLocaleString()} HP
+                    {/* "user" is a legacy placeholder — show telegramId instead */}
+                    {u.username && u.username !== "user" ? `@${u.username}` : u.telegramId}
+                    {" · "}{u.balance.toLocaleString()} HP
                   </p>
                   <p className="text-xs text-muted-foreground/60">
                     Active {relTime(u.lastActive)}

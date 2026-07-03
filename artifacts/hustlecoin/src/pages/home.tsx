@@ -35,29 +35,33 @@ export default function Home() {
   const [splashReward, setSplashReward] = useState(0);
 
   useEffect(() => {
-    if (status?.state === "mining" && typeof status.secondsRemaining === "number" && status.secondsRemaining > 0) {
-      setCountdown(status.secondsRemaining);
-      const interval = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
+    if (status?.state === "mining" && status.sessionStartedAt) {
+      // Compute remaining seconds from sessionStartedAt on every tick so the
+      // countdown stays accurate even when JS is suspended (mobile backgrounding).
+      // This replaces the stale-decrement approach that drifted after app resumes.
+      const SESSION_MS = 24 * 60 * 60 * 1000;
+      const endsAt = new Date(new Date(status.sessionStartedAt).getTime() + SESSION_MS);
+
+      // Declare interval before tick() so clearInterval never hits TDZ.
+      let interval: ReturnType<typeof setInterval> | undefined;
+
+      const tick = () => {
+        const remaining = Math.max(0, Math.floor((endsAt.getTime() - Date.now()) / 1000));
+        setCountdown(remaining);
+        if (remaining <= 0) {
+          if (interval !== undefined) clearInterval(interval);
+          queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+        }
+      };
+
+      tick(); // set immediately so UI doesn't show 0 for the first second
+      interval = setInterval(tick, 1000);
+      return () => { if (interval !== undefined) clearInterval(interval); };
     }
     if (status?.state !== "mining") {
       setCountdown(0);
     }
     return undefined;
-    // secondsRemaining intentionally omitted: only reinitialise the timer when a
-    // new session begins (sessionStartedAt changes) or state transitions.
-    // Including secondsRemaining would reset the local countdown on every
-    // background refetch (React Query refetches on window focus).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status?.sessionStartedAt, status?.state, queryClient]);
 
   const handleStartMining = () => {

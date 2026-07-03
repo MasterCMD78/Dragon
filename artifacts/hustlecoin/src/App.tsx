@@ -22,8 +22,10 @@ const queryClient = new QueryClient();
 function Router() {
   return (
     <Switch>
-      <Route path="/admin/:rest*" component={AdminPanel} />
-      <Route path="/admin" component={AdminPanel} />
+      {/* Regex matches /admin, /admin/users, /admin/users/:id, etc.
+          regexparam v3 (:rest*) does NOT cross path separators, so
+          "/admin/:rest*" only matches one segment after /admin/. */}
+      <Route path={/^\/admin(\/.*)?$/} component={AdminPanel} />
       <Route>
         <Layout>
           <Switch>
