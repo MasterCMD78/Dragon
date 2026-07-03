@@ -36,7 +36,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
 
-    if (webApp && webApp.initData) {
+    // ALWAYS check Telegram first — real Telegram users must never be
+    // authenticated as the dev account.
+    if (webApp?.initData) {
       webApp.ready();
       webApp.expand();
 
@@ -54,7 +56,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    if (DEV_BYPASS) {
+    // DEV_BYPASS is only allowed when the Telegram SDK is completely absent.
+    // If window.Telegram.WebApp exists but initData is empty (edge case during
+    // SDK init), we do NOT fall through to dev bypass — we wait for initData.
+    if (DEV_BYPASS && !webApp) {
       if (!user && !isMeLoading) {
         authMutation.mutate(
           { data: { initData: `dev_bypass:${DEV_USER_ID}` } },
@@ -69,7 +74,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    setIsTelegramAvailable(false);
+    // Not in Telegram and no dev bypass — show "open in Telegram" placeholder.
+    if (!webApp) {
+      setIsTelegramAvailable(false);
+    }
   }, [user, isMeLoading, queryClient]);
 
   const isLoading = isMeLoading || authMutation.isPending;

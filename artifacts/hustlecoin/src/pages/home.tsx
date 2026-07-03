@@ -24,7 +24,15 @@ export default function Home() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
-  const { data: status, isLoading: isStatusLoading } = useGetMiningStatus();
+  const { data: status, isLoading: isStatusLoading } = useGetMiningStatus({
+    query: {
+      // Re-fetch every 30 s so the UI transitions to "claimable" automatically
+      // when a session completes, and users returning from background get fresh
+      // state without a manual refresh.
+      refetchInterval: 30_000,
+      refetchIntervalInBackground: false,
+    },
+  });
   const { data: history, isLoading: isHistoryLoading } = useGetMiningHistory({ limit: 5, offset: 0 });
   
   const startMining = useStartMining();

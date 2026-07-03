@@ -138,9 +138,11 @@ function UnlocksPanel({
             unlocks.map((u) => (
               <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-background/40">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white font-medium">{u.firstName}</p>
+                  <p className="text-sm text-white font-medium">
+                    {u.firstName || (u.username && u.username !== "user" ? `@${u.username}` : u.telegramId)}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {u.username ? `@${u.username}` : u.telegramId} · {new Date(u.unlockedAt).toLocaleDateString()}
+                    {u.username && u.username !== "user" ? `@${u.username}` : u.telegramId} · {new Date(u.unlockedAt).toLocaleDateString()}
                   </p>
                 </div>
                 <button

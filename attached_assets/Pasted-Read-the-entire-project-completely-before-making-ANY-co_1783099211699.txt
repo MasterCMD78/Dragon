@@ -1,0 +1,185 @@
+Read the entire project completely before making ANY code changes.
+
+This project is already feature-complete through Phase 10.
+
+Do NOT rebuild any existing systems.
+
+First:
+
+1. Install dependencies.
+2. Verify all imported secrets are present.
+3. Start both API and frontend workflows.
+4. Verify PostgreSQL connection.
+5. Verify the Telegram Mini App builds correctly.
+6. Verify production and development are using the same database.
+
+After everything is verified, continue ONLY with the remaining production bugs below.
+
+========================
+BUG 1 — TELEGRAM AUTH ORDER
+========================
+
+Investigate AuthContext.tsx.
+
+Current issue:
+
+The development bypass runs BEFORE checking Telegram WebApp.
+
+Current behavior:
+
+DEV_BYPASS
+   ↓
+return
+
+Therefore real Telegram users are authenticated as the development account instead of their own Telegram account whenever the bypass exists.
+
+Fix this logic.
+
+Required authentication order:
+
+1. If window.Telegram.WebApp.initData exists
+      → ALWAYS authenticate using Telegram initData.
+
+2. Only if Telegram WebApp is NOT available
+      → allow development bypass.
+
+Development bypass must NEVER override a real Telegram session.
+
+========================
+BUG 2 — MINING STATUS NOT REFRESHING
+========================
+
+The real Telegram app still shows:
+
+• no countdown
+• no CLAIM REWARDS button
+• sometimes idle forever
+
+This must be investigated in production flow.
+
+DO NOT use fake UI states.
+
+DO NOT use ?dev_state.
+
+DO NOT use screenshots from bypass mode.
+
+Trace the real flow:
+
+Telegram login
+↓
+
+/api/auth/me
+
+↓
+
+/api/mining/status
+
+↓
+
+React Query
+
+↓
+
+home.tsx
+
+Find the exact condition preventing the claim UI from rendering.
+
+Then fix it.
+
+Also:
+
+• invalidate mining queries immediately after authentication
+
+• add an appropriate refetchInterval for mining status so users returning from background receive updated state
+
+• ensure React Query refreshes mining status after claim
+
+• verify countdown always derives from sessionStartedAt instead of stale cached secondsRemaining
+
+========================
+BUG 3 — ADMIN USER DETAIL
+========================
+
+The admin panel mostly works.
+
+Verify every admin route.
+
+Verify regex routing.
+
+Verify:
+
+/admin/users/:telegramId
+
+works correctly.
+
+========================
+BUG 4 — USER DISPLAY
+========================
+
+Some users still appear as:
+
+"user"
+
+instead of their real names.
+
+Apply the correct fallback everywhere:
+
+firstName + lastName
+
+↓
+
+@username (if not placeholder "user")
+
+↓
+
+telegramId
+
+Apply this consistently across:
+
+• Users page
+• User detail page
+• Tasks submissions
+• Everywhere admin views users
+
+========================
+IMPORTANT
+========================
+
+After making changes:
+
+DO NOT assume anything.
+
+Verify everything.
+
+For the mining issue specifically:
+
+Trace the REAL authenticated Telegram account.
+
+Print:
+
+- /api/auth/me response
+- /api/mining/status response
+- values reaching home.tsx
+- why Claim button is or isn't rendered
+
+Then verify:
+
+✔ countdown visible
+
+✔ Claim button visible
+
+✔ Claim works
+
+✔ Balance increases
+
+✔ Mining history updates
+
+✔ Next mining session starts correctly
+
+Only mark complete after verifying the real production flow.
+
+Do not stop after code changes.
+
+Do not rely on development bypass or simulated UI.
+
+Use the real Telegram authentication flow as the source of truth.
