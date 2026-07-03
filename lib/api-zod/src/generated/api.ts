@@ -634,3 +634,34 @@ export const MarkNotificationReadResponse = zod.object({
 })
 
 
+/**
+ * @summary Get current user's transaction history
+ */
+export const getWalletTransactionsQueryFilterDefault = `all`;
+export const getWalletTransactionsQueryLimitDefault = 20;
+export const getWalletTransactionsQueryOffsetDefault = 0;
+
+export const GetWalletTransactionsQueryParams = zod.object({
+  "filter": zod.enum(['all', 'today', 'week', 'month']).default(getWalletTransactionsQueryFilterDefault),
+  "type": zod.coerce.string().optional(),
+  "search": zod.coerce.string().optional(),
+  "limit": zod.coerce.number().default(getWalletTransactionsQueryLimitDefault),
+  "offset": zod.coerce.number().default(getWalletTransactionsQueryOffsetDefault)
+})
+
+export const GetWalletTransactionsResponse = zod.object({
+  "balance": zod.number(),
+  "transactions": zod.array(zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "amount": zod.number(),
+  "balanceBefore": zod.number(),
+  "balanceAfter": zod.number(),
+  "description": zod.string(),
+  "relatedId": zod.string().nullish(),
+  "createdAt": zod.string()
+})),
+  "total": zod.number()
+})
+
+

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Home, User as UserIcon, ExternalLink, Users, Trophy, ListChecks, Swords, Award, Bell } from "lucide-react";
+import { Home, User as UserIcon, ExternalLink, Users, Trophy, ListChecks, Swords, Award, Bell, Wallet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { useGetNotificationsUnreadCount } from "@workspace/api-client-react";
@@ -120,6 +120,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <div className={`relative flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/notifications' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-notifications">
               <Bell className="w-5 h-5" />
               <UnreadBadge count={unreadCount} />
+            </div>
+          </Link>
+          <Link href="/wallet" className="flex-1 flex justify-center">
+            <div className={`flex flex-col items-center justify-center w-full h-full transition-colors ${location === '/wallet' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`} data-testid="link-wallet">
+              <Wallet className="w-5 h-5" />
             </div>
           </Link>
           <Link href="/profile" className="flex-1 flex justify-center">

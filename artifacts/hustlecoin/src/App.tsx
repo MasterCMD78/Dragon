@@ -12,6 +12,7 @@ import Tasks from "@/pages/tasks";
 import Quests from "@/pages/quests";
 import Achievements from "@/pages/achievements";
 import Notifications from "@/pages/notifications";
+import WalletPage from "@/pages/wallet";
 import AdminPanel from "@/pages/admin/index";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -36,6 +37,7 @@ function Router() {
             <Route path="/quests" component={Quests} />
             <Route path="/achievements" component={Achievements} />
             <Route path="/notifications" component={Notifications} />
+            <Route path="/wallet" component={WalletPage} />
             <Route path="/profile" component={Profile} />
             <Route component={NotFound} />
           </Switch>

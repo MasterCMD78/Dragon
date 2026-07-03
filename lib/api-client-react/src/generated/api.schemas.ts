@@ -423,6 +423,24 @@ export interface NotificationsUnreadCount {
   count: number;
 }
 
+export interface WalletTransaction {
+  id: number;
+  type: string;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  description: string;
+  /** @nullable */
+  relatedId?: string | null;
+  createdAt: string;
+}
+
+export interface WalletTransactionsResponse {
+  balance: number;
+  transactions: WalletTransaction[];
+  total: number;
+}
+
 export type GetMiningHistoryParams = {
 limit?: number;
 offset?: number;
@@ -469,5 +487,23 @@ export const GetNotificationsType = {
   quest: 'quest',
   achievement: 'achievement',
   system: 'system',
+} as const;
+
+export type GetWalletTransactionsParams = {
+filter?: GetWalletTransactionsFilter;
+type?: string;
+search?: string;
+limit?: number;
+offset?: number;
+};
+
+export type GetWalletTransactionsFilter = typeof GetWalletTransactionsFilter[keyof typeof GetWalletTransactionsFilter];
+
+
+export const GetWalletTransactionsFilter = {
+  all: 'all',
+  today: 'today',
+  week: 'week',
+  month: 'month',
 } as const;
 

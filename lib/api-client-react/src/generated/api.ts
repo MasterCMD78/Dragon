@@ -32,6 +32,7 @@ import type {
   GetNotificationsParams,
   GetReferralRewardsParams,
   GetReferralUsersParams,
+  GetWalletTransactionsParams,
   HealthStatus,
   LeaderboardGlobalResponse,
   LeaderboardMiningResponse,
@@ -55,7 +56,8 @@ import type {
   TelegramAuthInput,
   User,
   UserProfile,
-  UserStats
+  UserStats,
+  WalletTransactionsResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -2660,4 +2662,88 @@ export const useMarkNotificationRead = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getMarkNotificationReadMutationOptions(options));
     }
+
+export const getGetWalletTransactionsUrl = (params?: GetWalletTransactionsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/wallet/transactions?${stringifiedParams}` : `/api/wallet/transactions`
+}
+
+/**
+ * @summary Get current user's transaction history
+ */
+export const getWalletTransactions = async (params?: GetWalletTransactionsParams, options?: RequestInit): Promise<WalletTransactionsResponse> => {
+
+  return customFetch<WalletTransactionsResponse>(getGetWalletTransactionsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetWalletTransactionsQueryKey = (params?: GetWalletTransactionsParams,) => {
+    return [
+    `/api/wallet/transactions`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetWalletTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof getWalletTransactions>>, TError = ErrorType<ErrorResponse>>(params?: GetWalletTransactionsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWalletTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWalletTransactionsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWalletTransactions>>> = ({ signal }) => getWalletTransactions(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWalletTransactions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetWalletTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof getWalletTransactions>>>
+export type GetWalletTransactionsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get current user's transaction history
+ */
+
+export function useGetWalletTransactions<TData = Awaited<ReturnType<typeof getWalletTransactions>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetWalletTransactionsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWalletTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetWalletTransactionsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
