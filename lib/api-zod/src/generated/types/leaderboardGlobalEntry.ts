@@ -11,6 +11,7 @@ export interface LeaderboardGlobalEntry {
   telegramId: string;
   username: string;
   firstName: string;
+  lastName?: string | null;
   level: number;
   balance: number;
 }

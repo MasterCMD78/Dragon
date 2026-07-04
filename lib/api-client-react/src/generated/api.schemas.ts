@@ -289,6 +289,7 @@ export interface LeaderboardGlobalEntry {
   telegramId: string;
   username: string;
   firstName: string;
+  lastName?: string | null;
   level: number;
   balance: number;
 }
@@ -303,6 +304,7 @@ export interface LeaderboardMiningEntry {
   telegramId: string;
   username: string;
   firstName: string;
+  lastName?: string | null;
   totalMines: number;
   streak: number;
 }
@@ -317,6 +319,7 @@ export interface LeaderboardReferralEntry {
   telegramId: string;
   username: string;
   firstName: string;
+  lastName?: string | null;
   totalReferrals: number;
   totalReferralHp: number;
 }

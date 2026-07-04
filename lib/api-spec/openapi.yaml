@@ -1353,6 +1353,9 @@ components:
           type: string
         firstName:
           type: string
+        lastName:
+          type: string
+          nullable: true
         level:
           type: integer
         balance:
@@ -1381,6 +1384,9 @@ components:
           type: string
         firstName:
           type: string
+        lastName:
+          type: string
+          nullable: true
         totalMines:
           type: integer
         streak:
@@ -1409,6 +1415,9 @@ components:
           type: string
         firstName:
           type: string
+        lastName:
+          type: string
+          nullable: true
         totalReferrals:
           type: integer
         totalReferralHp:

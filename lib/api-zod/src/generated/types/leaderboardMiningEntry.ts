@@ -11,6 +11,7 @@ export interface LeaderboardMiningEntry {
   telegramId: string;
   username: string;
   firstName: string;
+  lastName?: string | null;
   totalMines: number;
   streak: number;
 }

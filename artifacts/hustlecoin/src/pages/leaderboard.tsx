@@ -19,9 +19,16 @@ const TABS: { key: TabKey; label: string; emoji: string; icon: React.ElementType
   { key: "referrals", label: "Referrals", emoji: "👥", icon: Users },
 ];
 
-function displayName(firstName?: string, username?: string): string {
-  if (username) return `@${username}`;
-  return firstName || "User";
+function displayName(
+  firstName?: string | null,
+  lastName?: string | null,
+  username?: string | null,
+  telegramId?: string,
+): string {
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  if (fullName) return fullName;
+  if (username && username !== "user") return `@${username}`;
+  return telegramId ?? "—";
 }
 
 function medal(rank: number): string | null {
@@ -220,10 +227,10 @@ export default function Leaderboard() {
                     )} ${mine ? "ring-2 ring-primary/70" : ""}`}
                   >
                     <RankBadge rank={entry.rank} />
-                    <Avatar label={displayName(entry.firstName, entry.username)} rank={entry.rank} />
+                    <Avatar label={displayName(entry.firstName, entry.lastName, entry.username, entry.telegramId)} rank={entry.rank} />
                     <div className="flex-1 min-w-0 flex flex-col">
                       <span className="text-sm font-medium text-white truncate flex items-center gap-1.5">
-                        {displayName(entry.firstName, entry.username)}
+                        {displayName(entry.firstName, entry.lastName, entry.username, entry.telegramId)}
                         {mine && (
                           <span className="text-[10px] uppercase tracking-wider text-primary bg-primary/10 rounded-full px-1.5 py-0.5">
                             You

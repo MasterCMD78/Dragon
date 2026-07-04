@@ -260,6 +260,7 @@ export const GetLeaderboardGlobalResponse = zod.object({
   "telegramId": zod.string(),
   "username": zod.string(),
   "firstName": zod.string(),
+  "lastName": zod.string().nullish(),
   "level": zod.number(),
   "balance": zod.number()
 })),
@@ -284,6 +285,7 @@ export const GetLeaderboardMiningResponse = zod.object({
   "telegramId": zod.string(),
   "username": zod.string(),
   "firstName": zod.string(),
+  "lastName": zod.string().nullish(),
   "totalMines": zod.number(),
   "streak": zod.number()
 })),
@@ -308,6 +310,7 @@ export const GetLeaderboardReferralsResponse = zod.object({
   "telegramId": zod.string(),
   "username": zod.string(),
   "firstName": zod.string(),
+  "lastName": zod.string().nullish(),
   "totalReferrals": zod.number(),
   "totalReferralHp": zod.number()
 })),

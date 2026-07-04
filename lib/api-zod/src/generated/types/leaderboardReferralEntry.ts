@@ -11,6 +11,7 @@ export interface LeaderboardReferralEntry {
   telegramId: string;
   username: string;
   firstName: string;
+  lastName?: string | null;
   totalReferrals: number;
   totalReferralHp: number;
 }

@@ -32,6 +32,7 @@ router.get(
           telegramId: usersTable.telegramId,
           username: usersTable.username,
           firstName: usersTable.firstName,
+          lastName: usersTable.lastName,
           level: usersTable.level,
           balance: usersTable.balance,
         })
@@ -66,6 +67,7 @@ router.get(
           telegramId: usersTable.telegramId,
           username: usersTable.username,
           firstName: usersTable.firstName,
+          lastName: usersTable.lastName,
           totalMines: usersTable.totalMines,
           streak: usersTable.streak,
         })
@@ -100,6 +102,7 @@ router.get(
           telegramId: usersTable.telegramId,
           username: usersTable.username,
           firstName: usersTable.firstName,
+          lastName: usersTable.lastName,
           totalReferrals: sql<number>`count(${referralsTable.id})::int`,
           totalReferralHp: sql<number>`coalesce(sum(${referralsTable.referrerHpEarned}), 0)::int`,
         })
@@ -114,6 +117,7 @@ router.get(
           usersTable.telegramId,
           usersTable.username,
           usersTable.firstName,
+          usersTable.lastName,
         )
         .orderBy(
           sql`count(${referralsTable.id}) desc`,
