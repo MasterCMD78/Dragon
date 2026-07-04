@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Loader2 } from "lucide-react";
 import { Layout } from "@/components/Layout";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth, isAccountBanned } from "@/contexts/AuthContext";
 import "@/types/telegram.d.ts";
 
 const Home = lazy(() => import("@/pages/home"));
@@ -19,8 +19,23 @@ const Notifications = lazy(() => import("@/pages/notifications"));
 const WalletPage = lazy(() => import("@/pages/wallet"));
 const AdminPanel = lazy(() => import("@/pages/admin/index"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+const BannedScreen = lazy(() => import("@/pages/BannedScreen"));
+
+function dispatchBanEvent() {
+  window.dispatchEvent(new CustomEvent("account-banned"));
+}
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (isAccountBanned(error)) dispatchBanEvent();
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (isAccountBanned(error)) dispatchBanEvent();
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 30_000,
@@ -67,6 +82,20 @@ function Router() {
   );
 }
 
+function AppContent() {
+  const { isBanned } = useAuth();
+
+  if (isBanned) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <BannedScreen />
+      </Suspense>
+    );
+  }
+
+  return <Router />;
+}
+
 function App() {
   useEffect(() => {
     document.documentElement.classList.add("dark");
@@ -77,7 +106,7 @@ function App() {
       <TooltipProvider>
         <AuthProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
+            <AppContent />
           </WouterRouter>
           <Toaster />
         </AuthProvider>

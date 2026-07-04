@@ -27,7 +27,11 @@ export async function requireAuth(
 
   if (user.isBanned) {
     req.session.destroy(() => {});
-    res.status(403).json({ error: "Account suspended" });
+    res.status(403).json({
+      error: "ACCOUNT_BANNED",
+      message: "Your HustleCoin account has been suspended.",
+      appealAllowed: true,
+    });
     return;
   }
 

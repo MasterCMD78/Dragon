@@ -69,6 +69,16 @@ router.post(
     let isNewUser = false;
 
     if (user) {
+      // Reject banned users before creating a session
+      if (user.isBanned) {
+        res.status(403).json({
+          error: "ACCOUNT_BANNED",
+          message: "Your HustleCoin account has been suspended.",
+          appealAllowed: true,
+        });
+        return;
+      }
+
       // Update mutable profile fields in case they changed in Telegram
       const [updated] = await db
         .update(usersTable)
