@@ -252,6 +252,7 @@ export default function Notifications() {
   const touchStartY = useRef<number | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   const markReadMutation = useMarkNotificationRead();
   const markAllMutation = useMarkAllNotificationsRead();
@@ -331,10 +332,11 @@ export default function Notifications() {
   // Effects
   // ---------------------------------------------------------------------------
 
-  // Load on mount + filter change
+  // Load on mount + filter change (guard: only when authenticated)
   useEffect(() => {
+    if (!isAuthenticated) return;
     loadInitial(activeFilter);
-  }, [activeFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeFilter, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Infinite scroll sentinel
   useEffect(() => {

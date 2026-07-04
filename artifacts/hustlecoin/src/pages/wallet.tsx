@@ -272,10 +272,11 @@ export default function WalletPage() {
     [],
   );
 
-  // Initial load + re-load on filter change
+  // Initial load + re-load on filter change (guard: only when authenticated)
   React.useEffect(() => {
+    if (!isAuthenticated) return;
     void load(dateFilter, typeFilter, search, 0, false);
-  }, [dateFilter, typeFilter, search, load]);
+  }, [dateFilter, typeFilter, search, load, isAuthenticated]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
