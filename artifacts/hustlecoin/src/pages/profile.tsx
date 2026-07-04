@@ -61,8 +61,13 @@ export default function Profile() {
     return <ProfileSkeleton />;
   }
 
-  const displayName = profile?.username ? `@${profile.username}` : profile?.firstName ?? "User";
-  const initial = (profile?.firstName ?? profile?.username ?? "U").charAt(0).toUpperCase();
+  const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ");
+  const displayName = fullName
+    || (profile?.username && profile.username !== "user" ? `@${profile.username}` : null)
+    || (profile?.telegramId ? String(profile.telegramId) : "—");
+  const initial = (fullName || profile?.username || profile?.telegramId?.toString() || "U")
+    .charAt(0)
+    .toUpperCase();
 
   return (
     <div className="p-6 flex flex-col pb-8">

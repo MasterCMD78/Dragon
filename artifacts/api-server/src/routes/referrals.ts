@@ -53,6 +53,7 @@ router.get(
           hpEarned: referralsTable.referrerHpEarned,
           joinedAt: referralsTable.createdAt,
           firstName: usersTable.firstName,
+          lastName: usersTable.lastName,
           username: usersTable.username,
         })
         .from(referralsTable)
@@ -74,8 +75,9 @@ router.get(
       entries: rows.map((r) => ({
         id: r.id,
         refereeTelegramId: r.refereeTelegramId,
-        firstName: r.firstName ?? "User",
-        username: r.username ?? "",
+        firstName: r.firstName ?? null,
+        lastName: r.lastName ?? null,
+        username: r.username ?? null,
         hpEarned: r.hpEarned,
         joinedAt: r.joinedAt.toISOString(),
       })),
@@ -101,6 +103,7 @@ router.get(
           hpEarned: referralsTable.referrerHpEarned,
           earnedAt: referralsTable.createdAt,
           firstName: usersTable.firstName,
+          lastName: usersTable.lastName,
           username: usersTable.username,
         })
         .from(referralsTable)
@@ -122,8 +125,9 @@ router.get(
       entries: rows.map((r) => ({
         id: r.id,
         refereeTelegramId: r.refereeTelegramId,
-        firstName: r.firstName ?? "User",
-        username: r.username ?? "",
+        firstName: r.firstName ?? null,
+        lastName: r.lastName ?? null,
+        username: r.username ?? null,
         hpEarned: r.hpEarned,
         earnedAt: r.earnedAt.toISOString(),
       })),

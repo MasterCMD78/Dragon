@@ -124,8 +124,9 @@ export interface AchievementUnlock {
   id: number;
   telegramId: string;
   unlockedAt: string;
-  username: string;
-  firstName: string;
+  username: string | null;
+  firstName: string | null;
+  lastName: string | null;
 }
 
 export interface Transaction {

@@ -1287,7 +1287,7 @@ components:
 
     ReferralUserEntry:
       type: object
-      required: [id, refereeTelegramId, firstName, username, hpEarned, joinedAt]
+      required: [id, refereeTelegramId, hpEarned, joinedAt]
       properties:
         id:
           type: integer
@@ -1295,8 +1295,13 @@ components:
           type: string
         firstName:
           type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
         username:
           type: string
+          nullable: true
         hpEarned:
           type: integer
         joinedAt:
@@ -1315,7 +1320,7 @@ components:
 
     ReferralRewardEntry:
       type: object
-      required: [id, refereeTelegramId, firstName, username, hpEarned, earnedAt]
+      required: [id, refereeTelegramId, hpEarned, earnedAt]
       properties:
         id:
           type: integer
@@ -1323,8 +1328,13 @@ components:
           type: string
         firstName:
           type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
         username:
           type: string
+          nullable: true
         hpEarned:
           type: integer
         earnedAt:

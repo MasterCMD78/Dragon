@@ -9,8 +9,9 @@
 export interface ReferralRewardEntry {
   id: number;
   refereeTelegramId: string;
-  firstName: string;
-  username: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  username?: string | null;
   hpEarned: number;
   earnedAt: string;
 }

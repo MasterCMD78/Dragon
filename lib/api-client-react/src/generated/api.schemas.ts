@@ -259,8 +259,9 @@ export interface ReferralStats {
 export interface ReferralUserEntry {
   id: number;
   refereeTelegramId: string;
-  firstName: string;
-  username: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  username?: string | null;
   hpEarned: number;
   joinedAt: string;
 }
@@ -273,8 +274,9 @@ export interface ReferralUsersResponse {
 export interface ReferralRewardEntry {
   id: number;
   refereeTelegramId: string;
-  firstName: string;
-  username: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  username?: string | null;
   hpEarned: number;
   earnedAt: string;
 }

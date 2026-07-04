@@ -210,8 +210,9 @@ export const GetReferralUsersResponse = zod.object({
   "entries": zod.array(zod.object({
   "id": zod.number(),
   "refereeTelegramId": zod.string(),
-  "firstName": zod.string(),
-  "username": zod.string(),
+  "firstName": zod.string().nullish(),
+  "lastName": zod.string().nullish(),
+  "username": zod.string().nullish(),
   "hpEarned": zod.number(),
   "joinedAt": zod.string()
 })),
@@ -234,8 +235,9 @@ export const GetReferralRewardsResponse = zod.object({
   "entries": zod.array(zod.object({
   "id": zod.number(),
   "refereeTelegramId": zod.string(),
-  "firstName": zod.string(),
-  "username": zod.string(),
+  "firstName": zod.string().nullish(),
+  "lastName": zod.string().nullish(),
+  "username": zod.string().nullish(),
   "hpEarned": zod.number(),
   "earnedAt": zod.string()
 })),

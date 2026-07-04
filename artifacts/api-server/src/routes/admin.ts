@@ -1110,6 +1110,7 @@ router.get(
         unlockedAt: achievementUnlocksTable.unlockedAt,
         username: usersTable.username,
         firstName: usersTable.firstName,
+        lastName: usersTable.lastName,
       })
       .from(achievementUnlocksTable)
       .leftJoin(usersTable, eq(achievementUnlocksTable.telegramId, usersTable.telegramId))

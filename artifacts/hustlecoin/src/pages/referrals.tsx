@@ -19,9 +19,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
-function displayName(firstName: string, username: string): string {
-  if (username) return `@${username}`;
-  return firstName || "User";
+function displayName(
+  firstName?: string | null,
+  lastName?: string | null,
+  username?: string | null,
+  telegramId?: string,
+): string {
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  if (fullName) return fullName;
+  if (username && username !== "user") return `@${username}`;
+  return telegramId ?? "—";
 }
 
 
@@ -221,12 +228,12 @@ export default function Referrals() {
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-primary font-display font-bold text-sm">
-                      {(entry.firstName?.[0] ?? "U").toUpperCase()}
+                      {displayName(entry.firstName, entry.lastName, entry.username, entry.refereeTelegramId).charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-white">
-                      {displayName(entry.firstName, entry.username)}
+                      {displayName(entry.firstName, entry.lastName, entry.username, entry.refereeTelegramId)}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       Joined {format(new Date(entry.joinedAt), "MMM d, yyyy")}
@@ -275,7 +282,7 @@ export default function Referrals() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-white">
-                      {displayName(entry.firstName, entry.username)} joined
+                      {displayName(entry.firstName, entry.lastName, entry.username, entry.refereeTelegramId)} joined
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {format(new Date(entry.earnedAt), "MMM d, yyyy · h:mm a")}
