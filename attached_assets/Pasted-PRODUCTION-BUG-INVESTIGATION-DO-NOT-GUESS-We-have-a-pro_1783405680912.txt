@@ -1,0 +1,202 @@
+PRODUCTION BUG INVESTIGATION (DO NOT GUESS)
+
+We have a production Telegram Mini App.
+
+Symptoms:
+
+* Username is blank
+* Balance = 0
+* Referrals = 0
+* Profile stats = 0
+* Wallet empty
+* Mining shows default values
+
+The app is successfully published and BotFather URL is correct.
+
+Changing sameSite to "none" did NOT fix the issue.
+
+Your task
+
+Do NOT guess.
+
+Trace the ENTIRE authentication flow from start to finish and identify the exact point where production fails.
+
+Follow this order exactly.
+
+STEP 1
+
+Verify Telegram authentication.
+
+Check:
+
+* window.Telegram.WebApp.initData
+* window.Telegram.WebApp.initDataUnsafe
+* telegramId extracted correctly
+* auth payload actually sent
+
+Show the payload.
+
+⸻
+
+STEP 2
+
+Inspect POST /api/auth/telegram
+
+Verify:
+
+* request reaches backend
+* initData verification passes
+* user lookup succeeds
+* session is actually created
+
+Print the session ID.
+
+⸻
+
+STEP 3
+
+Immediately after login inspect:
+
+GET /api/auth/me
+
+Verify:
+
+* session cookie exists
+* cookie reaches backend
+* req.session.user exists
+* authenticated user returned
+
+If not, explain WHY.
+
+⸻
+
+STEP 4
+
+Inspect every frontend request.
+
+Confirm every authenticated request includes:
+
+credentials: “include”
+
+If any request does not, fix it.
+
+⸻
+
+STEP 5
+
+Check session middleware.
+
+Verify:
+
+* secure
+* sameSite
+* trust proxy
+* cookie domain
+* cookie path
+* maxAge
+
+Do NOT change anything unless you prove it is wrong.
+
+⸻
+
+STEP 6
+
+Inspect AuthContext.
+
+Trace:
+
+Telegram init
+
+↓
+
+POST /api/auth/telegram
+
+↓
+
+GET /api/auth/me
+
+↓
+
+setUser()
+
+↓
+
+React renders profile
+
+Find exactly where the chain breaks.
+
+⸻
+
+STEP 7
+
+Verify the frontend actually receives profile data.
+
+Log:
+
+auth/me response
+
+profile response
+
+mining response
+
+wallet response
+
+referrals response
+
+Show the JSON.
+
+⸻
+
+STEP 8
+
+If auth/me succeeds but profile is still zero,
+
+trace:
+
+profile query
+
+React Query
+
+API client
+
+customFetch
+
+response parsing
+
+Find exactly where data disappears.
+
+⸻
+
+STEP 9
+
+Do NOT stop until you reproduce the bug.
+
+Fix the REAL cause.
+
+⸻
+
+IMPORTANT
+
+Do NOT tell me
+
+“I think…”
+
+“I believe…”
+
+“This should…”
+
+Instead provide evidence.
+
+Show:
+
+✔ what request failed
+
+✔ why it failed
+
+✔ exact file
+
+✔ exact line
+
+✔ exact fix
+
+Then verify inside the running production build.
