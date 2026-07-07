@@ -1,4 +1,9 @@
-import express, { type Express } from "express";
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -47,5 +52,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
 
 app.use("/api", router);
+
+/**
+ * Global error handler — must be registered after all routes.
+ * Express 5 automatically catches async route errors and passes them here.
+ * Without this, unhandled route errors produce a generic 500 with no JSON body
+ * and pino-http logs a synthetic "failed with status code 500" error that hides
+ * the real cause. This handler passes the original error object to req.log so
+ * the shared pino serializer (serializeErrorChain in logger.ts) emits the full
+ * cause chain — including PostgreSQL SQLSTATE code and pg error message.
+ */
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  // Pass the raw error — the shared pino serializer walks the cause chain,
+  // captures pgCode/pgDetail/pgHint/stack at every level.
+  req.log.error({ err }, "Unhandled route error");
+
+  if (!res.headersSent) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default app;

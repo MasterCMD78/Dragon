@@ -1,0 +1,96 @@
+I need you to investigate and fix a production authentication failure, not make assumptions.
+
+The current production symptom is:
+
+* Telegram Mini App opens but all values are 0 / blank.
+* POST /api/auth/telegram returns 500.
+* Every request after that returns 401 because the session is never created.
+* This is happening only in production after publishing.
+
+Your task is to perform a complete root-cause investigation and fix it.
+
+Investigation checklist
+
+1. Install all dependencies.
+2. Start both workflows (Frontend and API).
+3. Verify all Replit Secrets exist:
+    * DATABASE_URL
+    * SESSION_SECRET
+    * TELEGRAM_BOT_TOKEN
+    * TELEGRAM_BOT_USERNAME
+4. Check the production logs and expose the real PostgreSQL error, not just “Failed query”. Log error.cause, error.stack, and the underlying pg error.
+5. Test the first query inside POST /api/auth/telegram.
+6. Verify the database connection.
+7. Verify the production schema matches the code.
+
+Database verification
+
+Check whether these columns exist:
+
+* mining_session_start
+* last_mining_claim
+* is_admin
+* banned
+* balance
+
+If anything is missing, automatically migrate the schema safely without deleting data.
+
+If the database endpoint is suspended or disabled, detect it and report it clearly.
+
+Authentication verification
+
+Verify:
+
+* POST /api/auth/telegram
+* session creation
+* express-session
+* cookie settings
+* SameSite
+* Secure
+* trust proxy
+
+Ensure a successful login creates a session and /api/auth/me returns the logged-in user.
+
+Production verification
+
+After fixing:
+
+Run a complete end-to-end test:
+
+1. Login through /api/auth/telegram
+2. Verify /api/auth/me
+3. Verify Mining
+4. Verify Wallet
+5. Verify Leaderboard
+6. Verify Profile
+7. Verify Referrals
+8. Verify Notifications
+
+No endpoint should return 401 after successful login.
+
+Logging
+
+Improve server logging so future production errors always include:
+
+* PostgreSQL error message
+* SQLSTATE code
+* cause
+* stack trace
+
+Never hide the underlying database error again.
+
+Constraints
+
+* Do NOT reset or wipe the database.
+* Do NOT remove existing user data.
+* Do NOT break any working features.
+* Preserve all previous phases.
+* Fix only the root cause.
+
+When finished, provide:
+
+* Root cause found
+* Files changed
+* Database changes (if any)
+* End-to-end verification results
+* Confirmation that the production app is ready to publish.
