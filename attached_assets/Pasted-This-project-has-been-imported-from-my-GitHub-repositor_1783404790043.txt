@@ -1,0 +1,114 @@
+This project has been imported from my GitHub repository.
+
+DO NOT make random changes or add new features.
+
+Your first job is to restore the development environment exactly as it should be.
+
+========================
+PHASE 1 — PROJECT SETUP
+========================
+
+1. Read the entire project before making any changes.
+
+2. Install all dependencies for every workspace/package.
+   - Run the appropriate install command (pnpm install or equivalent).
+   - Verify there are no missing packages.
+
+3. Verify all required environment variables/secrets exist:
+   - DATABASE_URL
+   - SESSION_SECRET
+   - TELEGRAM_BOT_TOKEN
+   - TELEGRAM_BOT_USERNAME
+   - Any other required production secrets
+
+4. Start every required workflow:
+   - API server
+   - Frontend (Vite)
+   - Any background workers if required
+
+5. Confirm:
+   - Frontend is running successfully.
+   - API server is running successfully.
+   - PostgreSQL is connected.
+   - No startup errors.
+
+6. Run TypeScript checks.
+7. Run the project build.
+8. Fix ONLY setup/build issues if any exist.
+
+========================
+PHASE 2 — PRODUCTION BUG
+========================
+
+The Telegram Mini App UI loads successfully, but after publishing all user data is missing.
+
+Symptoms:
+
+• Username is blank
+• Balance = 0 HP
+• Total Mines = 0
+• Referrals = 0
+• Joined = ---
+• Referral link stays on "Loading..."
+• Home page shows 0 HP/hr
+• Mining reward is 0
+• Existing users' data is not displayed
+
+IMPORTANT:
+This is NOT a UI bug.
+
+The frontend loads correctly, so React is working.
+
+This is most likely an authentication, session, API, database, or deployment issue.
+
+Investigate in this exact order:
+
+1. Verify POST /api/auth/telegram
+2. Verify GET /api/auth/me
+3. Verify session creation
+4. Verify session persistence
+5. Verify cookies
+6. Verify GET /api/profile
+7. Verify GET /api/mining/status
+8. Verify GET /api/referrals
+9. Verify frontend is calling the correct backend
+10. Verify backend is connected to the correct PostgreSQL database
+11. Compare development and published environments
+12. Check backend logs
+13. Check browser network requests
+14. Find the exact root cause
+
+DO NOT guess.
+
+Once you find the root cause:
+
+• Explain exactly WHY it happened.
+• Fix ONLY the root cause.
+• Do not modify unrelated code.
+• Do not add new features.
+
+========================
+FINAL VERIFICATION
+========================
+
+After fixing:
+
+✓ Username loads correctly
+✓ Balance loads correctly
+✓ Mining status loads correctly
+✓ Referral link loads correctly
+✓ Profile statistics load correctly
+✓ Existing users retain all previous data
+✓ Wallet still works
+✓ Leaderboard still works
+✓ Notifications still work
+✓ Mining still works
+✓ TypeScript passes with 0 errors
+✓ Both frontend and API start without errors
+
+Finally provide a detailed report including:
+
+- Root cause
+- Files changed
+- Why the fix works
+- Proof that the issue has been resolved

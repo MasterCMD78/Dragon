@@ -11,11 +11,17 @@ export const sessionMiddleware = session({
   proxy: true,
   cookie: {
     httpOnly: true,
-    // "auto" is a valid runtime value that express-session uses with proxy:true
-    // to automatically set secure/sameSite based on the request protocol.
-    // Required for Telegram WebApp (cross-origin WebView) in production.
+    // secure:"auto" is a valid express-session value: it reads req.secure,
+    // which respects app.set("trust proxy", 1) and Replit's HTTPS proxy.
     secure: "auto" as unknown as boolean,
-    sameSite: "auto" as unknown as boolean,
+    // Telegram Mini App runs in a cross-origin WebView/iframe.
+    // Browsers block cookies with SameSite=Lax (the default) in cross-origin
+    // contexts, so the session cookie would never be sent after login, causing
+    // all user data to appear blank. SameSite=None + Secure is required.
+    // "auto" is NOT a recognised express-session value for sameSite — it is
+    // passed verbatim to Set-Cookie, producing an invalid attribute that
+    // browsers silently ignore and treat as Lax. Use "none" explicitly.
+    sameSite: "none",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },
 });
