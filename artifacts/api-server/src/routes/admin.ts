@@ -1492,6 +1492,129 @@ router.get(
   },
 );
 
+// ─── Global HP Grant ─────────────────────────────────────────────────────────
+
+// POST /admin/grant-everyone
+router.post(
+  "/admin/grant-everyone",
+  requireAdmin,
+  async (req: Request, res: Response): Promise<void> => {
+    const admin = (req as AdminRequest).currentUser;
+    const { amount, reason, notify } = req.body as {
+      amount: unknown;
+      reason: unknown;
+      notify: unknown;
+    };
+
+    // ── Validate ──────────────────────────────────────────────────────────────
+    const parsedAmount = Number(amount);
+    if (!Number.isInteger(parsedAmount) || parsedAmount <= 0) {
+      res.status(400).json({ error: "amount must be a positive integer" });
+      return;
+    }
+    if (!reason || typeof reason !== "string" || !reason.trim()) {
+      res.status(400).json({ error: "reason is required" });
+      return;
+    }
+    const shouldNotify = notify === true || notify === "true";
+    const trimmedReason = reason.trim();
+
+    try {
+      // ── Atomic transaction: lock rows → update balances → record txns ──────
+      // FOR UPDATE row-locks ensure the fetched set, the updated set, and the
+      // transaction records are always identical — no race with concurrent
+      // mining, quest, or admin HP changes.
+      const grantedUsers = await db.transaction(async (tx) => {
+        const users = await tx
+          .select({ telegramId: usersTable.telegramId, balance: usersTable.balance })
+          .from(usersTable)
+          .where(eq(usersTable.isBanned, false))
+          .for("update");
+
+        if (users.length === 0) return [];
+
+        // Single UPDATE — all locked rows incremented atomically
+        await tx
+          .update(usersTable)
+          .set({ balance: sql`${usersTable.balance} + ${parsedAmount}` })
+          .where(eq(usersTable.isBanned, false));
+
+        // Insert transaction records in batches of 500
+        const BATCH = 500;
+        for (let i = 0; i < users.length; i += BATCH) {
+          const chunk = users.slice(i, i + BATCH);
+          await tx.insert(transactionsTable).values(
+            chunk.map((u) => ({
+              telegramId: u.telegramId,
+              type: "admin_grant",
+              amount: parsedAmount,
+              balanceBefore: u.balance,
+              balanceAfter: u.balance + parsedAmount,
+              description: trimmedReason,
+            })),
+          );
+        }
+
+        return users;
+      });
+
+      if (grantedUsers.length === 0) {
+        res.json({ success: true, count: 0, message: "No eligible users to grant." });
+        return;
+      }
+
+      const count = grantedUsers.length;
+
+      // ── Admin log — always written immediately after transaction commits ───
+      // Must be before notifications so a notification failure cannot prevent
+      // the audit trail from being recorded.
+      await writeAdminLog(
+        admin.telegramId,
+        "grant_everyone",
+        undefined,
+        `amount=${parsedAmount} reason=${trimmedReason} users=${count} notify=${shouldNotify}`,
+      );
+
+      // ── Notifications — best-effort, isolated from operation success ───────
+      // A notification failure must never mask an already-committed grant.
+      let notifsSent = 0;
+      if (shouldNotify) {
+        try {
+          const BATCH = 500;
+          for (let i = 0; i < grantedUsers.length; i += BATCH) {
+            const chunk = grantedUsers.slice(i, i + BATCH);
+            await db.insert(notificationsTable).values(
+              chunk.map((u) => ({
+                telegramId: u.telegramId,
+                title: `🎁 ${parsedAmount} HP Granted!`,
+                message: `You received ${parsedAmount} HP! Reason: ${trimmedReason}`,
+                type: "system" as const,
+                read: false,
+              })),
+            );
+            notifsSent += chunk.length;
+          }
+        } catch (notifErr) {
+          req.log.error(
+            { err: notifErr },
+            "Grant notifications failed — grant and audit log were committed successfully",
+          );
+        }
+      }
+
+      res.json({
+        success: true,
+        count,
+        message: `Successfully granted ${parsedAmount} HP to ${count} users.`,
+        ...(shouldNotify ? { notificationsSent: notifsSent } : {}),
+      });
+    } catch (err) {
+      req.log.error({ err }, "Global HP grant failed");
+      res.status(500).json({ error: "Global HP grant failed" });
+    }
+  },
+);
+
 // ─── Admin Logs ───────────────────────────────────────────────────────────────
 
 // GET /admin/logs

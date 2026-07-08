@@ -240,6 +240,10 @@ export const adminApi = {
   }) =>
     get<{ transactions: Transaction[]; total: number }>("/admin/transactions", params),
 
+  // Global HP Grant
+  grantEveryone: (data: { amount: number; reason: string; notify: boolean }) =>
+    post<{ success: boolean; count: number; message: string }>("/admin/grant-everyone", data),
+
   // Logs
   getLogs: (limit?: number, offset?: number) =>
     get<{ logs: AdminLog[]; total: number }>("/admin/logs", { limit, offset }),
