@@ -10,25 +10,19 @@ type AuthedRequest = Request & { currentUser: typeof usersTable.$inferSelect };
 /**
  * Build the referral deep link for this user.
  *
- * Uses the Mini App direct link format (?startapp=) when
- * TELEGRAM_APP_SHORT_NAME is configured — this guarantees start_param is
- * included in initData for ALL users (new and returning) because the Mini App
- * opens directly, bypassing the bot-chat START flow that strips it.
+ * This bot is configured as a Telegram Main Mini App (has_main_web_app=true),
+ * confirmed via Bot API. Main Mini Apps use the ?startapp= query parameter
+ * directly on the bot URL — no Short Name or path segment is needed.
  *
- * Falls back to the bot link format (?start=) when the app short name is
- * absent; this still works for returning users but loses start_param for
- * brand-new users who have never opened the bot before.
+ * Format: https://t.me/<bot>?startapp=<telegramId>
+ *
+ * This guarantees start_param is passed in initData for ALL users (new and
+ * returning) without going through the bot-chat START flow that strips it.
  */
 function buildReferralLink(telegramId: string): string {
   const bot = process.env.TELEGRAM_BOT_USERNAME ?? "";
   if (!bot) return "";
-  const appShortName = process.env.TELEGRAM_APP_SHORT_NAME ?? "";
-  if (appShortName) {
-    // Mini App direct link — always carries start_param
-    return `https://t.me/${bot}/${appShortName}?startapp=${telegramId}`;
-  }
-  // Bot link fallback — works for returning users
-  return `https://t.me/${bot}?start=${telegramId}`;
+  return `https://t.me/${bot}?startapp=${telegramId}`;
 }
 
 // GET /referrals/stats
