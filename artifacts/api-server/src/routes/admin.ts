@@ -1552,7 +1552,7 @@ router.get(
       .select()
       .from(adminLogsTable)
       .where(eq(adminLogsTable.action, "grant_everyone"))
-      .orderBy(desc(adminLogsTable.createdAt))
+      .orderBy(desc(adminLogsTable.createdAt), desc(adminLogsTable.id))
       .limit(1);
 
     if (!lastGrant) {
@@ -1652,12 +1652,18 @@ router.post(
 
         if (users.length === 0) return { grantedUsers: [], grantCount: 0, totalHPDistributed: 0 };
 
-        await tx
-          .update(usersTable)
-          .set({ balance: sql`${usersTable.balance} + ${parsedAmount}` })
-          .where(eq(usersTable.isBanned, false));
-
+        // Update ONLY the exact locked set (not WHERE isBanned=false) so no
+        // row created or unbanned after the SELECT..FOR UPDATE can receive HP
+        // without a corresponding transaction record.
+        const lockedIds = users.map((u) => u.telegramId);
         const BATCH = 500;
+        for (let i = 0; i < lockedIds.length; i += BATCH) {
+          await tx
+            .update(usersTable)
+            .set({ balance: sql`${usersTable.balance} + ${parsedAmount}` })
+            .where(inArray(usersTable.telegramId, lockedIds.slice(i, i + BATCH)));
+        }
+
         for (let i = 0; i < users.length; i += BATCH) {
           const chunk = users.slice(i, i + BATCH);
           await tx.insert(transactionsTable).values(
@@ -1741,12 +1747,13 @@ router.post(
       req.ip ??
       "unknown";
 
-    // Find the most recent grant
+    // Find the most recent grant — order by (createdAt DESC, id DESC) for
+    // deterministic selection when two rows share the same timestamp.
     const [lastGrant] = await db
       .select()
       .from(adminLogsTable)
       .where(eq(adminLogsTable.action, "grant_everyone"))
-      .orderBy(desc(adminLogsTable.createdAt))
+      .orderBy(desc(adminLogsTable.createdAt), desc(adminLogsTable.id))
       .limit(1);
 
     if (!lastGrant) {
@@ -1794,6 +1801,20 @@ router.post(
 
         if (existingRollbacks.some((l) => l.details?.includes(`batchId=${batchId}`))) {
           throw Object.assign(new Error("ALREADY_ROLLED_BACK"), { code: "ALREADY_ROLLED_BACK" });
+        }
+
+        // Re-verify this batch is still the latest grant — guards against a new
+        // grant being committed between the initial lookup and this transaction.
+        // Use (createdAt DESC, id DESC) for deterministic tie-breaking.
+        const [currentLatest] = await tx
+          .select({ id: adminLogsTable.id })
+          .from(adminLogsTable)
+          .where(eq(adminLogsTable.action, "grant_everyone"))
+          .orderBy(desc(adminLogsTable.createdAt), desc(adminLogsTable.id))
+          .limit(1);
+
+        if (!currentLatest || currentLatest.id !== lastGrant.id) {
+          throw Object.assign(new Error("GRANT_SUPERSEDED"), { code: "GRANT_SUPERSEDED" });
         }
 
         // Write rollback audit log FIRST (atomic with balance changes)
@@ -1848,8 +1869,16 @@ router.post(
         message: `Successfully rolled back grant of ${grantAmount} HP from ${batchTransactions.length} users.`,
       });
     } catch (err) {
-      if ((err as { code?: string }).code === "ALREADY_ROLLED_BACK") {
+      const code = (err as { code?: string }).code;
+      if (code === "ALREADY_ROLLED_BACK") {
         res.status(409).json({ error: "This grant has already been rolled back" });
+        return;
+      }
+      if (code === "GRANT_SUPERSEDED") {
+        res.status(409).json({
+          error:
+            "A newer grant has been issued since you opened this page. Refresh to see the latest grant before rolling back.",
+        });
         return;
       }
       req.log.error({ err }, "Grant rollback failed");
