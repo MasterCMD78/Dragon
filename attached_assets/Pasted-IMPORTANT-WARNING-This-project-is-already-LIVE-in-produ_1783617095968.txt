@@ -1,0 +1,241 @@
+IMPORTANT WARNING ⚠️
+
+This project is already LIVE in production.
+
+This is the SAME Replit workspace.
+
+Dependencies are already installed.
+
+The workflows already exist.
+
+The database is already connected.
+
+DO NOT reinstall dependencies.
+
+DO NOT recreate workflows.
+
+DO NOT reconnect or replace the database.
+
+DO NOT modify secrets.
+
+DO NOT push migrations.
+
+DO NOT reseed the database.
+
+DO NOT redesign or rewrite any working system.
+
+DO NOT touch:
+
+- Authentication
+- Mining
+- Wallet
+- Transactions
+- Leaderboard
+- Tasks
+- Quests
+- Achievements
+- Notifications
+- Admin Panel
+- Global HP Grant
+- Rollback System
+- Super Admin System
+
+Unless you collect CONCRETE EVIDENCE proving the issue exists there.
+
+Never assume.
+
+Always collect evidence first.
+
+Create a rollback snapshot/git commit before changing anything.
+
+--------------------------------------------------
+
+TASK
+
+The referral system is still broken.
+
+Current behaviour:
+
+✅ Users join successfully using referral links.
+
+❌ Referral count never increases.
+
+❌ Referrer never receives HP.
+
+❌ New user welcome bonus may not execute correctly.
+
+I also discovered my application currently generates referral links like:
+
+https://t.me/HustleCoinMinerBot?start=7035629762
+
+However my bot is configured as a Telegram Main Mini App.
+
+Mini App Short Name:
+
+httpsc04ec70d94dc48118a26
+
+Investigate whether this is the actual cause.
+
+DO NOT assume.
+
+--------------------------------------------------
+
+INVESTIGATE THE COMPLETE REFERRAL FLOW
+
+Verify every step with evidence.
+
+1.
+Check how referral links are generated.
+
+Determine whether they use:
+
+?start=
+
+or
+
+?startapp=
+
+2.
+Verify what Telegram actually sends.
+
+Check:
+
+- initData
+- initDataUnsafe
+- start_param
+
+Log the values.
+
+3.
+Verify AuthContext forwards the referral code.
+
+4.
+Verify backend auth receives it.
+
+5.
+Verify candidateReferrerId.
+
+6.
+Verify referred_by storage.
+
+7.
+Verify referral reward execution.
+
+8.
+Verify welcome bonus execution.
+
+9.
+Verify transaction creation.
+
+10.
+Verify notification creation.
+
+11.
+Verify referral count update.
+
+12.
+Verify leaderboard/statistics refresh.
+
+--------------------------------------------------
+
+DATABASE VERIFICATION
+
+Before changing code:
+
+Run SQL queries to verify:
+
+- Total users
+- referred_by values
+- referrals table
+- referral transactions
+- notification records
+
+After fixing:
+
+Run the same SQL again.
+
+Show the difference.
+
+--------------------------------------------------
+
+FIX
+
+Only after proving the exact root cause.
+
+If the issue is the referral link format,
+
+change ONLY the referral link generation to the proper Telegram Mini App format.
+
+If another bug exists,
+
+fix ONLY that bug.
+
+Do NOT rewrite the referral engine.
+
+--------------------------------------------------
+
+END-TO-END TEST
+
+Perform a complete referral test:
+
+User A
+
+↓
+
+Generate referral link
+
+↓
+
+User B joins
+
+↓
+
+Verify:
+
+✅ start_param received
+
+✅ backend receives referral code
+
+✅ referred_by saved
+
+✅ referral count increases
+
+✅ welcome bonus awarded
+
+✅ referral bonus awarded
+
+✅ transaction created
+
+✅ notification created
+
+✅ leaderboard updated
+
+Continue until every step passes.
+
+--------------------------------------------------
+
+TESTING
+
+Run:
+
+- TypeScript check
+- Production build
+- Referral end-to-end test
+
+Do not introduce any new TypeScript errors.
+
+--------------------------------------------------
+
+FINAL REPORT
+
+Return:
+
+- Root cause
+- Evidence
+- Files changed
+- SQL before fix
+- SQL after fix
+- End-to-end verification
+- Production readiness
+
+Do not stop until the referral system is proven working with database evidence, logs, and a successful end-to-end test.
