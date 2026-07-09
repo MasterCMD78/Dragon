@@ -272,4 +272,13 @@ export const adminApi = {
   // Logs
   getLogs: (limit?: number, offset?: number) =>
     get<{ logs: AdminLog[]; total: number }>("/admin/logs", { limit, offset }),
+
+  // System Settings (Super Admin only)
+  getSettings: () =>
+    get<{ settings: Record<string, string> }>("/admin/settings"),
+  updateSettings: (settings: Record<string, string | boolean | number>) =>
+    put<{
+      success: boolean;
+      updated: { key: string; oldValue: string; newValue: string }[];
+    }>("/admin/settings", settings),
 };

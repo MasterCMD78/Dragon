@@ -105,8 +105,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       webApp?.ready();
       webApp?.expand();
       setPhase("authenticating");
+      // Also extract start_param from initDataUnsafe as an explicit referralCode.
+      // This is belt-and-suspenders: the backend already parses start_param from
+      // the validated initData, but sending it here ensures it's captured even
+      // if the link format or Telegram version differs.
+      const startParam: string | null =
+        (webApp?.initDataUnsafe as { start_param?: string } | undefined)?.start_param ?? null;
       authMutation.mutate(
-        { data: { initData } },
+        { data: { initData, referralCode: startParam } },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });

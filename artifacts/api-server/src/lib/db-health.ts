@@ -1,4 +1,5 @@
 import { pool } from "@workspace/db";
+import { SETTING_KEYS, SETTING_DEFAULTS } from "@workspace/db";
 import { logger } from "./logger";
 
 /**
@@ -91,6 +92,27 @@ export async function checkDbAndMigrateSchema(): Promise<boolean> {
     }
 
     logger.info("Schema verification complete — all required columns present");
+
+    // 4. Create system_settings table if it doesn't exist
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_by_telegram_id TEXT
+      )
+    `);
+
+    // 5. Seed default settings (INSERT … ON CONFLICT DO NOTHING = idempotent)
+    const defaults = Object.entries(SETTING_DEFAULTS);
+    for (const [key, value] of defaults) {
+      await client.query(
+        `INSERT INTO system_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`,
+        [key, value],
+      );
+    }
+    logger.info({ count: defaults.length }, "System settings table ready");
+
     return true;
   } catch (err) {
     logger.error({ err }, "Schema verification/migration failed");

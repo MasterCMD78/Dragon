@@ -4,11 +4,10 @@ import {
   referralsTable,
   transactionsTable,
   notificationsTable,
+  referralEventsTable,
 } from "@workspace/db";
 import { eq } from "drizzle-orm";
-
-export const REFERRER_HP = 500;
-export const REFEREE_HP = 250;
+import { getSettingInTx, SETTING_KEYS } from "./settings";
 
 /** Drizzle transaction client type inferred from the db instance. */
 type TxClient = Parameters<Parameters<(typeof db)["transaction"]>[0]>[0];
@@ -19,26 +18,78 @@ interface NewUserInfo {
   balance: number;
 }
 
+/** Log a referral event step for production debugging. */
+async function logReferralEvent(
+  tx: TxClient,
+  step: string,
+  result: string,
+  message?: string,
+  referrerTelegramId?: string | null,
+  refereeTelegramId?: string,
+  source?: string,
+) {
+  try {
+    await tx.insert(referralEventsTable).values({
+      referrerTelegramId: referrerTelegramId ?? null,
+      refereeTelegramId: refereeTelegramId ?? "unknown",
+      step,
+      result,
+      message: message ?? null,
+      source: source ?? null,
+    });
+  } catch {
+    // Never let event logging kill the referral transaction
+  }
+}
+
 /**
  * Atomically process a referral inside an existing Drizzle transaction.
  *
+ * Reads configurable amounts from system_settings.
  * Validates:
  *  - referrer exists (caller must verify before passing in)
  *  - not a self-referral (caller must verify before passing in)
  *  - no duplicate referral row (defense-in-depth guard inside)
+ *  - welcome_bonus_enabled setting
  *
  * On success writes:
- *  1. referrals row (500 / 250)
- *  2. referrer balance +500  + transaction record
- *  3. new-user balance +250  + transaction record
+ *  1. referrals row
+ *  2. referrer balance + referral_bonus_amount  + transaction record
+ *  3. new-user balance + welcome_bonus_amount   + transaction record
  *  4. notification for referrer
  *  5. notification for new user
+ *  6. referral_events row at each step (for production debugging)
  */
 export async function processReferralInTx(
   tx: TxClient,
   referrerTelegramId: string,
   newUser: NewUserInfo,
+  source?: string,
 ): Promise<void> {
+  // Read configurable settings
+  const [enabledStr, referrerHpStr, refereeHpStr] = await Promise.all([
+    getSettingInTx(tx, SETTING_KEYS.WELCOME_BONUS_ENABLED),
+    getSettingInTx(tx, SETTING_KEYS.REFERRAL_BONUS_AMOUNT),
+    getSettingInTx(tx, SETTING_KEYS.WELCOME_BONUS_AMOUNT),
+  ]);
+
+  const welcomeBonusEnabled = enabledStr !== "false";
+  // Use explicit NaN check so a configured value of 0 is respected (not treated
+  // as falsy and replaced with the hardcoded default).
+  const parsedReferrerHp = parseInt(referrerHpStr, 10);
+  const parsedRefereeHp = parseInt(refereeHpStr, 10);
+  const REFERRER_HP = isNaN(parsedReferrerHp) ? 500 : Math.max(0, parsedReferrerHp);
+  const REFEREE_HP = isNaN(parsedRefereeHp) ? 250 : Math.max(0, parsedRefereeHp);
+
+  if (!welcomeBonusEnabled) {
+    await logReferralEvent(
+      tx, "bonus_check", "skipped",
+      "welcome_bonus_enabled is false — no rewards issued",
+      referrerTelegramId, newUser.telegramId, source,
+    );
+    return;
+  }
+
   // Defense-in-depth: ensure no duplicate referral row for this referee
   const existing = await tx
     .select({ id: referralsTable.id })
@@ -47,7 +98,11 @@ export async function processReferralInTx(
     .limit(1);
 
   if (existing.length > 0) {
-    // Referral already recorded — skip silently (idempotent)
+    await logReferralEvent(
+      tx, "duplicate_check", "skipped",
+      "Referral already recorded for this referee — idempotent skip",
+      referrerTelegramId, newUser.telegramId, source,
+    );
     return;
   }
 
@@ -59,7 +114,11 @@ export async function processReferralInTx(
     .limit(1);
 
   if (!referrer) {
-    // Referrer vanished between validation and now — abort
+    await logReferralEvent(
+      tx, "referrer_lookup", "error",
+      "Referrer not found in DB — aborting referral",
+      referrerTelegramId, newUser.telegramId, source,
+    );
     return;
   }
 
@@ -132,4 +191,11 @@ export async function processReferralInTx(
     type: "referral_bonus",
     relatedEntity: referralId,
   });
+
+  // 8. Success event
+  await logReferralEvent(
+    tx, "complete", "success",
+    `Referrer +${REFERRER_HP} HP, Referee +${REFEREE_HP} HP. referral_id=${referralId}`,
+    referrerTelegramId, newUser.telegramId, source,
+  );
 }

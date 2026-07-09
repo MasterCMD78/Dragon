@@ -14,6 +14,9 @@ import {
   miningLogsTable,
   referralsTable,
   adminLogsTable,
+  systemSettingsTable,
+  SETTING_KEYS,
+  SETTING_DEFAULTS,
 } from "@workspace/db";
 import {
   eq,
@@ -1909,6 +1912,119 @@ router.get(
     ]);
 
     res.json({ logs, total, limit, offset });
+  },
+);
+
+// ─── System Settings (Super Admin only) ───────────────────────────────────────
+
+function requireSuperAdmin(req: Request, res: Response, next: () => void): void {
+  const admin = (req as AdminRequest).currentUser;
+  if (admin.telegramId !== SUPER_ADMIN_TELEGRAM_ID) {
+    res.status(403).json({ error: "Super Admin access required" });
+    return;
+  }
+  next();
+}
+
+// GET /admin/settings — read all configurable settings
+router.get(
+  "/admin/settings",
+  requireAdmin,
+  (req: Request, res: Response, next: () => void) => requireSuperAdmin(req, res, next),
+  async (_req: Request, res: Response): Promise<void> => {
+    const rows = await db.select().from(systemSettingsTable);
+    // Merge in defaults for any key that isn't in the table yet
+    const settings: Record<string, string> = { ...SETTING_DEFAULTS };
+    for (const row of rows) {
+      settings[row.key] = row.value;
+    }
+    res.json({ settings });
+  },
+);
+
+// PUT /admin/settings — update one or more settings (Super Admin only)
+router.put(
+  "/admin/settings",
+  requireAdmin,
+  (req: Request, res: Response, next: () => void) => requireSuperAdmin(req, res, next),
+  async (req: Request, res: Response): Promise<void> => {
+    const admin = (req as AdminRequest).currentUser;
+    const incoming = req.body as Record<string, unknown>;
+
+    const ALLOWED_KEYS = new Set<string>(Object.values(SETTING_KEYS));
+    const updates: { key: string; oldValue: string; newValue: string }[] = [];
+
+    // Read existing values first so we can log old→new
+    const existing = await db.select().from(systemSettingsTable);
+    const existingMap = new Map(existing.map((r) => [r.key, r.value]));
+
+    for (const [key, rawValue] of Object.entries(incoming)) {
+      if (!ALLOWED_KEYS.has(key)) continue;
+
+      let newValue: string;
+
+      if (key === SETTING_KEYS.WELCOME_BONUS_ENABLED) {
+        // Must be "true" or "false"
+        if (rawValue !== true && rawValue !== false && rawValue !== "true" && rawValue !== "false") {
+          res.status(400).json({ error: `${key} must be a boolean` });
+          return;
+        }
+        newValue = String(rawValue === true || rawValue === "true");
+      } else {
+        // Amount fields: must be a positive integer
+        const n = parseInt(String(rawValue), 10);
+        if (isNaN(n) || n < 0) {
+          res.status(400).json({ error: `${key} must be a non-negative integer` });
+          return;
+        }
+        newValue = String(n);
+      }
+
+      const oldValue = existingMap.get(key) ?? (SETTING_DEFAULTS as Record<string, string>)[key] ?? "";
+      updates.push({ key, oldValue, newValue });
+    }
+
+    if (updates.length === 0) {
+      res.status(400).json({ error: "No valid settings provided" });
+      return;
+    }
+
+    // Apply updates
+    for (const { key, newValue } of updates) {
+      await db
+        .insert(systemSettingsTable)
+        .values({ key, value: newValue, updatedByTelegramId: admin.telegramId })
+        .onConflictDoUpdate({
+          target: systemSettingsTable.key,
+          set: {
+            value: newValue,
+            updatedAt: new Date(),
+            updatedByTelegramId: admin.telegramId,
+          },
+        });
+    }
+
+    // Write audit log entries with old/new values
+    for (const { key, oldValue, newValue } of updates) {
+      await writeAdminLog(
+        admin.telegramId,
+        `update_setting:${key}`,
+        undefined,
+        JSON.stringify({
+          key,
+          adminId: admin.id,
+          telegramId: admin.telegramId,
+          username: admin.username,
+          oldValue,
+          newValue,
+        }),
+      );
+    }
+
+    res.json({
+      success: true,
+      updated: updates.map(({ key, oldValue, newValue }) => ({ key, oldValue, newValue })),
+    });
   },
 );
 

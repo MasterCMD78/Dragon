@@ -95,6 +95,52 @@ Restored from GitHub import into fresh Replit workspace. All checks executed aga
 
 **Overall health: Green.** No application code was modified. Ready for Phase 14 development.
 
+## Phase 14 Complete (2026-07-09)
+
+### Referral Bug Fix
+
+**Root cause found:** The `start_param` was never present in Telegram `initData` when new users opened the Mini App. The referral link format `t.me/Bot?start=<code>` routes brand-new users through the bot chat START flow — when the Mini App subsequently opens from a keyboard button, Telegram strips `start_param` from `initData`. Evidence: 90 production users, 0 referrals, 0 `referred_by` values in the DB.
+
+**Fixes applied:**
+- `artifacts/api-server/src/routes/referrals.ts`: `buildReferralLink` now generates `t.me/<bot>/<appShortName>?startapp=<telegramId>` when `TELEGRAM_APP_SHORT_NAME` is set. This format directly opens the Mini App for both new and returning users and always passes `start_param`. Falls back to `?start=` format when the env var is absent.
+- `artifacts/hustlecoin/src/contexts/AuthContext.tsx`: Frontend now sends `initDataUnsafe.start_param` as explicit `referralCode` (belt-and-suspenders; covers edge cases where the backend extraction path differs).
+- `artifacts/api-server/src/routes/auth.ts`: Added detailed referral candidate logging (`startParam`, `referralCode`, `candidateReferrerId`) for every new user registration. Organic signups and referrer-not-found cases now write to `referral_events` table.
+- `artifacts/api-server/src/lib/referral-engine.ts`: Now writes referral events at every step (duplicate_check, bonus_check, referrer_lookup, complete) using the existing `referral_events` table for production debugging.
+
+**Action required:** Set `TELEGRAM_APP_SHORT_NAME` secret to your Mini App's short name from BotFather. The API server logs a warning on startup if it's missing.
+
+### Welcome Bonus Controls (Super Admin)
+
+New `system_settings` table (auto-created by `db-health.ts` with idempotent DDL — no manual migration needed).
+
+**Settings:**
+- `welcome_bonus_enabled` (default: `"true"`) — if `"false"`, no referral rewards are issued at all
+- `welcome_bonus_amount` (default: `"250"`) — HP awarded to the new user who joins via referral
+- `referral_bonus_amount` (default: `"500"`) — HP awarded to the existing user who made the referral
+
+**Admin API endpoints (Super Admin only — 403 for regular admins):**
+- `GET /admin/settings` — read all settings
+- `PUT /admin/settings` — update settings; every change is audit-logged with Admin ID, Telegram ID, username, old value, new value, timestamp
+
+**Frontend:** New "Settings" tab in the Admin Panel. Toggle for enable/disable, numeric inputs with quick-select presets for both bonus amounts. Save button only enables when there are unsaved changes.
+
+**Files added/changed:**
+- `lib/db/src/schema/system_settings.ts` — new schema
+- `artifacts/api-server/src/lib/settings.ts` — DB reader helpers
+- `artifacts/api-server/src/lib/db-health.ts` — auto-creates table + seeds defaults
+- `artifacts/api-server/src/routes/admin.ts` — GET/PUT /admin/settings (Super Admin gated)
+- `artifacts/hustlecoin/src/lib/adminApi.ts` — `getSettings()`, `updateSettings()`
+- `artifacts/hustlecoin/src/pages/admin/Settings.tsx` — new settings UI
+- `artifacts/hustlecoin/src/pages/admin/AdminLayout.tsx` — Settings nav item
+- `artifacts/hustlecoin/src/pages/admin/index.tsx` — /admin/settings route
+
+| Verification | Result |
+|---|---|
+| TypeScript (`pnpm run typecheck`) | ✅ 0 errors |
+| Production build (`pnpm run build`) | ✅ 0 errors (mockup-sandbox pre-existing failure excluded) |
+| API server | ✅ Running — system_settings table created with 3 default rows |
+| Frontend | ✅ Running |
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details

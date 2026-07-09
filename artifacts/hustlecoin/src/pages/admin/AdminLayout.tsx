@@ -12,6 +12,7 @@ import {
   ScrollText,
   ChevronLeft,
   ShieldCheck,
+  Settings2,
 } from "lucide-react";
 
 interface NavItem {
@@ -30,6 +31,7 @@ const NAV: NavItem[] = [
   { path: "/admin/announcements", label: "Announcements", icon: <Megaphone className="w-4 h-4" /> },
   { path: "/admin/transactions", label: "Transactions", icon: <ArrowRightLeft className="w-4 h-4" /> },
   { path: "/admin/logs", label: "Audit Logs", icon: <ScrollText className="w-4 h-4" /> },
+  { path: "/admin/settings", label: "Settings", icon: <Settings2 className="w-4 h-4" /> },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

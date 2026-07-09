@@ -1,0 +1,252 @@
+IMPORTANT ⚠️⚠️⚠️
+
+THIS PROJECT IS ALREADY LIVE IN PRODUCTION.
+
+DO NOT REWRITE EXISTING SYSTEMS.
+
+DO NOT REFACTOR WORKING CODE.
+
+DO NOT TOUCH:
+
+- Authentication
+- Telegram Login
+- Mining
+- Wallet
+- Transactions
+- Leaderboard
+- Tasks
+- Quests
+- Achievements
+- Notifications
+- Global HP Grant
+- Rollback System
+- Super Admin System
+- Admin Permissions
+- Database Schema
+
+Unless you find CONCRETE EVIDENCE that one of those systems is directly causing the referral bug.
+
+Do NOT assume.
+
+Do NOT guess.
+
+Do NOT redesign.
+
+Only investigate the confirmed issues below.
+
+If you need to change any existing working logic outside these issues, explain why first.
+
+------------------------------------------------
+
+STEP 1 — Environment Recovery
+
+This project has just been imported from GitHub into a fresh Replit workspace.
+
+Before making any code changes:
+
+- Read the entire project.
+- Read replit.md completely.
+- Read the admin implementation.
+- Read the referral implementation.
+- Read the welcome bonus implementation.
+- Read package.json.
+- Read workflow configuration.
+- Read environment configuration.
+
+Install all dependencies.
+
+Verify these secrets exist:
+
+- DATABASE_URL
+- SESSION_SECRET
+- TELEGRAM_BOT_TOKEN
+- TELEGRAM_BOT_USERNAME
+
+Do NOT replace or modify any secret.
+
+Connect to the existing database.
+
+Verify the schema.
+
+Do NOT push migrations.
+
+Do NOT seed data.
+
+Start all required workflows:
+
+- API Server
+- Frontend
+- Any additional services
+
+Verify everything starts successfully.
+
+------------------------------------------------
+
+STEP 2 — Referral System Investigation
+
+The referral system is NOT working correctly.
+
+Observed behaviour:
+
+✅ New users successfully join using a referral link.
+
+❌ Referrer does NOT receive HP.
+
+❌ Referral count does NOT increase.
+
+❌ Referral reward is never granted.
+
+Do NOT immediately fix anything.
+
+FIRST investigate.
+
+Collect evidence.
+
+Trace the complete referral flow from beginning to end.
+
+Check:
+
+- Referral code generation
+- Referral link parsing
+- Telegram start parameter
+- Authentication flow
+- Database writes
+- Referral events
+- Referral statistics
+- Reward logic
+- Transaction creation
+- Notification creation
+- Referral count updates
+- Any async jobs
+- Any failed queries
+- Any silent exceptions
+
+Find the EXACT point where the process stops.
+
+Return evidence.
+
+Only after proving the cause should you fix it.
+
+Do NOT rewrite the referral system.
+
+Fix ONLY the confirmed bug.
+
+After fixing:
+
+Verify:
+
+- Referrer receives HP.
+- Referral count increases.
+- Referral transaction is created.
+- Notification is sent.
+- Leaderboard updates.
+- Statistics update.
+
+------------------------------------------------
+
+STEP 3 — Welcome Bonus Controls
+
+Add Super Admin controls.
+
+DO NOT change the welcome bonus logic.
+
+ONLY make it configurable.
+
+Add controls inside the Admin Panel.
+
+Required settings:
+
+1.
+
+Enable / Disable Welcome Bonus
+
+ON / OFF switch
+
+2.
+
+Edit Welcome Bonus amount
+
+Example:
+
+100 HP
+
+250 HP
+
+500 HP
+
+etc.
+
+3.
+
+Edit Referral Bonus amount
+
+Example:
+
+50 HP
+
+100 HP
+
+250 HP
+
+etc.
+
+4.
+
+Save Settings
+
+Changes must immediately affect future users.
+
+Existing users must NOT be modified.
+
+------------------------------------------------
+
+STEP 4 — Security
+
+Only Super Admin may edit these settings.
+
+Normal admins must NOT.
+
+Log every change.
+
+Admin Log must contain:
+
+- Admin ID
+- Telegram ID
+- Username
+- Old Value
+- New Value
+- Timestamp
+
+------------------------------------------------
+
+STEP 5 — Verification
+
+Run:
+
+- TypeScript
+- Production build
+- End-to-end tests
+
+Verify:
+
+- No new TypeScript errors
+- No runtime errors
+- Existing systems still work
+- Referral system works correctly
+- Welcome bonus controls work correctly
+- Referral bonus controls work correctly
+
+------------------------------------------------
+
+FINAL REPORT
+
+Return:
+
+- Root cause of referral bug
+- Evidence collected
+- Exact fix applied
+- Files modified
+- Verification results
+- Any remaining recommendations
+
+DO NOT modify anything outside the scope above.

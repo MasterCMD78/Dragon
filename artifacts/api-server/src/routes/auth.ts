@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, referralEventsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { validateTelegramInitData } from "../lib/telegram";
 import { requireAuth } from "../middlewares/auth";
@@ -131,13 +131,23 @@ router.post(
       // ── New user — resolve referrer, then run everything in one transaction ─
       isNewUser = true;
 
-      // The referral payload comes from:
-      //   1. Telegram deep-link start_param (e.g. t.me/Bot?start=<telegramId>)
-      //   2. Explicit referralCode field in request body (fallback)
+      // The referral payload comes from (in priority order):
+      //   1. Telegram deep-link start_param embedded in initData
+      //      (present when app is opened via t.me/Bot/App?startapp=<id> or
+      //       t.me/Bot?start=<id> for returning users)
+      //   2. Explicit referralCode sent by the frontend from initDataUnsafe
+      //      (belt-and-suspenders: frontend sends initDataUnsafe.start_param)
       const candidateReferrerId = startParam ?? referralCode ?? null;
+
+      req.log.info(
+        { telegramId, startParam, referralCode, candidateReferrerId },
+        "New user referral candidate resolved",
+      );
 
       // Validate: referrer must exist and must not be the joining user
       let verifiedReferrerId: string | null = null;
+      let referralSource: string | null = null;
+
       if (candidateReferrerId && candidateReferrerId !== telegramId) {
         const [referrer] = await db
           .select({ telegramId: usersTable.telegramId })
@@ -146,7 +156,36 @@ router.post(
           .limit(1);
         if (referrer) {
           verifiedReferrerId = referrer.telegramId;
+          referralSource = startParam ? "start_param" : "referral_code_body";
+        } else {
+          req.log.warn(
+            { telegramId, candidateReferrerId },
+            "Referral candidate not found in DB — no referral applied",
+          );
+          // Log the miss for production debugging
+          void db.insert(referralEventsTable).values({
+            referrerTelegramId: candidateReferrerId,
+            refereeTelegramId: telegramId,
+            step: "referrer_lookup",
+            result: "not_found",
+            message: "Referrer telegram_id not found in users table",
+            source: startParam ? "start_param" : "referral_code_body",
+          }).catch(() => {});
         }
+      } else if (!candidateReferrerId) {
+        req.log.info(
+          { telegramId },
+          "New user has no referral code — organic signup",
+        );
+        // Log organic signups for funnel analysis
+        void db.insert(referralEventsTable).values({
+          referrerTelegramId: null,
+          refereeTelegramId: telegramId,
+          step: "referral_candidate",
+          result: "none",
+          message: "No start_param or referralCode — organic signup",
+          source: "none",
+        }).catch(() => {});
       }
 
       // Atomic: create user + award referral rewards (if any) in one transaction
@@ -166,13 +205,14 @@ router.post(
           .returning();
 
         if (verifiedReferrerId) {
-          await processReferralInTx(tx, verifiedReferrerId, {
-            id: created.id,
-            telegramId: created.telegramId,
-            balance: created.balance,
-          });
+          await processReferralInTx(
+            tx,
+            verifiedReferrerId,
+            { id: created.id, telegramId: created.telegramId, balance: created.balance },
+            referralSource ?? undefined,
+          );
 
-          // Re-read the user so the returned balance reflects the +250 bonus
+          // Re-read the user so the returned balance reflects the welcome bonus
           const [withBonus] = await tx
             .select()
             .from(usersTable)
@@ -185,7 +225,7 @@ router.post(
       });
 
       req.log.info(
-        { userId: user.id, telegramId, referredBy: verifiedReferrerId },
+        { userId: user.id, telegramId, referredBy: verifiedReferrerId, referralSource },
         "New user registered",
       );
 

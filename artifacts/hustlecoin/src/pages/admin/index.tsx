@@ -12,6 +12,7 @@ import { Broadcast } from "./Broadcast";
 import { Announcements } from "./Announcements";
 import { Transactions } from "./Transactions";
 import { Logs } from "./Logs";
+import { Settings } from "./Settings";
 import { ShieldOff, Loader2, RefreshCw } from "lucide-react";
 
 function AccessDenied() {
@@ -92,6 +93,10 @@ export default function AdminPanel() {
     content = <Transactions />;
   } else if (location === "/admin/logs") {
     content = <Logs />;
+  } else if (location === "/admin/settings") {
+    // Settings page: Super Admin check is enforced server-side.
+    // Show a friendly message if the user is a regular admin.
+    content = <Settings />;
   } else {
     content = <Dashboard />;
   }
