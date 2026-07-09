@@ -1,3 +1,4 @@
 - [Production DB schema](production-db-schema.md) — production users table uses different column names than typical schema; all 16 tables mapped to Drizzle exactly.
 - [Express trust proxy + session cookies](express-trust-proxy-sessions.md) — missing trust proxy causes express-session to silently skip Set-Cookie behind Replit's HTTPS proxy.
 - [Database migration](database-migration.md) — Neon DB replaced; drizzle-kit push-force creates all 16 tables; seeds run at startup via checkDbAndMigrateSchema.
+- [Phase 14 Grant System Design](phase14-grant-system.md) — Super Admin immunity, atomic grant+audit tx, locked-ID update pattern, advisory lock rollback, server-driven rollback panel.
