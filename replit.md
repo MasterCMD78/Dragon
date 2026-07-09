@@ -75,6 +75,26 @@ Phase 7 complete: Quests System — 5 backend endpoints (GET /quests, GET /quest
 - Telegram WebApp cookie `sameSite` must be `"none"` + `secure: true` in production for cross-origin WebView sessions to work.
 - The Orval codegen produces `<OperationIdPascal>Body` Zod names — never name `components/schemas` entries with that pattern or you'll get TS2308 collisions.
 
+## Phase 14 Baseline Verification (2026-07-09)
+
+Restored from GitHub import into fresh Replit workspace. All checks executed against live environment.
+
+| Check | Result |
+|---|---|
+| Dependencies (`pnpm install`) | ✅ 486 packages installed, lockfile unchanged |
+| Secrets present | ✅ DATABASE_URL, SESSION_SECRET, TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME |
+| API Server workflow | ✅ Running on port 8080 |
+| Frontend workflow | ✅ Running on port 21494 |
+| Database connectivity | ✅ Verified via API server startup (`Database connectivity OK`) |
+| DB schema (users table) | ✅ All 17 columns present, schema verification complete |
+| TypeScript check (`pnpm run typecheck`) | ✅ 0 errors |
+| Production build (api-server + hustlecoin) | ✅ Built successfully |
+| Auth flow (session/cookie middleware) | ✅ Active — 401 returned correctly for unauthenticated browser requests |
+| Mockup-sandbox build | ⚠️ Pre-existing failure — PORT required at Vite config eval time during build (dev server runs fine) |
+| Git snapshot | ✅ `Pre Phase 14 Stable Baseline` committed at HEAD |
+
+**Overall health: Green.** No application code was modified. Ready for Phase 14 development.
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
