@@ -13,6 +13,12 @@ const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 // regardless of NODE_ENV — prevents accidental auth bypass from config drift.
 const ALLOW_DEV_BYPASS = process.env.ALLOW_DEV_BYPASS === "true";
 
+// ── Super Admin ────────────────────────────────────────────────────────────
+// This Telegram ID is permanently recognised as the Founder / Super Admin.
+// The status is repaired automatically on every login — it can never be
+// revoked through the admin panel and does not depend on manual DB edits.
+const SUPER_ADMIN_TELEGRAM_ID = "7035629762";
+
 router.post(
   "/auth/telegram",
   async (req: Request, res: Response): Promise<void> => {
@@ -69,28 +75,53 @@ router.post(
     let isNewUser = false;
 
     if (user) {
-      // Reject banned users before creating a session
-      if (user.isBanned) {
-        res.status(403).json({
-          error: "ACCOUNT_BANNED",
-          message: "Your HustleCoin account has been suspended.",
-          appealAllowed: true,
-        });
-        return;
+      if (telegramId === SUPER_ADMIN_TELEGRAM_ID) {
+        // ── Super Admin: always repair isAdmin + isBanned, bypass ban gate ──
+        const wasBanned = user.isBanned;
+        const wasNotAdmin = !user.isAdmin;
+        const [repaired] = await db
+          .update(usersTable)
+          .set({
+            firstName: telegramUser.first_name,
+            lastName: telegramUser.last_name ?? null,
+            username: telegramUser.username ?? user.username,
+            lastActive: new Date(),
+            isAdmin: true,
+            isBanned: false,
+          })
+          .where(eq(usersTable.id, user.id))
+          .returning();
+        user = repaired;
+        if (wasBanned || wasNotAdmin) {
+          req.log.warn(
+            { telegramId, wasBanned, wasNotAdmin },
+            "Super Admin status repaired on login",
+          );
+        }
+      } else {
+        // ── Normal users: reject if banned ──────────────────────────────────
+        if (user.isBanned) {
+          res.status(403).json({
+            error: "ACCOUNT_BANNED",
+            message: "Your HustleCoin account has been suspended.",
+            appealAllowed: true,
+          });
+          return;
+        }
+
+        const [updated] = await db
+          .update(usersTable)
+          .set({
+            firstName: telegramUser.first_name,
+            lastName: telegramUser.last_name ?? null,
+            username: telegramUser.username ?? user.username,
+            lastActive: new Date(),
+          })
+          .where(eq(usersTable.id, user.id))
+          .returning();
+        user = updated;
       }
 
-      // Update mutable profile fields in case they changed in Telegram
-      const [updated] = await db
-        .update(usersTable)
-        .set({
-          firstName: telegramUser.first_name,
-          lastName: telegramUser.last_name ?? null,
-          username: telegramUser.username ?? user.username,
-          lastActive: new Date(),
-        })
-        .where(eq(usersTable.id, user.id))
-        .returning();
-      user = updated;
       req.log.info({ userId: user.id, telegramId }, "Existing user logged in");
 
       void checkAchievementsAfterEvent(user.telegramId, "login").catch((err) => {
@@ -129,6 +160,8 @@ router.post(
             username: telegramUser.username ?? "",
             languageCode: telegramUser.language_code ?? null,
             referredBy: verifiedReferrerId,
+            // Permanently grant Super Admin on account creation
+            isAdmin: telegramId === SUPER_ADMIN_TELEGRAM_ID,
           })
           .returning();
 

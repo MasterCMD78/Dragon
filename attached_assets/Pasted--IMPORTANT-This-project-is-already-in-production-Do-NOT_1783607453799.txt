@@ -1,0 +1,332 @@
+
+IMPORTANT:
+
+This project is already in production.
+
+Do NOT rewrite existing working systems.
+
+Do NOT redesign any UI unless necessary.
+
+Do NOT modify authentication, mining, wallet, referrals, quests, tasks, leaderboard, or notifications unless a bug is found during the audit.
+
+Preserve all existing functionality.
+
+Fix only confirmed issues.
+
+If any proposed change could affect existing users, explain it first before implementing.
+
+Take a snapshot/commit before making any modifications so the project can be rolled back if necessary.
+
+# Phase 14 – Complete Admin Panel Audit + Super Admin + Global HP Grant Production Audit
+
+Before making any changes, first read and understand the entire codebase related to:
+
+- Authentication
+- Admin routes
+- Dashboard
+- Users
+- Wallet
+- Transactions
+- Notifications
+- Balance system
+- Ban system
+- Grant Everyone feature
+- Database schema
+- OpenAPI spec
+- Frontend admin pages
+
+Do not skip any files.
+
+---
+
+# 1. Make My Telegram Account Permanent Super Admin
+
+My Telegram account must ALWAYS be recognized as the Founder and Super Admin.
+
+Use these details:
+
+- Telegram ID: 7035629762
+- Username: @Yahuza_78
+- First Name: CMD😎
+- Language: 
+
+This Telegram ID must ALWAYS be recognized as the Founder.
+
+If the user logs in for the first time:
+
+- Create the account normally.
+- Automatically assign Super Admin.
+
+If the user already exists:
+
+- Automatically repair any missing admin permissions.
+- Never downgrade this account.
+- Never allow another admin to remove this account's privileges.
+
+This account must have unrestricted access to all current and future admin features.
+
+- Never remove this admin status.
+- If the user already exists, update the record.
+- If the user does not exist, create/update it during authentication.
+- Set:
+  - isAdmin = true
+  - role = "super_admin" (if roles exist)
+- Never depend on manually editing the database.
+- This Telegram ID must always bypass normal admin assignment.
+- This account must always have access to every current and future admin feature.
+
+Verify after implementation that logging in with Telegram ID 7035629762 immediately gives full Super Admin access.
+
+---
+
+# 2. Complete Admin Panel Audit
+
+Perform a complete audit of the Admin Panel.
+
+Inspect every admin page and fix anything broken.
+
+Check:
+
+- Dashboard
+- Users
+- Leaderboard
+- Wallet
+- Transactions
+- Tasks
+- Quests
+- Achievements
+- Notifications
+- Ban system
+- Referral management
+- Statistics
+- Navigation
+- Loading states
+- Error handling
+- API requests
+- Permissions
+- Pagination
+- Search
+- Filters
+
+Fix:
+
+- Missing data
+- Broken buttons
+- Loading bugs
+- Permission issues
+- API errors
+- Statistics not updating
+- UI inconsistencies
+
+Ensure every admin feature works correctly.
+
+---
+
+# 3. Audit & Improve Global HP Grant System
+
+The Global HP Grant feature has been implemented.
+
+Before deployment, perform a complete audit and improve it to production quality.
+
+---
+
+## 1. Security
+
+- Ensure only authenticated admins can access the endpoint.
+- Verify every request passes requireAdmin.
+- Prevent non-admins from calling the API.
+- Validate amount and reason on both frontend and backend.
+
+---
+
+## 2. Confirmation Protection
+
+Improve the confirmation flow.
+
+Instead of only showing:
+
+"Are you sure?"
+
+Require the admin to type:
+
+GRANT
+
+before the Grant button becomes active.
+
+This prevents accidental mass grants.
+
+---
+
+## 3. Maximum Grant Limit
+
+Prevent economy abuse.
+
+Rules:
+
+- Maximum HP per grant = 5,000
+- Minimum HP = 1
+
+Reject any value outside the range.
+
+---
+
+## 4. Cooldown
+
+Prevent multiple accidental grants.
+
+After a successful grant:
+
+- Disable the Grant button for 60 seconds.
+- Display a countdown timer.
+
+---
+
+## 5. Duplicate Protection
+
+Prevent sending the exact same grant twice.
+
+If another grant with the same:
+
+- amount
+- reason
+
+was sent within the last 10 minutes,
+
+reject it with a friendly error.
+
+---
+
+## 6. Preview Screen
+
+Before confirming, display:
+
+- Number of users receiving HP
+- Total HP to be distributed
+- Estimated new circulating HP
+
+Example:
+
+Users: 412
+
+Amount per user: 100 HP
+
+Total Distribution:
+
+41,200 HP
+
+Estimated Total Circulating HP:
+
+XXXXX HP
+
+Require confirmation after preview.
+
+---
+
+## 7. Notifications
+
+Ensure notifications are sent only after the transaction commits successfully.
+
+A notification failure must never rollback the grant.
+
+---
+
+## 8. Admin Log
+
+Log:
+
+- Admin ID
+- Admin name
+- Admin Telegram ID
+- Amount
+- Total users
+- Total HP distributed
+- Reason
+- Timestamp
+- IP address (if available)
+
+---
+
+## 9. Rollback Support
+
+Implement an emergency rollback.
+
+Admin should be able to reverse the last global grant only.
+
+Requirements:
+
+- Restore balances.
+- Reverse transaction records.
+- Log rollback action.
+- Prevent rolling back twice.
+
+---
+
+## 10. Performance
+
+If the user count grows:
+
+- Process updates in batches.
+- Avoid memory spikes.
+- Keep everything inside a transaction where appropriate.
+- Use row locking where necessary.
+- Optimize for thousands of users.
+
+---
+
+## 11. Statistics
+
+After a grant, automatically refresh:
+
+- Total users
+- Total HP
+- Total circulating HP
+- Total transactions
+- Recent admin logs
+
+without reloading the page.
+
+---
+
+## 12. Testing
+
+Run:
+
+- TypeScript check
+- Production build
+- End-to-end tests
+- API permission tests
+- Super Admin tests
+- Grant Everyone tests
+- Rollback tests
+
+Verify:
+
+- Do not introduce any new TypeScript errors.
+
+If pre-existing TypeScript errors exist, list them separately and ensure your changes introduce zero additional errors.
+- Zero runtime errors
+- Zero API errors
+- Admin panel works correctly
+- Grant Everyone works correctly
+- Rollback works correctly
+- Notifications work correctly
+- Statistics refresh correctly
+- My Telegram ID (7035629762) is always recognized as Super Admin
+
+---
+
+# Final Report
+
+Return a detailed report containing:
+
+- Bugs found
+- Bugs fixed
+- Security improvements
+- Performance improvements
+- Admin panel improvements
+- Global Grant improvements
+- Super Admin implementation details
+- Production readiness assessment
+- Any remaining recommendations before deployment
+
+Do not stop until every item above has been completed and verified.

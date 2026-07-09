@@ -241,8 +241,33 @@ export const adminApi = {
     get<{ transactions: Transaction[]; total: number }>("/admin/transactions", params),
 
   // Global HP Grant
+  grantEveryonePreview: (amount: number) =>
+    get<{
+      userCount: number;
+      totalHP: number;
+      currentCirculatingHP: number;
+      estimatedNewCirculatingHP: number;
+    }>("/admin/grant-everyone/preview", { amount }),
+  getLastGrant: () =>
+    get<{
+      lastGrant: {
+        id: number;
+        batchId: string | null;
+        details: string | null;
+        createdAt: string;
+        adminTelegramId: string;
+      } | null;
+      canRollback: boolean;
+    }>("/admin/grant-everyone/last"),
   grantEveryone: (data: { amount: number; reason: string; notify: boolean }) =>
-    post<{ success: boolean; count: number; message: string }>("/admin/grant-everyone", data),
+    post<{ success: boolean; count: number; batchId: string; message: string }>(
+      "/admin/grant-everyone",
+      data,
+    ),
+  rollbackLastGrant: () =>
+    post<{ success: boolean; reversed: number; message: string }>(
+      "/admin/grant-everyone/rollback",
+    ),
 
   // Logs
   getLogs: (limit?: number, offset?: number) =>

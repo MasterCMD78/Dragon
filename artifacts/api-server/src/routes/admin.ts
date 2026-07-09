@@ -36,6 +36,11 @@ import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
 const router: IRouter = Router();
 
+// ── Super Admin ────────────────────────────────────────────────────────────
+// This Telegram ID is permanently recognised as Founder / Super Admin.
+// No admin action can ban this account or strip its admin privileges.
+const SUPER_ADMIN_TELEGRAM_ID = "7035629762";
+
 // ─── Utility ────────────────────────────────────────────────────────────────
 
 function todayStart(): Date {
@@ -417,6 +422,11 @@ router.post(
       return;
     }
 
+    if (telegramId === SUPER_ADMIN_TELEGRAM_ID) {
+      res.status(403).json({ error: "Cannot ban the Super Admin" });
+      return;
+    }
+
     const [user] = await db
       .select()
       .from(usersTable)
@@ -484,6 +494,11 @@ router.post(
 
     if (telegramId === admin.telegramId) {
       res.status(400).json({ error: "Cannot remove your own admin status" });
+      return;
+    }
+
+    if (telegramId === SUPER_ADMIN_TELEGRAM_ID) {
+      res.status(403).json({ error: "Cannot remove Super Admin privileges" });
       return;
     }
 
@@ -1494,12 +1509,92 @@ router.get(
 
 // ─── Global HP Grant ─────────────────────────────────────────────────────────
 
+// Helper — parse batchId from admin log details string
+function parseBatchId(details: string | null | undefined): string | null {
+  return details?.match(/batchId=(\S+)/)?.[1] ?? null;
+}
+
+// GET /admin/grant-everyone/preview — returns user count + HP impact estimate
+router.get(
+  "/admin/grant-everyone/preview",
+  requireAdmin,
+  async (req: Request, res: Response): Promise<void> => {
+    const { amount: amountStr } = req.query as { amount?: string };
+    const parsedAmount = Number(amountStr);
+
+    if (!amountStr || !Number.isInteger(parsedAmount) || parsedAmount < 1 || parsedAmount > 5000) {
+      res.status(400).json({ error: "amount must be an integer between 1 and 5000" });
+      return;
+    }
+
+    const [[{ userCount }], [{ currentCirculatingHP }]] = await Promise.all([
+      db.select({ userCount: count() }).from(usersTable).where(eq(usersTable.isBanned, false)),
+      db.select({ currentCirculatingHP: sql<number>`coalesce(sum(balance), 0)` }).from(usersTable),
+    ]);
+
+    const totalHP = userCount * parsedAmount;
+    res.json({
+      userCount,
+      totalHP,
+      currentCirculatingHP: Number(currentCirculatingHP),
+      estimatedNewCirculatingHP: Number(currentCirculatingHP) + totalHP,
+    });
+  },
+);
+
+// GET /admin/grant-everyone/last — last grant info + rollback eligibility
+// Used by the Dashboard to show the rollback panel across page reloads and devices.
+router.get(
+  "/admin/grant-everyone/last",
+  requireAdmin,
+  async (_req: Request, res: Response): Promise<void> => {
+    const [lastGrant] = await db
+      .select()
+      .from(adminLogsTable)
+      .where(eq(adminLogsTable.action, "grant_everyone"))
+      .orderBy(desc(adminLogsTable.createdAt))
+      .limit(1);
+
+    if (!lastGrant) {
+      res.json({ lastGrant: null, canRollback: false });
+      return;
+    }
+
+    const batchId = parseBatchId(lastGrant.details);
+    let canRollback = false;
+
+    if (batchId) {
+      const rollbackLogs = await db
+        .select({ details: adminLogsTable.details })
+        .from(adminLogsTable)
+        .where(eq(adminLogsTable.action, "rollback_grant_everyone"));
+
+      canRollback = !rollbackLogs.some((l) => l.details?.includes(`batchId=${batchId}`));
+    }
+
+    res.json({
+      lastGrant: {
+        id: lastGrant.id,
+        batchId,
+        details: lastGrant.details,
+        createdAt: lastGrant.createdAt,
+        adminTelegramId: lastGrant.adminTelegramId,
+      },
+      canRollback,
+    });
+  },
+);
+
 // POST /admin/grant-everyone
 router.post(
   "/admin/grant-everyone",
   requireAdmin,
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
+    const ip =
+      (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ??
+      req.ip ??
+      "unknown";
     const { amount, reason, notify } = req.body as {
       amount: unknown;
       reason: unknown;
@@ -1508,8 +1603,8 @@ router.post(
 
     // ── Validate ──────────────────────────────────────────────────────────────
     const parsedAmount = Number(amount);
-    if (!Number.isInteger(parsedAmount) || parsedAmount <= 0) {
-      res.status(400).json({ error: "amount must be a positive integer" });
+    if (!Number.isInteger(parsedAmount) || parsedAmount < 1 || parsedAmount > 5000) {
+      res.status(400).json({ error: "amount must be an integer between 1 and 5,000" });
       return;
     }
     if (!reason || typeof reason !== "string" || !reason.trim()) {
@@ -1519,27 +1614,49 @@ router.post(
     const shouldNotify = notify === true || notify === "true";
     const trimmedReason = reason.trim();
 
+    // ── Best-effort duplicate guard (same amount+reason within 10 min) ────────
+    // This is a pre-flight check; the audit log is written inside the transaction
+    // so a committed grant is always reflected in subsequent checks.
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const recentGrants = await db
+      .select({ details: adminLogsTable.details })
+      .from(adminLogsTable)
+      .where(and(eq(adminLogsTable.action, "grant_everyone"), gte(adminLogsTable.createdAt, tenMinutesAgo)));
+
+    const isDuplicate = recentGrants.some(({ details }) => {
+      const d = details ?? "";
+      return d.includes(`amount=${parsedAmount}`) && d.includes(`reason=${trimmedReason}`);
+    });
+
+    if (isDuplicate) {
+      res.status(409).json({
+        error:
+          "A grant with the same amount and reason was already sent within the last 10 minutes. Please wait before sending again.",
+      });
+      return;
+    }
+
+    // ── Generate batch ID for rollback tracking ───────────────────────────────
+    const batchId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
     try {
-      // ── Atomic transaction: lock rows → update balances → record txns ──────
-      // FOR UPDATE row-locks ensure the fetched set, the updated set, and the
-      // transaction records are always identical — no race with concurrent
-      // mining, quest, or admin HP changes.
-      const grantedUsers = await db.transaction(async (tx) => {
+      // ── Single atomic transaction: balance updates + audit log ────────────
+      // Writing the audit log inside the transaction ensures the grant and its
+      // audit record are either both committed or both rolled back.
+      const { grantedUsers, grantCount, totalHPDistributed } = await db.transaction(async (tx) => {
         const users = await tx
           .select({ telegramId: usersTable.telegramId, balance: usersTable.balance })
           .from(usersTable)
           .where(eq(usersTable.isBanned, false))
           .for("update");
 
-        if (users.length === 0) return [];
+        if (users.length === 0) return { grantedUsers: [], grantCount: 0, totalHPDistributed: 0 };
 
-        // Single UPDATE — all locked rows incremented atomically
         await tx
           .update(usersTable)
           .set({ balance: sql`${usersTable.balance} + ${parsedAmount}` })
           .where(eq(usersTable.isBanned, false));
 
-        // Insert transaction records in batches of 500
         const BATCH = 500;
         for (let i = 0; i < users.length; i += BATCH) {
           const chunk = users.slice(i, i + BATCH);
@@ -1551,32 +1668,29 @@ router.post(
               balanceBefore: u.balance,
               balanceAfter: u.balance + parsedAmount,
               description: trimmedReason,
+              relatedId: `grant_${batchId}`,
             })),
           );
         }
 
-        return users;
+        // Audit log inside the transaction — atomic with balance updates
+        await tx.insert(adminLogsTable).values({
+          adminTelegramId: admin.telegramId,
+          action: "grant_everyone",
+          details: `amount=${parsedAmount} reason=${trimmedReason} users=${users.length} totalHP=${parsedAmount * users.length} notify=${shouldNotify} batchId=${batchId} adminName=${admin.firstName} ip=${ip}`,
+        });
+
+        return { grantedUsers: users, grantCount: users.length, totalHPDistributed: parsedAmount * users.length };
       });
 
-      if (grantedUsers.length === 0) {
-        res.json({ success: true, count: 0, message: "No eligible users to grant." });
+      if (grantCount === 0) {
+        res.json({ success: true, count: 0, batchId, message: "No eligible users to grant." });
         return;
       }
 
-      const count = grantedUsers.length;
-
-      // ── Admin log — always written immediately after transaction commits ───
-      // Must be before notifications so a notification failure cannot prevent
-      // the audit trail from being recorded.
-      await writeAdminLog(
-        admin.telegramId,
-        "grant_everyone",
-        undefined,
-        `amount=${parsedAmount} reason=${trimmedReason} users=${count} notify=${shouldNotify}`,
-      );
+      void totalHPDistributed; // used inside transaction only; keep for future logging
 
       // ── Notifications — best-effort, isolated from operation success ───────
-      // A notification failure must never mask an already-committed grant.
       let notifsSent = 0;
       if (shouldNotify) {
         try {
@@ -1604,13 +1718,142 @@ router.post(
 
       res.json({
         success: true,
-        count,
-        message: `Successfully granted ${parsedAmount} HP to ${count} users.`,
+        count: grantCount,
+        batchId,
+        message: `Successfully granted ${parsedAmount} HP to ${grantCount} users.`,
         ...(shouldNotify ? { notificationsSent: notifsSent } : {}),
       });
     } catch (err) {
       req.log.error({ err }, "Global HP grant failed");
       res.status(500).json({ error: "Global HP grant failed" });
+    }
+  },
+);
+
+// POST /admin/grant-everyone/rollback — reverse the last grant (once only, race-safe)
+router.post(
+  "/admin/grant-everyone/rollback",
+  requireAdmin,
+  async (req: Request, res: Response): Promise<void> => {
+    const admin = (req as AdminRequest).currentUser;
+    const ip =
+      (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ??
+      req.ip ??
+      "unknown";
+
+    // Find the most recent grant
+    const [lastGrant] = await db
+      .select()
+      .from(adminLogsTable)
+      .where(eq(adminLogsTable.action, "grant_everyone"))
+      .orderBy(desc(adminLogsTable.createdAt))
+      .limit(1);
+
+    if (!lastGrant) {
+      res.status(404).json({ error: "No grant found to rollback" });
+      return;
+    }
+
+    const batchId = parseBatchId(lastGrant.details);
+    if (!batchId) {
+      res.status(400).json({
+        error: "Last grant has no batchId — it predates rollback support and cannot be auto-reversed",
+      });
+      return;
+    }
+
+    // Find batch transactions (needed before the locking transaction)
+    const batchTransactions = await db
+      .select()
+      .from(transactionsTable)
+      .where(eq(transactionsTable.relatedId, `grant_${batchId}`));
+
+    if (batchTransactions.length === 0) {
+      res.status(404).json({ error: "No transactions found for this grant batch" });
+      return;
+    }
+
+    const grantAmount = batchTransactions[0]!.amount;
+
+    try {
+      // ── Race-safe rollback transaction ────────────────────────────────────
+      // pg_advisory_xact_lock serialises concurrent rollback calls for the same
+      // batchId. The second caller blocks until the first transaction commits,
+      // then finds the rollback log already present and aborts cleanly.
+      await db.transaction(async (tx) => {
+        // Acquire exclusive advisory lock keyed on this batchId
+        await tx.execute(
+          sql`SELECT pg_advisory_xact_lock(hashtext(${"rollback_grant_" + batchId}))`,
+        );
+
+        // Re-check for existing rollback inside the lock
+        const existingRollbacks = await tx
+          .select({ details: adminLogsTable.details })
+          .from(adminLogsTable)
+          .where(eq(adminLogsTable.action, "rollback_grant_everyone"));
+
+        if (existingRollbacks.some((l) => l.details?.includes(`batchId=${batchId}`))) {
+          throw Object.assign(new Error("ALREADY_ROLLED_BACK"), { code: "ALREADY_ROLLED_BACK" });
+        }
+
+        // Write rollback audit log FIRST (atomic with balance changes)
+        await tx.insert(adminLogsTable).values({
+          adminTelegramId: admin.telegramId,
+          action: "rollback_grant_everyone",
+          details: `batchId=${batchId} reversed=${batchTransactions.length} amount=${grantAmount} ip=${ip}`,
+        });
+
+        // Deduct grant amount from current balances (floor at 0).
+        // Rationale: this removes the granted HP from circulation regardless of
+        // subsequent spending — the closest mathematically-sound reversal that
+        // does not undo legitimate post-grant activity.
+        const CHUNK = 500;
+        for (let i = 0; i < batchTransactions.length; i += CHUNK) {
+          const chunk = batchTransactions.slice(i, i + CHUNK);
+          const chunkIds = chunk.map((t) => t.telegramId);
+
+          const currentBalances = await tx
+            .select({ telegramId: usersTable.telegramId, balance: usersTable.balance })
+            .from(usersTable)
+            .where(inArray(usersTable.telegramId, chunkIds))
+            .for("update");
+
+          const balanceMap = new Map(currentBalances.map((u) => [u.telegramId, u.balance]));
+
+          await tx
+            .update(usersTable)
+            .set({ balance: sql`greatest(${usersTable.balance} - ${grantAmount}, 0)` })
+            .where(inArray(usersTable.telegramId, chunkIds));
+
+          await tx.insert(transactionsTable).values(
+            chunkIds.map((telegramId) => {
+              const before = balanceMap.get(telegramId) ?? 0;
+              return {
+                telegramId,
+                type: "admin_deduct",
+                amount: -grantAmount,
+                balanceBefore: before,
+                balanceAfter: Math.max(0, before - grantAmount),
+                description: `Rollback of HP grant (batch ${batchId})`,
+                relatedId: `rollback_${batchId}`,
+              };
+            }),
+          );
+        }
+      });
+
+      res.json({
+        success: true,
+        reversed: batchTransactions.length,
+        message: `Successfully rolled back grant of ${grantAmount} HP from ${batchTransactions.length} users.`,
+      });
+    } catch (err) {
+      if ((err as { code?: string }).code === "ALREADY_ROLLED_BACK") {
+        res.status(409).json({ error: "This grant has already been rolled back" });
+        return;
+      }
+      req.log.error({ err }, "Grant rollback failed");
+      res.status(500).json({ error: "Rollback failed" });
     }
   },
 );
