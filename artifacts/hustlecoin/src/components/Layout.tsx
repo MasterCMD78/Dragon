@@ -14,11 +14,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { useGetNotificationsUnreadCount } from "@workspace/api-client-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const DEV_BYPASS = import.meta.env.VITE_ALLOW_DEV_BYPASS === "true";
 
 function buildTelegramLink(): string {
   const bot = __TELEGRAM_BOT_USERNAME__;
@@ -69,7 +67,7 @@ function NavItem({ href, icon: Icon, isActive, badge = 0, testId }: NavItemProps
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location] = useLocation();
-  const { isLoading, isTelegramAvailable, isAuthenticated } = useAuth();
+  const { isLoading, isTelegramAvailable, isAuthenticated, authFailed, retryAuth } = useAuth();
   const { data: unreadData } = useGetNotificationsUnreadCount({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     query: { refetchInterval: 30000, enabled: isAuthenticated } as any,
@@ -123,7 +121,51 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     );
   }
 
-  if (!DEV_BYPASS && (isLoading || !isAuthenticated)) {
+  // Authentication could not complete after retries — never leave the user
+  // staring at an infinite spinner; offer an explicit way to try again.
+  if (authFailed) {
+    return (
+      <div className="min-h-[100dvh] w-full flex items-center justify-center bg-black">
+        <div className="w-full max-w-[430px] h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center border-x border-border/50 gap-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            className="w-20 h-20 bg-destructive/20 rounded-full flex items-center justify-center"
+          >
+            <span className="text-destructive font-display text-4xl font-bold">!</span>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex flex-col gap-2"
+          >
+            <h1 className="text-2xl font-display font-bold text-white" data-testid="text-auth-error">
+              Connection Failed
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              We couldn't verify your Telegram session. Check your connection and try again.
+            </p>
+          </motion.div>
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => void retryAuth()}
+            data-testid="button-retry-auth"
+            className="flex items-center justify-center gap-2 w-full max-w-xs rounded-2xl py-4 px-6 bg-gradient-to-r from-primary to-orange-500 text-black font-display font-bold text-lg shadow-[0_0_20px_rgba(255,170,0,0.3)] hover:shadow-[0_0_30px_rgba(255,170,0,0.5)] transition-shadow"
+          >
+            <RefreshCw className="w-5 h-5" />
+            Retry
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-[100dvh] w-full flex items-center justify-center bg-black">
         <div className="w-full max-w-[430px] h-[100dvh] bg-background flex flex-col items-center justify-center border-x border-border/50">

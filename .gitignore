@@ -47,3 +47,7 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Environment overrides (never commit; production builds must not see dev-only flags)
+.env.local
+.env.*.local

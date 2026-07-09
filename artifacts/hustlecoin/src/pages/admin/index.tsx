@@ -12,7 +12,7 @@ import { Broadcast } from "./Broadcast";
 import { Announcements } from "./Announcements";
 import { Transactions } from "./Transactions";
 import { Logs } from "./Logs";
-import { ShieldOff, Loader2 } from "lucide-react";
+import { ShieldOff, Loader2, RefreshCw } from "lucide-react";
 
 function AccessDenied() {
   return (
@@ -30,7 +30,31 @@ function AccessDenied() {
 
 export default function AdminPanel() {
   const [location] = useLocation();
-  const { isLoading, isAuthenticated, user } = useAuth();
+  const { isLoading, isAuthenticated, authFailed, retryAuth, user } = useAuth();
+
+  // Mirror Layout.tsx's terminal auth-error state here too, since /admin is
+  // rendered outside <Layout>. Never leave admins staring at an infinite
+  // spinner or a misleading "Access Denied" when auth simply failed/retried.
+  if (authFailed) {
+    return (
+      <div className="min-h-[100dvh] w-full flex items-center justify-center bg-black">
+        <div className="w-full max-w-[430px] h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center border-x border-border/50 gap-4">
+          <ShieldOff className="w-16 h-16 text-destructive/60" />
+          <div>
+            <h1 className="text-xl font-display font-bold text-white mb-1">Connection Failed</h1>
+            <p className="text-muted-foreground text-sm">We couldn't verify your session. Try again.</p>
+          </div>
+          <button
+            onClick={() => void retryAuth()}
+            className="flex items-center justify-center gap-2 rounded-xl py-3 px-6 bg-primary text-black font-display font-bold"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

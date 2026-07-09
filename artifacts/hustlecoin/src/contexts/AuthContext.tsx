@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import {
   useTelegramAuth,
   useGetMe,
@@ -14,6 +14,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isTelegramAvailable: boolean;
   isBanned: boolean;
+  /** True once we've given up retrying and auth could not complete. */
+  authFailed: boolean;
   retryAuth: () => Promise<void>;
 }
 
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isTelegramAvailable: true,
   isBanned: false,
+  authFailed: false,
   retryAuth: async () => {},
 });
 
@@ -30,6 +33,20 @@ export const useAuth = () => useContext(AuthContext);
 
 const DEV_BYPASS = import.meta.env.VITE_ALLOW_DEV_BYPASS === "true";
 const DEV_USER_ID = import.meta.env.VITE_DEV_USER_ID || "999888777";
+
+// Telegram's own WebApp SDK script (loaded in index.html) ALWAYS creates
+// `window.Telegram.WebApp`, whether or not the page was actually opened from
+// inside Telegram — see telegram.org/js/telegram-web-app.js, which
+// unconditionally runs `window.Telegram = {}` and `var WebApp = {}` on load.
+// `initData` defaults to an empty string and is only populated when Telegram
+// passes launch params via the URL hash. So `webApp` truthiness can NEVER be
+// used to detect "running inside Telegram" — only `initData` can.
+const INIT_DATA_RETRY_ATTEMPTS = 5;
+const INIT_DATA_RETRY_DELAY_MS = 400;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export function isAccountBanned(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
@@ -41,8 +58,16 @@ export function isAccountBanned(err: unknown): boolean {
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isTelegramAvailable, setIsTelegramAvailable] = useState(true);
+  // "checking"      — still probing for Telegram launch data (with retries)
+  // "no-telegram"   — telegram-web-app.js never loaded at all (script blocked/offline)
+  // "authenticating"— a login request is in flight
+  // "authenticated" — login succeeded (derived from `user` being set)
+  // "failed"        — initData never became available / login kept failing after retries
+  const [phase, setPhase] = useState<"checking" | "no-telegram" | "authenticating" | "failed">(
+    "checking",
+  );
   const [isBanned, setIsBanned] = useState(false);
+  const startedRef = useRef(false);
   const queryClient = useQueryClient();
   const { data: user, isLoading: isMeLoading } = useGetMe();
   const authMutation = useTelegramAuth();
@@ -61,67 +86,109 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [authMutation.isError, authMutation.error]);
 
-  useEffect(() => {
+  const runAuth = useCallback(async () => {
+    setIsBanned(false);
+    setPhase("checking");
+
+    // Give the Telegram WebApp SDK a chance to populate `initData` — it's
+    // synchronous in normal launches, but retry briefly to cover any startup
+    // race (e.g. the script finishing init a tick after our effect runs).
+    let initData = window.Telegram?.WebApp?.initData ?? "";
+    for (let attempt = 0; !initData && attempt < INIT_DATA_RETRY_ATTEMPTS; attempt++) {
+      await sleep(INIT_DATA_RETRY_DELAY_MS);
+      initData = window.Telegram?.WebApp?.initData ?? "";
+    }
+
     const webApp = window.Telegram?.WebApp;
 
-    if (webApp?.initData) {
-      webApp.ready();
-      webApp.expand();
-
-      if (!user && !isMeLoading) {
-        authMutation.mutate(
-          { data: { initData: webApp.initData } },
-          {
-            onSuccess: () => {
-              setIsBanned(false);
-              queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-              queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
-            },
-            onError: (err) => {
-              if (isAccountBanned(err)) setIsBanned(true);
-            },
+    if (initData) {
+      webApp?.ready();
+      webApp?.expand();
+      setPhase("authenticating");
+      authMutation.mutate(
+        { data: { initData } },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+            queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
           },
-        );
-      }
+          onError: (err: unknown) => {
+            if (isAccountBanned(err)) {
+              setIsBanned(true);
+            } else {
+              setPhase("failed");
+            }
+          },
+        },
+      );
       return;
     }
 
-    if (DEV_BYPASS && !webApp) {
-      if (!user && !isMeLoading) {
-        authMutation.mutate(
-          { data: { initData: `dev_bypass:${DEV_USER_ID}` } },
-          {
-            onSuccess: () => {
-              setIsBanned(false);
-              queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-              queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
-            },
-            onError: (err) => {
-              if (isAccountBanned(err)) setIsBanned(true);
-            },
+    // No real initData ever showed up. In dev, fall back to the bypass user
+    // so local/browser testing keeps working exactly as before.
+    if (DEV_BYPASS) {
+      setPhase("authenticating");
+      authMutation.mutate(
+        { data: { initData: `dev_bypass:${DEV_USER_ID}` } },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+            queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
           },
-        );
-      }
+          onError: (err: unknown) => {
+            if (isAccountBanned(err)) {
+              setIsBanned(true);
+            } else {
+              setPhase("failed");
+            }
+          },
+        },
+      );
       return;
     }
 
-    if (!webApp) {
-      setIsTelegramAvailable(false);
-    }
-  }, [user, isMeLoading, queryClient]);
+    // Not in dev, no Telegram launch data ever arrived. Distinguish "SDK
+    // script never loaded at all" (truly opened outside Telegram, e.g. a
+    // direct browser hit with no Telegram context whatsoever) from "SDK
+    // loaded but never received initData" (still show a retry-able error,
+    // since this can be a transient Telegram-side issue on refresh).
+    setPhase(webApp ? "failed" : "no-telegram");
+  }, [authMutation, queryClient]);
+
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    void runAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const retryAuth = useCallback(async () => {
     setIsBanned(false);
     authMutation.reset();
     await queryClient.resetQueries({ queryKey: getGetMeQueryKey() });
-  }, [queryClient, authMutation]);
+    await runAuth();
+  }, [queryClient, authMutation, runAuth]);
 
-  const isLoading = isMeLoading || authMutation.isPending;
   const isAuthenticated = !!user;
+  const isTelegramAvailable = phase !== "no-telegram";
+  const authFailed = phase === "failed" && !isAuthenticated;
+  const isLoading =
+    !isAuthenticated &&
+    !authFailed &&
+    phase !== "no-telegram" &&
+    (phase === "checking" || phase === "authenticating" || isMeLoading || authMutation.isPending);
 
   return (
     <AuthContext.Provider
-      value={{ user: user || null, isLoading, isAuthenticated, isTelegramAvailable, isBanned, retryAuth }}
+      value={{
+        user: user || null,
+        isLoading,
+        isAuthenticated,
+        isTelegramAvailable,
+        isBanned,
+        authFailed,
+        retryAuth,
+      }}
     >
       {children}
     </AuthContext.Provider>
