@@ -1,0 +1,151 @@
+IMPORTANT ⚠️
+
+This project is already in production.
+
+DO NOT rewrite or redesign anything.
+
+DO NOT modify:
+
+- Authentication
+- Mining
+- Wallet
+- Referrals logic
+- Tasks
+- Quests
+- Leaderboard
+- Notifications
+- Admin panel
+- Database schema
+- OpenAPI
+- API routes
+
+unless absolutely required for this single fix.
+
+Take a checkpoint/commit before making any changes.
+
+--------------------------------------------------------
+
+TASK
+
+During the previous investigation we confirmed:
+
+✅ My Telegram bot is configured as a Main Mini App.
+
+Evidence collected:
+
+- has_main_web_app = true
+- Telegram successfully resolves:
+  https://t.me/HustleCoinMinerBot?startapp=TEST
+
+Therefore this bot DOES NOT use a Mini App Short Name.
+
+The previous assumption about TELEGRAM_APP_SHORT_NAME was incorrect for this bot type.
+
+--------------------------------------------------------
+
+YOUR JOB
+
+Find ONLY the function responsible for generating referral links.
+
+Currently it generates:
+
+https://t.me/HustleCoinMinerBot?start=<referrerId>
+
+Change ONLY that link format to:
+
+https://t.me/HustleCoinMinerBot?startapp=<referrerId>
+
+Nothing else.
+
+Do NOT introduce TELEGRAM_APP_SHORT_NAME.
+
+Do NOT add new environment variables.
+
+Do NOT modify referral reward logic.
+
+Do NOT modify authentication.
+
+Do NOT modify backend validation.
+
+Do NOT modify the database.
+
+Do NOT modify any unrelated code.
+
+--------------------------------------------------------
+
+AFTER MAKING THE CHANGE
+
+Perform a complete investigation and verification.
+
+Do NOT assume the fix worked.
+
+Collect evidence.
+
+Verify:
+
+1. Generated referral links now use:
+
+?startapp=
+
+instead of
+
+?start=
+
+2. Open the generated link.
+
+3. Confirm Telegram passes:
+
+start_param
+
+into the Mini App.
+
+4. Register a brand-new Telegram account using that referral link.
+
+5. Verify the backend receives the referral parameter.
+
+6. Verify:
+
+- referred_by is populated.
+- referrals table gets a new row.
+- referral_events table logs the event.
+- Referral bonus transaction is created.
+- Welcome bonus transaction is created.
+- Referrer's referral count increases.
+- Referrer's HP balance increases.
+- New user's HP balance increases.
+
+7. Confirm no existing functionality is broken.
+
+--------------------------------------------------------
+
+RUN
+
+- TypeScript check
+- Production build
+- End-to-end verification
+
+Ensure:
+
+- Zero NEW TypeScript errors.
+- Zero runtime errors.
+- Zero API errors.
+
+--------------------------------------------------------
+
+FINAL REPORT
+
+Return:
+
+- Files changed
+- Exactly what was modified
+- Evidence that start_param reaches the backend
+- Evidence that referred_by is written
+- Evidence that referral rewards were granted
+- Evidence that referral count increased
+- Confirmation that no unrelated systems were modified
+
+If the referral system STILL does not work after changing ?start to ?startapp, STOP and investigate further.
+
+Do NOT guess.
+
+Do NOT implement additional fixes until you have concrete evidence identifying the next root cause.
