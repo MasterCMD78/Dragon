@@ -1,0 +1,107 @@
+This project has just been imported from GitHub into a fresh Replit workspace.
+
+IMPORTANT:
+
+Do NOT modify application logic yet.
+
+Do NOT start implementing any new features.
+
+Your job is ONLY to restore the development environment and verify the project is healthy.
+
+Before doing anything:
+
+1. Read the entire project structure.
+2. Read replit.md completely.
+3. Read package.json files.
+4. Read workspace configuration.
+5. Read drizzle configuration.
+6. Read environment configuration.
+7. Read workflow configuration.
+8. Understand the architecture before writing anything.
+
+Then perform the following:
+
+## Environment
+
+- Install all dependencies.
+- Verify every workspace installs successfully.
+- Verify DATABASE_URL is present.
+- Verify SESSION_SECRET exists.
+- Verify TELEGRAM_BOT_TOKEN exists.
+- Verify TELEGRAM_BOT_USERNAME exists.
+
+If any required secret is missing, report it instead of guessing values.
+
+## Database
+
+- Connect to the configured database.
+- Verify connectivity.
+- Verify all expected tables exist.
+- Do NOT push migrations.
+- Do NOT modify schema.
+- Do NOT seed new data.
+- Do NOT overwrite existing production data.
+
+Simply verify that the schema matches the project.
+
+## Workflows
+
+Start every required workflow.
+
+Verify:
+
+- API Server
+- Frontend
+- Any additional workspace services
+
+Confirm every workflow starts successfully.
+
+## Verification
+
+Run:
+
+- TypeScript check
+- Production build
+
+Do NOT fix unrelated pre-existing TypeScript errors.
+
+Simply report:
+
+- Number of existing errors
+- Whether any new errors were introduced (should be zero)
+
+## Authentication
+
+Verify:
+
+- Telegram authentication flow
+- Session middleware
+- Cookie configuration
+- Database connection
+
+Do NOT change authentication logic.
+
+## Snapshot
+
+Before any future modifications:
+
+- Create a Git commit (or snapshot) named:
+
+"Pre Phase 14 Stable Baseline"
+
+This snapshot will be used for rollback if necessary.
+
+## Final Report
+
+Return:
+
+- Dependencies installed
+- Workflows running
+- Database connectivity
+- Existing TypeScript error count
+- Production build status
+- Missing secrets (if any)
+- Existing warnings
+- Overall project health
+
+Do NOT modify any application code unless a startup issue prevents the project from running.
