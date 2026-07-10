@@ -2,3 +2,4 @@
 - [Express trust proxy + session cookies](express-trust-proxy-sessions.md) — missing trust proxy causes express-session to silently skip Set-Cookie behind Replit's HTTPS proxy.
 - [Database migration](database-migration.md) — Neon DB replaced; drizzle-kit push-force creates all 16 tables; seeds run at startup via checkDbAndMigrateSchema.
 - [Phase 14 Grant System Design](phase14-grant-system.md) — Super Admin immunity, atomic grant+audit tx, locked-ID update pattern, advisory lock rollback, server-driven rollback panel.
+- [Trim env vars used in URLs/config](env-var-whitespace.md) — secrets can carry stray whitespace that silently breaks constructed URLs; trim defensively.

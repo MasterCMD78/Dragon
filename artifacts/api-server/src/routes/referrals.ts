@@ -10,19 +10,18 @@ type AuthedRequest = Request & { currentUser: typeof usersTable.$inferSelect };
 /**
  * Build the referral deep link for this user.
  *
- * This bot is configured as a Telegram Main Mini App (has_main_web_app=true),
- * confirmed via Bot API. Main Mini Apps use the ?startapp= query parameter
- * directly on the bot URL — no Short Name or path segment is needed.
+ * The bot now has a Named Mini App (short name "hustlecoin"), so referral
+ * links route through the Mini App path segment rather than the bare bot URL.
  *
- * Format: https://t.me/<bot>?startapp=<telegramId>
+ * Format: https://t.me/<bot>/hustlecoin?startapp=<telegramId>
  *
  * This guarantees start_param is passed in initData for ALL users (new and
  * returning) without going through the bot-chat START flow that strips it.
  */
 function buildReferralLink(telegramId: string): string {
-  const bot = process.env.TELEGRAM_BOT_USERNAME ?? "";
+  const bot = (process.env.TELEGRAM_BOT_USERNAME ?? "").trim();
   if (!bot) return "";
-  return `https://t.me/${bot}?startapp=${telegramId}`;
+  return `https://t.me/${bot}/hustlecoin?startapp=${telegramId}`;
 }
 
 // GET /referrals/stats
