@@ -1,0 +1,239 @@
+# Phase 6.1 — Build the Official HustleCoin Website
+
+Read the project's instruction file completely before doing anything.
+
+## Workspace Status
+
+This Replit already contains the imported HustleCoin project and has remaining Agent credits.
+
+Do NOT reinstall or recreate the environment unless you discover something is actually broken.
+
+First:
+
+1. Read the project structure.
+2. Read the instruction file.
+3. Read the Replit Secrets.
+4. Verify the API server can start.
+5. Verify the Telegram Mini App frontend can start.
+6. Verify the existing project builds successfully.
+7. Confirm everything is healthy before writing any code.
+
+Do NOT modify anything during this verification stage.
+
+---
+
+# ⚠️ CRITICAL WARNING
+
+This is a live production project.
+
+You are NOT allowed to modify, refactor, optimize, rename, move, delete or touch any existing production system unless it is absolutely required for this website task.
+
+That includes:
+
+- Authentication
+- Wallet
+- Mining
+- Referral system
+- Admin Panel
+- Transactions
+- Notifications
+- Leaderboards
+- Achievements
+- Tasks
+- Quests
+- Database schema
+- API routes
+- Telegram integration
+- Bot configuration
+- Existing frontend
+- Existing deployment
+- Current build configuration
+
+If you discover any unrelated issue:
+
+REPORT IT ONLY.
+
+DO NOT FIX IT.
+
+DO NOT IMPROVE IT.
+
+DO NOT REFACTOR IT.
+
+DO NOT UPGRADE DEPENDENCIES.
+
+DO NOT CHANGE EXISTING FILES UNLESS ABSOLUTELY NECESSARY.
+
+---
+
+# Task
+
+Create the Official HustleCoin Website inside the SAME repository.
+
+Do NOT create another Replit.
+
+Do NOT create another GitHub repository.
+
+Expected structure:
+
+artifacts/
+
+- api-server/
+- hustlecoin/ (existing Telegram Mini App)
+- website/ (new official website)
+
+The website must be completely independent from the Telegram Mini App.
+
+---
+
+# Purpose
+
+The website is the official home of HustleCoin.
+
+It is NOT the mining app.
+
+Its purpose is:
+
+- Branding
+- Google indexing
+- AI discoverability
+- Documentation
+- Community growth
+- Public information
+
+The Telegram Mini App remains the product.
+
+---
+
+# Website Version 1
+
+Create the foundation only.
+
+Pages:
+
+- Home
+- About
+- Features
+- Roadmap
+- FAQ
+- News (placeholder)
+- Contact
+
+---
+
+# Branding
+
+Project Name:
+HustleCoin
+
+Ticker:
+HSL
+
+Official slogan:
+Powered by the Hustle.
+
+Theme:
+
+- Black
+- Gold
+- White
+
+Style:
+
+- Premium
+- Modern
+- Crypto
+- Mobile-first
+
+---
+
+# Home Page
+
+Include:
+
+Hero section
+
+Headline:
+
+Powered by the Hustle.
+
+Subheading:
+
+Mine daily.
+Earn rewards.
+Grow together.
+
+Buttons:
+
+- Open App
+- Join Telegram
+
+Feature cards
+
+Roadmap preview
+
+Community section
+
+Professional footer
+
+---
+
+# Open App Button
+
+Use ONLY:
+
+https://t.me/HustleCoinMinerBot/hustlecoin
+
+Do not use any other link.
+
+---
+
+# Future Ready
+
+Prepare a clean architecture so the website can later consume the existing API.
+
+Do NOT implement API integration now.
+
+---
+
+# SEO Preparation
+
+Scaffold:
+
+- sitemap.xml
+- robots.txt
+- Metadata
+- Open Graph
+- Twitter Cards
+- Schema.org structured data
+
+No production SEO implementation yet.
+
+---
+
+# Before Writing Code
+
+Read the repository carefully.
+
+Understand:
+
+- Folder structure
+- Build system
+- Deployment
+- Existing frontend architecture
+
+Then explain your implementation plan before writing code.
+
+---
+
+# Validation
+
+When finished:
+
+1. Run typecheck.
+2. Build the new website.
+3. Verify the Telegram Mini App still builds.
+4. Verify the API server still runs.
+5. Confirm that no existing production feature was modified.
+6. List every new file and folder you created.
+
+The existing HustleCoin application must behave exactly as it did before this task. Only the new official website should be added.

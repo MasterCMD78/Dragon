@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hustlecoin.app/sitemap.xml

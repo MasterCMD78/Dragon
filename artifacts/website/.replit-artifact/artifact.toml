@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/website/"
+title = "HustleCoin Website"
+version = "1.0.0"
+id = "artifacts/website"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/website/" ]
+localPort = 19161
+
+[services.development]
+run = "pnpm --filter @workspace/website run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/website", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/website/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19161"
+BASE_PATH = "/website/"
