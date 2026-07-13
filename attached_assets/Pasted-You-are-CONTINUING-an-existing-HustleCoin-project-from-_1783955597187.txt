@@ -1,0 +1,194 @@
+You are CONTINUING an existing HustleCoin project from the latest GitHub commit.
+
+IMPORTANT:
+- Do NOT restart the project.
+- Do NOT recreate existing features.
+- Do NOT replace working code.
+- Read and understand the current codebase first.
+- Continue exactly from where the previous Replit agent stopped.
+
+CURRENT STATUS (already completed)
+
+✅ Telegram Mini App fully working
+✅ Referral system fixed using Named Mini App
+Referral format:
+https://t.me/HustleCoinMinerBot/hustlecoin?startapp=<telegramId>
+
+✅ Admin panel exists
+✅ Website exists
+✅ Public API exists
+✅ Blog CMS exists
+✅ Contact form exists
+✅ Roadmap manager exists
+✅ Announcement manager exists
+✅ Analytics foundation exists
+✅ Website SEO foundation exists
+✅ Database tables already created
+✅ Production deployment working
+✅ TypeScript passing
+✅ Existing functionality must remain untouched.
+
+The previous agent had already started PHASE 3 but stopped only because the monthly Replit Agent quota was exhausted.
+
+Your job is to CONTINUE and COMPLETE PHASE 3.
+
+==================================
+PHASE 3 TASKS TO COMPLETE
+==================================
+
+1. Finish the Admin Dashboard
+- Live statistics
+- Charts
+- Recent users
+- Recent mining
+- Recent contacts
+- Recent blog posts
+
+2. Finish User Management
+- Search
+- Filters
+- Pagination
+- Ban/unban
+- Reset streak
+- Grant HP
+- Remove HP
+- Export CSV
+- Referral tree
+- Edit user
+
+3. Finish Blog CMS
+- Rich editor
+- Image upload
+- Featured posts
+- Drafts
+- Categories
+- Tags
+- SEO fields
+
+4. Finish Roadmap Manager
+- Drag-and-drop
+- Progress slider
+- Icons
+- Status
+- Ordering
+
+5. Finish Announcement Manager
+- Popups
+- Banner
+- Scheduling
+- Expiry
+- Priority
+
+6. Finish Contact Inbox
+- Reply
+- Resolve
+- Delete
+- Export
+
+7. Finish Analytics
+- Visitors
+- Device stats
+- Browser stats
+- Country stats
+- Search keywords
+- Charts
+
+8. Production Polish
+- Skeleton loading
+- Lazy loading
+- Better animations
+- Accessibility
+- Mobile responsiveness
+- Performance optimization
+
+9. Security
+- CSRF
+- Rate limiting
+- Session timeout
+- Audit log
+- Secure cookies
+- Input sanitization
+
+10. Performance
+- Database indexes
+- Query optimization
+- API caching
+- Pagination
+
+11. SUPER ADMIN
+
+Telegram ID:
+7035629762
+
+I must have COMPLETE SUPER ADMIN POWER.
+
+The admin panel must allow me to:
+
+- Grant/remove HP
+- Ban/unban users
+- Delete users
+- Edit users
+- Reset mining timers
+- Reset streaks
+- Unlock achievements
+- Complete quests
+- Manage blog
+- Manage roadmap
+- Manage announcements
+- Manage contact messages
+- Manage analytics
+- Change website settings
+- Change admin password
+- Create admins
+- Remove admins
+- Promote admins
+- Demote admins
+- Broadcast notifications
+- Export database
+- Backup database
+- Restore database
+- View audit logs
+- Modify referral rewards
+- Modify mining rates
+- Modify quest rewards
+- Modify achievement rewards
+
+==================================
+BEFORE WRITING ANY CODE
+==================================
+
+First:
+
+1. Read the entire repository.
+2. Compare the current implementation with this checklist.
+3. Identify exactly what remains unfinished.
+4. Continue from the last completed work.
+
+Do NOT duplicate features that already exist.
+
+==================================
+WHEN FINISHED
+==================================
+
+Verify:
+
+- pnpm install completed
+- All workspace dependencies installed
+- Build succeeds
+- TypeScript passes
+- No runtime errors
+- No console errors
+- All workflows running
+- Website works
+- Mini App still works
+- Admin panel works
+- Existing functionality unchanged
+
+Finally provide:
+
+1. Everything completed
+2. Files modified
+3. Remaining tasks (if any)
+4. Validation results
+
+Continue until PHASE 3 is fully complete.

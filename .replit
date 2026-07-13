@@ -26,3 +26,4 @@ channel = "stable-25_05"
 
 [userenv.development]
 ALLOW_DEV_BYPASS = "true"
+VITE_ALLOW_DEV_BYPASS = "true"

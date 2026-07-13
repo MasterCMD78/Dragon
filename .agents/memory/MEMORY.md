@@ -4,3 +4,5 @@
 - [Phase 14 Grant System Design](phase14-grant-system.md) — Super Admin immunity, atomic grant+audit tx, locked-ID update pattern, advisory lock rollback, server-driven rollback panel.
 - [Trim env vars used in URLs/config](env-var-whitespace.md) — secrets can carry stray whitespace that silently breaks constructed URLs; trim defensively.
 - [Wouter /:rest* catch-all broken](wouter-routing-catch-all.md) — /:rest* with JSX children silently breaks public routes in wouter 3.x; use flat component={} routes instead.
+- [Artifact re-registration can overwrite existing files](artifact-reregister-overwrite.md) — createArtifact on an existing slug can silently re-adopt sibling artifacts and wipe the target's real source with scaffold defaults; back up first.
+- [Vite dev-bypass env prefix](vite-dev-bypass-env-prefix.md) — backend ALLOW_DEV_BYPASS is invisible to frontend unless a VITE_-prefixed twin is also set for the same environment.

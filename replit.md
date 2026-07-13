@@ -141,6 +141,20 @@ New `system_settings` table (auto-created by `db-health.ts` with idempotent DDL 
 | API server | ✅ Running — system_settings table created with 3 default rows |
 | Frontend | ✅ Running |
 
+## Phase 14 Re-import Recovery (2026-07-13)
+
+Re-imported into a fresh Replit workspace a second time; the artifact registry (workflows) was empty even though `.replit-artifact/artifact.toml` files existed on disk. Registering the `hustlecoin` artifact via `createArtifact` re-adopted all four artifacts and their workflows, but also overwrote `artifacts/hustlecoin/*` with generic scaffold files — the real frontend source (all pages, Layout.tsx, etc.) was restored from a pre-recreation backup. `website`, `api-server`, and `mockup-sandbox` directories were unaffected.
+
+Also added `VITE_ALLOW_DEV_BYPASS=true` (development env) so the frontend's dev-bypass login path activates in the browser preview — it was previously only set as backend `ALLOW_DEV_BYPASS`, which Vite does not expose to client code without the `VITE_` prefix.
+
+| Check | Result |
+|---|---|
+| `pnpm install` | ✅ 486 packages |
+| All 4 workflows (hustlecoin, website, api-server, mockup-sandbox) | ✅ running |
+| Database connectivity + schema verification | ✅ all required columns present |
+| Telegram auth (dev bypass) | ✅ `POST /api/auth/telegram` returns 200, session cookie set |
+| Website homepage | ✅ renders |
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
