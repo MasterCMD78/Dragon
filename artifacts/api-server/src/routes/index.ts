@@ -11,6 +11,8 @@ import achievementsRouter from "./achievements";
 import notificationsRouter from "./notifications";
 import walletRouter from "./wallet";
 import adminRouter from "./admin";
+import adminPhase2Router from "./admin-phase2";
+import publicRouter from "./public";
 
 const router: IRouter = Router();
 
@@ -26,5 +28,7 @@ router.use(achievementsRouter);
 router.use(notificationsRouter);
 router.use(walletRouter);
 router.use(adminRouter);
+router.use(adminPhase2Router);
+router.use(publicRouter);
 
 export default router;

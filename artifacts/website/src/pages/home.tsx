@@ -1,7 +1,33 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, TrendingUp, Users, Shield, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, Users, Shield, Zap, Search } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { Link } from "wouter";
+
+interface Stats {
+  totalUsers: number;
+  totalHP: number;
+  totalMines: number;
+  totalReferrals: number;
+  totalQuests: number;
+  onlineUsers: number;
+}
 
 export default function Home() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [content, setContent] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    apiFetch<Stats>("/api/public/stats").then(setStats).catch(() => {});
+    apiFetch<{ content: Record<string, string> }>("/api/public/content").then(res => setContent(res.content || {})).catch(() => {});
+  }, []);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    return num.toString();
+  };
+
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
@@ -19,7 +45,7 @@ export default function Home() {
               transition={{ duration: 0.5 }}
             >
               <span className="inline-block py-1 px-3 rounded-full bg-white/5 border border-white/10 text-xs md:text-sm font-medium text-primary mb-6 backdrop-blur-sm uppercase tracking-wider">
-                The New Standard in Telegram Mining
+                {content.content_hero_badge || "The New Standard in Telegram Mining"}
               </span>
             </motion.div>
 
@@ -28,17 +54,16 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              Powered by the <span className="gold-gradient-text">Hustle.</span>
-            </motion.h1>
+              dangerouslySetInnerHTML={{ __html: content.content_hero_title || `Powered by the <span class="gold-gradient-text">Hustle.</span>` }}
+            />
 
             <motion.p 
-              className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
+              className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed whitespace-pre-wrap"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Mine HP daily, build your streak, climb the leaderboards, and join the most driven community in Web3. No noise, just execution.
+              {content.content_hero_subtitle || "Mine HP daily, build your streak, climb the leaderboards, and join the most driven community in Web3. No noise, just execution."}
             </motion.p>
 
             <motion.div 
@@ -53,7 +78,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:scale-105"
               >
-                Start Mining <ArrowRight className="w-5 h-5" />
+                {content.content_hero_cta_primary || "Start Mining"} <ArrowRight className="w-5 h-5" />
               </a>
               <a
                 href="https://t.me/HustleCoinMinerBot"
@@ -61,7 +86,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-white/5 border border-white/10 px-8 py-4 text-base font-medium text-white transition-all hover:bg-white/10"
               >
-                Join Telegram
+                {content.content_hero_cta_secondary || "Join Telegram"}
               </a>
             </motion.div>
           </div>
@@ -73,10 +98,10 @@ export default function Home() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-white/5">
             {[
-              { label: "Active Miners", value: "50K+" },
-              { label: "HP Distributed", value: "2.4B" },
-              { label: "Daily Streaks", value: "15K" },
-              { label: "Uptime", value: "99.9%" }
+              { label: "Active Miners", value: stats ? formatNumber(stats.totalUsers) : "50K+" },
+              { label: "HP Distributed", value: stats ? `${formatNumber(stats.totalHP)} HP` : "2.4B" },
+              { label: "Online Now", value: stats ? stats.onlineUsers.toLocaleString() : "1,204" },
+              { label: "Total Mines", value: stats ? formatNumber(stats.totalMines) : "4.2M" }
             ].map((stat, i) => (
               <motion.div 
                 key={stat.label}
@@ -86,7 +111,11 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
               >
-                <div className="text-3xl md:text-5xl font-heading font-bold text-white mb-2">{stat.value}</div>
+                {stats ? (
+                  <div className="text-3xl md:text-5xl font-heading font-bold text-white mb-2">{stat.value}</div>
+                ) : (
+                  <div className="h-10 w-24 bg-white/10 animate-pulse mx-auto mb-2 rounded"></div>
+                )}
                 <div className="text-sm md:text-base text-muted-foreground uppercase tracking-widest">{stat.label}</div>
               </motion.div>
             ))}

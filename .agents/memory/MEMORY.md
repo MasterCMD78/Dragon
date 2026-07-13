@@ -3,3 +3,4 @@
 - [Database migration](database-migration.md) — Neon DB replaced; drizzle-kit push-force creates all 16 tables; seeds run at startup via checkDbAndMigrateSchema.
 - [Phase 14 Grant System Design](phase14-grant-system.md) — Super Admin immunity, atomic grant+audit tx, locked-ID update pattern, advisory lock rollback, server-driven rollback panel.
 - [Trim env vars used in URLs/config](env-var-whitespace.md) — secrets can carry stray whitespace that silently breaks constructed URLs; trim defensively.
+- [Wouter /:rest* catch-all broken](wouter-routing-catch-all.md) — /:rest* with JSX children silently breaks public routes in wouter 3.x; use flat component={} routes instead.

@@ -1,0 +1,378 @@
+# HUSTLECOIN WEBSITE PHASE 2 — ECOSYSTEM + ADMIN CONTROL
+
+We are now entering Phase 2.
+
+The current website is beautiful but it is only a landing page.
+
+I want to transform HustleCoin into a complete Web3 ecosystem.
+
+IMPORTANT:
+Do NOT break or remove anything already working.
+Improve the current website while keeping the premium black + gold design.
+
+-----------------------------------
+
+MISSION
+
+Build the official HustleCoin ecosystem website that will eventually rank on Google.
+
+Everything must feel like a real crypto company.
+
+-----------------------------------
+
+ADMIN PANEL
+
+I want COMPLETE ADMIN CONTROL.
+
+Create an Admin Website Dashboard connected to the current Flask backend.
+
+Only the Admin can access it.
+
+Admin Login should use existing admin authentication.
+
+Inside the Admin Dashboard I want:
+
+### Dashboard
+
+- Total Users
+- Active Miners
+- Total HP Distributed
+- Daily Mining Count
+- Referral Count
+- Quests Completed
+- Tasks Completed
+- Website Visitors
+- Live Activity Feed
+
+-----------------------------------
+
+USER MANAGEMENT
+
+Allow me to:
+
+- Search any user
+- Ban user
+- Unban user
+- Delete user
+- Reset mining
+- Edit HP balance
+- Edit username
+- Change level
+- View referral tree
+- View achievements
+- View wallet
+- View complete activity history
+
+-----------------------------------
+
+CONTENT MANAGEMENT
+
+Allow me to edit directly from admin:
+
+Home Page
+
+Hero Text
+
+Buttons
+
+Features
+
+FAQ
+
+Roadmap
+
+About
+
+Footer
+
+Contact
+
+News
+
+Announcements
+
+Everything should update instantly.
+
+-----------------------------------
+
+BLOG SYSTEM
+
+Build a real News / Blog CMS.
+
+I should be able to:
+
+Create article
+
+Upload cover image
+
+Write markdown
+
+Preview
+
+Publish
+
+Schedule
+
+Delete
+
+Edit
+
+Categories
+
+Tags
+
+SEO title
+
+Meta description
+
+Slug
+
+Featured article
+
+This blog will later be indexed by Google.
+
+-----------------------------------
+
+ANNOUNCEMENT SYSTEM
+
+Create Announcement Manager.
+
+Admin can publish:
+
+Popup
+
+Banner
+
+Alert
+
+Maintenance notice
+
+Emergency message
+
+Version updates
+
+Displayed instantly across website.
+
+-----------------------------------
+
+COMMUNITY MANAGEMENT
+
+Admin should manage:
+
+Telegram Link
+
+X (Twitter)
+
+Discord
+
+Instagram
+
+TikTok
+
+YouTube
+
+Medium
+
+GitHub
+
+Website
+
+Invite links
+
+-----------------------------------
+
+ROADMAP MANAGER
+
+Make roadmap editable.
+
+Add phase
+
+Edit phase
+
+Mark completed
+
+Progress %
+
+Release date
+
+-----------------------------------
+
+LIVE STATS
+
+Homepage should automatically display:
+
+Total Users
+
+Total HP
+
+Total Mining Sessions
+
+Total Referrals
+
+Total Quests
+
+Online Users
+
+These values should come from the backend.
+
+-----------------------------------
+
+SEO
+
+Improve SEO significantly.
+
+Generate:
+
+Dynamic sitemap
+
+robots.txt
+
+Structured Data
+
+Organization Schema
+
+WebSite Schema
+
+FAQ Schema
+
+Article Schema
+
+Breadcrumb Schema
+
+Meta Tags
+
+Canonical URLs
+
+OpenGraph
+
+Twitter Cards
+
+-----------------------------------
+
+SEARCH
+
+Create website search.
+
+Search:
+
+FAQ
+
+Blog
+
+Roadmap
+
+Pages
+
+Announcements
+
+-----------------------------------
+
+CONTACT SYSTEM
+
+Build Contact Form.
+
+Store all messages in Admin.
+
+Allow:
+
+Reply
+
+Archive
+
+Delete
+
+Mark Read
+
+-----------------------------------
+
+ANALYTICS
+
+Inside Admin:
+
+Website visits
+
+Popular pages
+
+Traffic source
+
+Device types
+
+Countries
+
+Daily visitors
+
+Weekly visitors
+
+Monthly visitors
+
+-----------------------------------
+
+SECURITY
+
+Rate Limiting
+
+Admin Session Timeout
+
+CSRF Protection
+
+Input Validation
+
+Secure Forms
+
+-----------------------------------
+
+PERFORMANCE
+
+Lazy Loading
+
+Image Optimization
+
+Compression
+
+Caching
+
+Fast mobile loading
+
+-----------------------------------
+
+DESIGN
+
+Maintain premium HustleCoin style.
+
+Black
+
+Gold
+
+Glass effects
+
+Smooth animations
+
+Professional Web3 look.
+
+-----------------------------------
+
+RULES
+
+Do NOT break the existing HustleCoin Mini App.
+
+Do NOT modify working mining logic.
+
+Do NOT modify production backend unless necessary.
+
+Reuse existing database.
+
+Create new tables only if required.
+
+Everything should be mobile-first.
+
+Everything must be production-ready.
+
+At the end:
+
+Run typecheck
+
+Run production build
+
+Fix every error
+
+Then provide a complete validation report.
