@@ -1,0 +1,208 @@
+HUSTLECOIN PROJECT — FINALIZE PHASE 3 (CONTINUE, DO NOT REBUILD)
+
+This repository was imported from GitHub into a fresh Replit.
+
+Read the existing code first.
+
+Do NOT recreate existing work.
+
+Continue from the latest commit.
+
+⸻
+
+CURRENT STATUS
+
+The previous agent has already completed the following:
+
+Security
+
+✅ CSRF protection implemented
+
+✅ Persistent PostgreSQL sessions (connect-pg-simple)
+
+✅ Rate limiting implemented
+
+✅ Session table created
+
+✅ Database indexes added
+
+⸻
+
+Backend
+
+✅ Middleware ordering verified
+
+✅ API typecheck passes
+
+✅ Production build passes
+
+✅ CRUD endpoints verified
+
+✅ Session persistence verified
+
+✅ Admin authentication verified
+
+✅ Public routes verified
+
+⸻
+
+Bug fixes
+
+✅ Fixed vulnerable PUT endpoint validation
+
+✅ Eliminated 500 errors caused by invalid payloads
+
+✅ Validation now correctly returns HTTP 400
+
+✅ Confirmed incorrect field names were only a test-script issue
+
+⸻
+
+Verification completed
+
+✅ 77 backend CRUD/API tests passed
+
+⸻
+
+WHERE THE PREVIOUS AGENT STOPPED
+
+The last completed task was:
+
+“All 77 backend CRUD/API checks pass cleanly. Now verifying the frontend surfaces (website homepage, admin UI, Telegram Mini App) visually, then cleaning up test data before writing the completion report.”
+
+Resume exactly from here.
+
+⸻
+
+REMAINING TASKS
+
+1. Frontend Validation
+
+Visually test:
+
+Public Website
+
+* Homepage
+* Blog
+* Search
+* Contact page
+* Roadmap
+* Announcements
+* Analytics
+
+Confirm all pages render correctly.
+
+⸻
+
+Website Admin
+
+Verify:
+
+* Login
+* Dashboard
+* User management
+* Blog CMS
+* Contact Inbox
+* Roadmap Manager
+* Announcement Manager
+* Analytics
+* Settings
+
+Test every CRUD action.
+
+⸻
+
+Telegram Mini App
+
+Verify:
+
+* Mining
+* Referrals
+* Wallet
+* HP balance
+* Transactions
+* Achievements
+* Quests
+* Tasks
+* Leaderboards
+* Profile
+
+Confirm no regressions.
+
+⸻
+
+2. Cleanup
+
+Remove:
+
+* Temporary test records
+* Debug data
+* Seed data used only for verification
+* Console debug logs
+* Temporary scripts
+
+Leave the database clean.
+
+⸻
+
+3. Final Verification
+
+Run:
+
+pnpm typecheck
+
+Production build
+
+Verify all workflows
+
+Confirm no runtime errors.
+
+⸻
+
+4. Documentation
+
+Create:
+
+PHASE3_COMPLETION.md
+
+Include:
+
+* Everything implemented
+* Security improvements
+* Middleware architecture
+* Session architecture
+* Database improvements
+* Performance improvements
+* Verification performed
+* Remaining known limitations
+* Deployment checklist
+
+⸻
+
+5. Git
+
+Commit everything using:
+
+feat: complete phase 3 production validation
+
+Push to GitHub.
+
+⸻
+
+6. Final Report
+
+When finished provide:
+
+* Files modified
+* Files created
+* Final verification summary
+* Screenshots (if available)
+* Confirmation that Phase 3 is complete
+
+If everything passes, clearly state:
+
+✅ PHASE 3 COMPLETE
+
+Then generate a detailed Phase 4 roadmap only.
+
+Do NOT begin Phase 4 implementation.

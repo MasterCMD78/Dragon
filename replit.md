@@ -12,11 +12,11 @@ A Telegram Mini App where users earn HP (HustleCoin Points) through daily mining
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL`, `SESSION_SECRET`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`
 
-## Restored from GitHub import (2026-07-14)
+## Restored from GitHub import (2026-07-14, re-run same day after a second container reset)
 
-Re-imported into a fresh Replit container. `pnpm install` (486 packages), registered 4 artifacts (api-server, hustlecoin, website, mockup-sandbox) with their workflows, and the user supplied `DATABASE_URL`/`TELEGRAM_BOT_TOKEN`/`TELEGRAM_BOT_USERNAME` secrets. All 4 workflows are running; `/api/healthz` returns 200; `pnpm run typecheck` passes clean across all packages. No application code was changed.
+Container reset a second time the same day, wiping artifact/workflow registration and secrets again (code on disk was untouched). Re-ran the same restoration: `pnpm install` (490 packages), re-registered the 4 artifacts (api-server, hustlecoin, website, mockup-sandbox) with their workflows, and the user re-supplied `DATABASE_URL`/`TELEGRAM_BOT_TOKEN`/`TELEGRAM_BOT_USERNAME` secrets. All 4 workflows are running; `/api/healthz` returns 200; `pnpm run typecheck` passes clean across all packages; website homepage renders correctly. No application code was changed.
 
-An attached brief indicates unfinished Phase 3 work (CSRF/rate-limit/session verification, admin & public route audits, security/performance review) from a prior session that ran out of quota — see follow-up tasks.
+An attached brief (in `attached_assets/`) requests finishing Phase 3 verification (visual QA of website/admin/Telegram mini app, CRUD checks, test-data cleanup, a PHASE3_COMPLETION.md report, and a Phase 4 roadmap) — that is substantial verification/QA work beyond project setup, so it has been proposed as a follow-up task rather than done here.
 
 ## Stack
 
