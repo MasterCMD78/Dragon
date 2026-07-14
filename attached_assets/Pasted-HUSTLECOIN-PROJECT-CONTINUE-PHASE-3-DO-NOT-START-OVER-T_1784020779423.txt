@@ -1,0 +1,186 @@
+HUSTLECOIN PROJECT — CONTINUE PHASE 3 (DO NOT START OVER)
+
+This project was imported from GitHub into a fresh Replit.
+
+The environment is already restored.
+
+DO NOT REPEAT
+
+* Do NOT reinstall dependencies unless required.
+* Do NOT recreate the database.
+* Do NOT rewrite architecture.
+* Do NOT redesign existing features.
+* Do NOT repeat previous work.
+* Read the repository first and continue from the latest commit.
+
+⸻
+
+CURRENT STATUS
+
+The previous agent already completed most of Phase 3.
+
+Completed work includes:
+
+✅ Backend security middleware created.
+
+✅ CSRF middleware implemented.
+
+✅ Rate limiting implemented.
+
+✅ Database indexes added to hot-path tables.
+
+✅ TypeScript passes for API server.
+
+✅ Website typecheck/build was being verified.
+
+✅ Fixed duplicate res.json block.
+
+✅ Fixed CSRF middleware leaking into unrelated public routes by correctly scoping the middleware instead of applying it globally.
+
+✅ Added session table creation inside db-health.ts.
+
+✅ Disabled connect-pg-simple runtime auto-create because the bundled production build couldn’t locate its SQL asset.
+
+✅ Session table now creates cleanly.
+
+The LAST action before the Replit quota expired was:
+
+“Session table created cleanly. Re-running the full auth / CSRF / rate-limit verification.”
+
+This is exactly where you must continue.
+
+⸻
+
+YOUR TASK
+
+Resume from the current project state.
+
+DO NOT redo completed work.
+
+Continue with:
+
+1. Finish verification
+
+Verify all authentication works.
+
+Verify session creation.
+
+Verify session persistence.
+
+Verify logout.
+
+Verify CSRF protection.
+
+Verify rate limiting.
+
+Verify admin permissions.
+
+⸻
+
+2. Verify Website Admin
+
+Test:
+
+* Login
+* Dashboard
+* User management
+* Blog CMS
+* Roadmap manager
+* Contact inbox
+* Announcements
+* Analytics
+* Settings
+
+Ensure every admin request succeeds.
+
+⸻
+
+3. Verify Public Website
+
+Test:
+
+* Homepage
+* Blog
+* Roadmap
+* Contact form
+* Search
+* Public APIs
+
+Ensure CSRF middleware is NOT affecting public routes.
+
+⸻
+
+4. Production Validation
+
+Run:
+
+* pnpm typecheck
+* production build
+* workflow verification
+
+Fix any remaining issues.
+
+⸻
+
+5. Security Review
+
+Confirm:
+
+* CSRF works correctly.
+* Sessions work correctly.
+* Rate limiting works.
+* No public route is accidentally protected.
+* No admin route is missing protection.
+
+⸻
+
+6. Performance Review
+
+Verify:
+
+* DB indexes
+* Cache
+* Query performance
+
+Only optimize where necessary.
+
+⸻
+
+IMPORTANT
+
+Do NOT remove or simplify any existing functionality.
+
+Do NOT modify Telegram Mini App logic.
+
+Do NOT modify mining.
+
+Do NOT modify referrals.
+
+Do NOT modify HP rewards.
+
+Do NOT modify achievements.
+
+Do NOT modify wallet logic.
+
+Do NOT modify transactions.
+
+Do NOT modify leaderboard logic.
+
+Preserve everything.
+
+⸻
+
+WHEN FINISHED
+
+Provide a report including:
+
+* Files modified
+* Bugs fixed
+* Verification performed
+* Remaining Phase 3 work (if any)
+
+If Phase 3 is 100% complete, clearly state:
+
+“Phase 3 Complete”
+
+Then provide a detailed roadmap for Phase 4 without implementing it.

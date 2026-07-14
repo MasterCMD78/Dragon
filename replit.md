@@ -12,6 +12,12 @@ A Telegram Mini App where users earn HP (HustleCoin Points) through daily mining
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL`, `SESSION_SECRET`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`
 
+## Restored from GitHub import (2026-07-14)
+
+Re-imported into a fresh Replit container. `pnpm install` (486 packages), registered 4 artifacts (api-server, hustlecoin, website, mockup-sandbox) with their workflows, and the user supplied `DATABASE_URL`/`TELEGRAM_BOT_TOKEN`/`TELEGRAM_BOT_USERNAME` secrets. All 4 workflows are running; `/api/healthz` returns 200; `pnpm run typecheck` passes clean across all packages. No application code was changed.
+
+An attached brief indicates unfinished Phase 3 work (CSRF/rate-limit/session verification, admin & public route audits, security/performance review) from a prior session that ran out of quota — see follow-up tasks.
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
