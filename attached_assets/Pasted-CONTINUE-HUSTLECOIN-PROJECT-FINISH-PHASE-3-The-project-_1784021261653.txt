@@ -1,0 +1,166 @@
+CONTINUE HUSTLECOIN PROJECT — FINISH PHASE 3
+
+The project has already been restored successfully into this Replit.
+
+VERIFIED (DO NOT REPEAT)
+
+* All 4 workflows are running.
+* API /healthz returns 200.
+* TypeScript passes.
+* Frontend renders correctly.
+* Database is connected.
+* Environment is healthy.
+* replit.md has already been updated.
+
+Do NOT spend time verifying setup again.
+
+⸻
+
+PREVIOUS IMPLEMENTATION STATUS
+
+The previous development agent already completed most of the Phase 3 implementation, including:
+
+* CSRF middleware
+* Rate limiting
+* Session improvements
+* Security middleware
+* Database indexes
+* Session table creation
+* CSRF scope fix (public routes no longer protected)
+* Production session configuration
+* API typecheck fixes
+
+The work stopped after:
+
+“Session table created cleanly. Re-running the full auth / CSRF / rate-limit verification.”
+
+Another restore agent then only confirmed the environment was healthy and stopped.
+
+⸻
+
+YOUR JOB
+
+Continue from that point.
+
+Phase 3 Completion Checklist
+
+1. Security Verification
+
+Verify and fix if necessary:
+
+* Login
+* Logout
+* Session persistence
+* Session expiration
+* CSRF protection
+* Rate limiting
+* Admin authorization
+* Cookie security
+
+⸻
+
+2. Admin Panel Verification
+
+Test every page:
+
+* Dashboard
+* Users
+* Blog CMS
+* Roadmap
+* Contact Inbox
+* Announcements
+* Analytics
+* Settings
+
+Verify all CRUD operations.
+
+Fix any bugs discovered.
+
+⸻
+
+3. Public Website Verification
+
+Test:
+
+* Homepage
+* Blog
+* Roadmap
+* Search
+* Contact form
+
+Ensure public endpoints are NOT blocked by CSRF middleware.
+
+⸻
+
+4. Production Validation
+
+Run:
+
+* Full typecheck
+* Production build
+* Workflow validation
+
+Fix every issue until all builds pass.
+
+⸻
+
+5. Performance Review
+
+Verify:
+
+* Database indexes
+* Cache behavior
+* Hot-path queries
+
+Optimize only where beneficial.
+
+⸻
+
+6. Final Phase 3 Audit
+
+Confirm that:
+
+* Telegram Mini App still works.
+* Website works.
+* Admin panel works.
+* API works.
+* Security is complete.
+* Performance improvements are active.
+
+⸻
+
+DO NOT CHANGE
+
+Do NOT redesign UI.
+
+Do NOT change business logic.
+
+Do NOT modify:
+
+* Mining
+* HP rewards
+* Wallet
+* Referrals
+* Achievements
+* Transactions
+* Leaderboards
+
+Only fix bugs and complete Phase 3 verification.
+
+⸻
+
+FINAL DELIVERABLE
+
+If everything is complete, explicitly state:
+
+✅ PHASE 3 COMPLETE
+
+Then provide:
+
+* Files modified
+* Bugs fixed
+* Tests performed
+* Security summary
+* Performance summary
+
+Finally create a detailed implementation roadmap for Phase 4 only. Do not start Phase 4.
