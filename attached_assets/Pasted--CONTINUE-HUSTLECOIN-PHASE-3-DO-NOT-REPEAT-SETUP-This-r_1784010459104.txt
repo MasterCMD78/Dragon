@@ -1,0 +1,170 @@
+# CONTINUE HUSTLECOIN PHASE 3 (DO NOT REPEAT SETUP)
+
+This repository is a continuation of an existing project imported from GitHub into a fresh Replit.
+
+## Current State (Already Completed)
+
+- Repository restored from GitHub.
+- Dependencies already installed.
+- Environment already configured.
+- Database schema already migrated.
+- All workflows already configured.
+- Continue from the latest commit only.
+- Read the repository first before making any changes.
+
+## DO NOT DO
+
+- Do NOT reinstall dependencies unless something is actually missing.
+- Do NOT recreate artifacts.
+- Do NOT rewrite existing architecture.
+- Do NOT change any working functionality.
+- Do NOT modify the Telegram Mini App referral system (it is already production-ready).
+- Do NOT modify mining, wallet, transactions, leaderboard, achievements, notifications, admin HP distribution, or referral logic unless fixing a confirmed bug.
+
+---
+
+# CONTINUE PHASE 3 ONLY
+
+The previous agent completed most of Phase 3 but stopped because the monthly Replit Agent quota was exhausted.
+
+Read the existing codebase and continue ONLY the remaining unfinished work.
+
+## Already Finished
+
+- DB indexes added on hot-path tables (verify existing indexes before adding anything).
+- CSRF middleware exists.
+- Backend CSRF verification works.
+- AuthContext now clears CSRF token after login/logout.
+- TypeScript passes.
+- Backend healthy.
+- Website admin authentication exists.
+
+---
+
+## Remaining Work
+
+### 1. Finish Website Admin CSRF Integration
+
+The remaining unfinished task is wiring the website admin API client.
+
+Locate the website admin fetch helper (apiFetch).
+
+Ensure every authenticated request automatically sends:
+
+- X-CSRF-Token header
+- credentials: "include"
+
+Token must come from the current CSRF storage/helper already implemented.
+
+Do NOT invent a new CSRF system.
+
+Reuse the existing implementation.
+
+---
+
+### 2. Verify Every Protected Endpoint
+
+Test every admin endpoint.
+
+Ensure all authenticated requests succeed.
+
+No endpoint should return 403 because of missing CSRF.
+
+---
+
+### 3. End-to-End Validation
+
+Verify:
+
+- Website admin login
+- Dashboard
+- Blog CMS
+- Contact inbox
+- Roadmap manager
+- Announcements
+- Analytics
+- Settings
+- User management
+- Global HP distribution
+- Search
+- Public API
+
+Everything must function after CSRF integration.
+
+---
+
+### 4. Performance Review
+
+Verify:
+
+- Database indexes are actually used.
+- No duplicate indexes.
+- No redundant queries.
+- No N+1 query problems.
+- No broken cache logic.
+
+Improve only where necessary.
+
+---
+
+### 5. Security Review
+
+Check for:
+
+- Missing CSRF protection
+- Session issues
+- Missing auth guards
+- Unsafe admin routes
+- Missing validation
+- Missing rate limiting
+
+Fix only genuine issues.
+
+---
+
+### 6. Code Quality
+
+Run:
+
+- pnpm typecheck
+- production builds
+- workflow verification
+
+Fix any remaining warnings.
+
+---
+
+### 7. Final Deliverable
+
+Only stop when ALL of the following are true:
+
+- TypeScript passes with zero errors.
+- Production builds succeed.
+- Website admin works completely.
+- CSRF protection works everywhere.
+- No broken routes.
+- No runtime errors.
+- No regression to existing HustleCoin functionality.
+
+---
+
+## IMPORTANT
+
+This is NOT a new project.
+
+Continue from the existing code.
+
+Preserve all previous work.
+
+Do not simplify features.
+
+Do not remove functionality.
+
+Do not redesign architecture.
+
+Finish Phase 3 completely, then provide a final validation report listing:
+
+- Files modified
+- Features completed
+- Tests performed
+- Remaining work (if any)

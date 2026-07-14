@@ -155,6 +155,27 @@ Also added `VITE_ALLOW_DEV_BYPASS=true` (development env) so the frontend's dev-
 | Telegram auth (dev bypass) | ✅ `POST /api/auth/telegram` returns 200, session cookie set |
 | Website homepage | ✅ renders |
 
+## Phase 14 Re-import Recovery #2 (2026-07-14)
+
+Re-imported into a fresh Replit workspace a third time; artifact registry was empty again (`listArtifacts()` returned `[]`) even though all four `.replit-artifact/artifact.toml` files existed on disk. Recovery procedure used:
+
+1. Backed up all 4 artifact directories (`api-server`, `hustlecoin`, `mockup-sandbox`, `website`) to `/tmp`.
+2. Moved `artifacts/hustlecoin` aside (directory must not exist for `createArtifact` to run) and called `createArtifact({ artifactType: "react-vite", slug: "hustlecoin", previewPath: "/", title: "HustleCoin V2" })`. This single call auto-registered all 4 sibling artifacts (confirmed via `automatic_updates`) and regenerated `hustlecoin` as scaffold — `website`, `api-server`, `mockup-sandbox` directories were untouched.
+3. Restored real `hustlecoin` source from the backup, keeping only the freshly-generated `.replit-artifact/artifact.toml`.
+4. `pnpm install`, restarted all 4 workflows — all came up clean.
+
+Added `DATABASE_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` secrets (were missing after this re-import; `SESSION_SECRET` and `ALLOW_DEV_BYPASS`/`VITE_ALLOW_DEV_BYPASS` were already present).
+
+| Check | Result |
+|---|---|
+| `pnpm install` | ✅ up to date, 10 workspace projects |
+| All 4 workflows (hustlecoin, website, api-server, mockup-sandbox) | ✅ running |
+| Database connectivity + schema verification | ✅ all required `users` columns present |
+| Telegram auth (dev bypass), verified via curl against the real dev domain | ✅ `POST /api/auth/telegram` → 200, `Secure; SameSite=None` cookie set, follow-up `GET /api/auth/me` → 200 |
+| Website homepage | ✅ renders |
+
+Note: screenshotting the `hustlecoin` root right after a fresh page load can show the "CONNECTING" spinner indefinitely — `AuthContext` waits up to 2s (5×400ms retries) for real Telegram `initData` before falling back to `dev_bypass`, so a screenshot taken faster than that will always look stuck even though the flow works (confirmed end-to-end via curl above).
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
