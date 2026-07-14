@@ -8,3 +8,4 @@
 - [Vite dev-bypass env prefix](vite-dev-bypass-env-prefix.md) — backend ALLOW_DEV_BYPASS is invisible to frontend unless a VITE_-prefixed twin is also set for the same environment.
 - [Telegram dev-bypass screenshot timing](telegram-dev-bypass-screenshot-timing.md) — a "connecting" spinner on first screenshot is a timing artifact of the SDK-detection retry window, not a bug; verify via curl instead.
 - [CSRF/session/rate-limit hardening](csrf-session-rate-limit-hardening.md) — double-submit CSRF, connect-pg-simple session table created via idempotent SQL (not auto-create), hot-path telegram_id indexes.
+- [Manual vite build needs PORT/BASE_PATH](artifact-manual-build-env-vars.md) — Replit artifact vite.config.ts requires these env vars; manual `pnpm run build` fails without them even though the app is fine.
