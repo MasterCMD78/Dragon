@@ -4,22 +4,27 @@ import {
   text,
   boolean,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-export const notificationsTable = pgTable("notifications", {
-  id: serial("id").primaryKey(),
-  telegramId: text("telegram_id").notNull(),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  type: text("type").notNull(),
-  read: boolean("read").notNull().default(false),
-  relatedEntity: text("related_entity"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const notificationsTable = pgTable(
+  "notifications",
+  {
+    id: serial("id").primaryKey(),
+    telegramId: text("telegram_id").notNull(),
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    type: text("type").notNull(),
+    read: boolean("read").notNull().default(false),
+    relatedEntity: text("related_entity"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("notifications_telegram_id_idx").on(table.telegramId)],
+);
 
 export const notificationSettingsTable = pgTable("notification_settings", {
   id: serial("id").primaryKey(),

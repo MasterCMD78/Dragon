@@ -1,15 +1,19 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-export const miningLogsTable = pgTable("mining_logs", {
-  id: serial("id").primaryKey(),
-  telegramId: text("telegram_id").notNull(),
-  hpEarned: integer("hp_earned").notNull().default(20),
-  bonusHp: integer("bonus_hp").notNull().default(0),
-  streak: integer("streak").notNull().default(0),
-  minedAt: timestamp("mined_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const miningLogsTable = pgTable(
+  "mining_logs",
+  {
+    id: serial("id").primaryKey(),
+    telegramId: text("telegram_id").notNull(),
+    hpEarned: integer("hp_earned").notNull().default(20),
+    bonusHp: integer("bonus_hp").notNull().default(0),
+    streak: integer("streak").notNull().default(0),
+    minedAt: timestamp("mined_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("mining_logs_telegram_id_idx").on(table.telegramId)],
+);
 
 export const insertMiningLogSchema = createInsertSchema(miningLogsTable).omit({
   id: true,

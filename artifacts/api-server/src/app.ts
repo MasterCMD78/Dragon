@@ -5,10 +5,13 @@ import express, {
   type NextFunction,
 } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { sessionMiddleware } from "./middlewares/session";
+import { ensureCsrfToken, requireCsrf } from "./middlewares/csrf";
+import { generalApiLimiter } from "./middlewares/rate-limit";
 
 const app: Express = express();
 
@@ -49,7 +52,11 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(sessionMiddleware);
+app.use(ensureCsrfToken);
+app.use(requireCsrf);
+app.use("/api", generalApiLimiter);
 
 app.use("/api", router);
 

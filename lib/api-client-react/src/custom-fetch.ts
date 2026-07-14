@@ -48,6 +48,25 @@ function isRequest(input: RequestInfo | URL): input is Request {
   return typeof Request !== "undefined" && input instanceof Request;
 }
 
+const CSRF_COOKIE_NAME = "csrf_token";
+const CSRF_HEADER_NAME = "x-csrf-token";
+const CSRF_UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+/**
+ * Mirrors the `csrf_token` cookie (set by the API's double-submit-cookie
+ * middleware — see artifacts/api-server/src/middlewares/csrf.ts) into a
+ * request header. Only meaningful in a browser: React Native has no
+ * `document.cookie` and uses bearer-token auth instead, where CSRF does not
+ * apply.
+ */
+function readCsrfCookie(): string | null {
+  if (typeof document === "undefined" || !document.cookie) return null;
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${CSRF_COOKIE_NAME}=`));
+  return match ? decodeURIComponent(match.slice(CSRF_COOKIE_NAME.length + 1)) : null;
+}
+
 function resolveMethod(input: RequestInfo | URL, explicitMethod?: string): string {
   if (explicitMethod) return explicitMethod.toUpperCase();
   if (isRequest(input)) return input.method.toUpperCase();
@@ -336,6 +355,13 @@ export async function customFetch<T = unknown>(
   }
 
   const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
+
+  if (CSRF_UNSAFE_METHODS.has(method) && !headers.has(CSRF_HEADER_NAME)) {
+    const csrfToken = readCsrfCookie();
+    if (csrfToken) {
+      headers.set(CSRF_HEADER_NAME, csrfToken);
+    }
+  }
 
   if (
     typeof init.body === "string" &&

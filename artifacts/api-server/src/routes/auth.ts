@@ -3,6 +3,7 @@ import { db, usersTable, referralEventsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { validateTelegramInitData } from "../lib/telegram";
 import { requireAuth } from "../middlewares/auth";
+import { authLimiter } from "../middlewares/rate-limit";
 import { processReferralInTx } from "../lib/referral-engine";
 import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
@@ -21,6 +22,7 @@ const SUPER_ADMIN_TELEGRAM_ID = "7035629762";
 
 router.post(
   "/auth/telegram",
+  authLimiter,
   async (req: Request, res: Response): Promise<void> => {
     const { initData, referralCode } = req.body as {
       initData?: string;

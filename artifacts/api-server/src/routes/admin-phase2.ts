@@ -36,8 +36,10 @@ import {
 } from "drizzle-orm";
 import { requireAdmin, type AdminRequest } from "../middlewares/admin";
 import { requireAuth } from "../middlewares/auth";
+import { adminLimiter, authLimiter } from "../middlewares/rate-limit";
 
 const router: IRouter = Router();
+router.use(adminLimiter);
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -90,6 +92,7 @@ async function upsertSetting(key: string, value: string, adminTelegramId?: strin
 // POST /admin/website-auth/login
 router.post(
   "/admin/website-auth/login",
+  authLimiter,
   async (req: Request, res: Response): Promise<void> => {
     const { telegramId, password } = req.body as {
       telegramId?: string;

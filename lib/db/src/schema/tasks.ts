@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -15,16 +15,20 @@ export const tasksTable = pgTable("tasks", {
     .defaultNow(),
 });
 
-export const taskCompletionsTable = pgTable("task_completions", {
-  id: serial("id").primaryKey(),
-  taskId: integer("task_id").notNull(),
-  telegramId: text("telegram_id").notNull(),
-  approved: integer("approved").notNull().default(0),
-  completedAt: timestamp("completed_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  status: text("status").notNull().default("pending"),
-});
+export const taskCompletionsTable = pgTable(
+  "task_completions",
+  {
+    id: serial("id").primaryKey(),
+    taskId: integer("task_id").notNull(),
+    telegramId: text("telegram_id").notNull(),
+    approved: integer("approved").notNull().default(0),
+    completedAt: timestamp("completed_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    status: text("status").notNull().default("pending"),
+  },
+  (table) => [index("task_completions_telegram_id_idx").on(table.telegramId)],
+);
 
 export const insertTaskSchema = createInsertSchema(tasksTable).omit({
   id: true,

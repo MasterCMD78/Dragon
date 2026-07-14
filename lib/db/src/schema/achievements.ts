@@ -4,6 +4,7 @@ import {
   text,
   integer,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -18,14 +19,18 @@ export const achievementsTable = pgTable("achievements", {
     .defaultNow(),
 });
 
-export const achievementUnlocksTable = pgTable("achievement_unlocks", {
-  id: serial("id").primaryKey(),
-  achievementId: integer("achievement_id").notNull(),
-  telegramId: text("telegram_id").notNull(),
-  unlockedAt: timestamp("unlocked_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const achievementUnlocksTable = pgTable(
+  "achievement_unlocks",
+  {
+    id: serial("id").primaryKey(),
+    achievementId: integer("achievement_id").notNull(),
+    telegramId: text("telegram_id").notNull(),
+    unlockedAt: timestamp("unlocked_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("achievement_unlocks_telegram_id_idx").on(table.telegramId)],
+);
 
 export const insertAchievementSchema = createInsertSchema(
   achievementsTable,

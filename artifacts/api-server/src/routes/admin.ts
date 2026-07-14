@@ -35,9 +35,11 @@ import {
   ne,
 } from "drizzle-orm";
 import { requireAdmin, type AdminRequest } from "../middlewares/admin";
+import { adminLimiter } from "../middlewares/rate-limit";
 import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
 const router: IRouter = Router();
+router.use(adminLimiter);
 
 // ── Super Admin ────────────────────────────────────────────────────────────
 // This Telegram ID is permanently recognised as Founder / Super Admin.

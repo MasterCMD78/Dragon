@@ -103,6 +103,40 @@ export async function checkDbAndMigrateSchema(): Promise<boolean> {
       )
     `);
 
+    // 4b. Create the connect-pg-simple session table if it doesn't exist.
+    // Schema matches connect-pg-simple's own table-creation.sql exactly —
+    // required because we run with createTableIfMissing: false (see
+    // middlewares/session.ts for why).
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "session" (
+        "sid" varchar NOT NULL COLLATE "default",
+        "sess" json NOT NULL,
+        "expire" timestamp(6) NOT NULL,
+        CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")
+    `);
+    logger.info("Session table ready");
+
+    // 4c. Hot-path indexes — these tables are filtered by telegram_id on
+    // nearly every request (mining, wallet, referrals, quests, tasks,
+    // achievements, notifications) but had no supporting index, forcing a
+    // sequential scan as each table grows. Idempotent, safe to run on every
+    // boot.
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "mining_logs_telegram_id_idx" ON "mining_logs" ("telegram_id");
+      CREATE INDEX IF NOT EXISTS "transactions_telegram_id_idx" ON "transactions" ("telegram_id");
+      CREATE INDEX IF NOT EXISTS "referrals_referrer_telegram_id_idx" ON "referrals" ("referrer_telegram_id");
+      CREATE INDEX IF NOT EXISTS "referrals_referee_telegram_id_idx" ON "referrals" ("referee_telegram_id");
+      CREATE INDEX IF NOT EXISTS "task_completions_telegram_id_idx" ON "task_completions" ("telegram_id");
+      CREATE INDEX IF NOT EXISTS "quest_progress_telegram_id_idx" ON "quest_progress" ("telegram_id");
+      CREATE INDEX IF NOT EXISTS "achievement_unlocks_telegram_id_idx" ON "achievement_unlocks" ("telegram_id");
+      CREATE INDEX IF NOT EXISTS "notifications_telegram_id_idx" ON "notifications" ("telegram_id");
+    `);
+    logger.info("Hot-path indexes ready");
+
     // 5. Seed default settings (INSERT … ON CONFLICT DO NOTHING = idempotent)
     const defaults = Object.entries(SETTING_DEFAULTS);
     for (const [key, value] of defaults) {

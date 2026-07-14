@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -14,17 +14,21 @@ export const questsTable = pgTable("quests", {
     .defaultNow(),
 });
 
-export const questProgressTable = pgTable("quest_progress", {
-  id: serial("id").primaryKey(),
-  questId: integer("quest_id").notNull(),
-  telegramId: text("telegram_id").notNull(),
-  progress: integer("progress").notNull().default(0),
-  completed: integer("completed").notNull().default(0),
-  date: text("date").notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const questProgressTable = pgTable(
+  "quest_progress",
+  {
+    id: serial("id").primaryKey(),
+    questId: integer("quest_id").notNull(),
+    telegramId: text("telegram_id").notNull(),
+    progress: integer("progress").notNull().default(0),
+    completed: integer("completed").notNull().default(0),
+    date: text("date").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("quest_progress_telegram_id_idx").on(table.telegramId)],
+);
 
 export const insertQuestSchema = createInsertSchema(questsTable).omit({
   id: true,

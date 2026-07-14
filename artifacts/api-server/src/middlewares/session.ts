@@ -1,10 +1,38 @@
 import session from "express-session";
+import createPgSessionStore from "connect-pg-simple";
+import { pool } from "@workspace/db";
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET env var is required");
 }
 
+// Persistent, DB-backed session store — sessions survive server restarts and
+// deploys, and are shared across autoscale instances (all pointed at the
+// same Postgres). The `session` table itself is created idempotently by
+// checkDbAndMigrateSchema() (see lib/db-health.ts) rather than by
+// connect-pg-simple's own createTableIfMissing option: that option reads a
+// .sql file from disk at runtime, which does not exist once the server is
+// bundled into a single dist/index.mjs by esbuild.
+const PgSessionStore = createPgSessionStore(session);
+
+const pgStore = new PgSessionStore({
+  pool,
+  tableName: "session",
+  createTableIfMissing: false,
+  // Prune expired sessions every 15 minutes instead of the 24h default —
+  // keeps the table small under continuous Telegram Mini App traffic.
+  pruneSessionInterval: 15 * 60,
+});
+
+pgStore.on("error", (err) => {
+  // connect-pg-simple emits this on pruning/query failures; without a
+  // listener, EventEmitter throws and can crash the process.
+  // eslint-disable-next-line no-console
+  console.error("Session store error:", err);
+});
+
 export const sessionMiddleware = session({
+  store: pgStore,
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,

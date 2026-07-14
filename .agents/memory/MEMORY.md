@@ -7,3 +7,4 @@
 - [Artifact re-registration can overwrite existing files](artifact-reregister-overwrite.md) — createArtifact on an existing slug can silently re-adopt sibling artifacts and wipe the target's real source with scaffold defaults; back up first.
 - [Vite dev-bypass env prefix](vite-dev-bypass-env-prefix.md) — backend ALLOW_DEV_BYPASS is invisible to frontend unless a VITE_-prefixed twin is also set for the same environment.
 - [Telegram dev-bypass screenshot timing](telegram-dev-bypass-screenshot-timing.md) — a "connecting" spinner on first screenshot is a timing artifact of the SDK-detection retry window, not a bug; verify via curl instead.
+- [CSRF/session/rate-limit hardening](csrf-session-rate-limit-hardening.md) — double-submit CSRF, connect-pg-simple session table created via idempotent SQL (not auto-create), hot-path telegram_id indexes.
