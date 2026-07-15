@@ -12,11 +12,11 @@ A Telegram Mini App where users earn HP (HustleCoin Points) through daily mining
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL`, `SESSION_SECRET`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`
 
-## Restored from GitHub import (2026-07-14, re-run same day after a second container reset)
+## Restored from GitHub import (2026-07-15, third restoration)
 
-Container reset a second time the same day, wiping artifact/workflow registration and secrets again (code on disk was untouched). Re-ran the same restoration: `pnpm install` (490 packages), re-registered the 4 artifacts (api-server, hustlecoin, website, mockup-sandbox) with their workflows, and the user re-supplied `DATABASE_URL`/`TELEGRAM_BOT_TOKEN`/`TELEGRAM_BOT_USERNAME` secrets. All 4 workflows are running; `/api/healthz` returns 200; `pnpm run typecheck` passes clean across all packages; website homepage renders correctly. No application code was changed.
+Registration/workflows/secrets were wiped again (code on disk untouched). This time the `DATABASE_URL` pointed at a brand-new, empty Postgres instance (no tables), which the prior two restorations hadn't hit. Restoration steps: backed up all 4 artifact directories, re-registered them via `createArtifact` (which re-adopted all 4 siblings' `artifact.toml`s in one call, as expected — see `.agents/memory/artifact-reregister-overwrite.md`), restored the `hustlecoin` source tree that got scaffold-replaced (the other 3 artifacts were untouched), ran `pnpm install`, ran `pnpm --filter @workspace/db run push-force` to create all 23 tables (16 documented previously + `session`, `blog_posts`, `contact_messages`, `roadmap_phases`, `site_analytics`, `system_settings`, `website_announcements` — schema has grown since the last migration note), and had the user re-supply `DATABASE_URL`/`TELEGRAM_BOT_TOKEN`/`TELEGRAM_BOT_USERNAME` secrets. All 4 workflows running; `/api/healthz` returns 200; dev-bypass Telegram auth round-trip verified via curl; `pnpm run typecheck` passes clean; website and mini app render correctly (mini app's "Connecting" spinner on the very first screenshot is expected SDK-detection timing, not a bug — see `.agents/memory/telegram-dev-bypass-screenshot-timing.md`). No application code was changed.
 
-An attached brief (in `attached_assets/`) requests finishing Phase 3 verification (visual QA of website/admin/Telegram mini app, CRUD checks, test-data cleanup, a PHASE3_COMPLETION.md report, and a Phase 4 roadmap) — that is substantial verification/QA work beyond project setup, so it has been proposed as a follow-up task rather than done here.
+An attached brief (in `attached_assets/`) requests finishing Phase 3 verification (visual QA of website/admin/Telegram mini app, CRUD checks, test-data cleanup, a PHASE3_COMPLETION.md report, and a Phase 4 roadmap) — that remains open as a follow-up task, not done as part of setup.
 
 ## Stack
 
