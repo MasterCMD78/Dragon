@@ -182,6 +182,17 @@ Added `DATABASE_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` secrets (wer
 
 Note: screenshotting the `hustlecoin` root right after a fresh page load can show the "CONNECTING" spinner indefinitely — `AuthContext` waits up to 2s (5×400ms retries) for real Telegram `initData` before falling back to `dev_bypass`, so a screenshot taken faster than that will always look stuck even though the flow works (confirmed end-to-end via curl above).
 
+## Session: CSRF fix verification + re-import recovery (2026-07-15)
+
+Continued from a previous session that had already written the CSRF frontend fix (`artifacts/website/src/lib/api.ts` mirrors the `csrf_token` cookie into `X-CSRF-Token` on every unsafe request; commit `fix: complete csrf frontend token handling` was already on `main`/GitHub before this session started). This session re-registered the artifact workflows (empty again after a container reset — same recovery as prior sessions) and ran full end-to-end verification of the CSRF fix.
+
+**Verification performed (dev environment):**
+- Confirmed `ensureCsrfToken`/`requireCsrf` middleware round-trip works: a GET issues the `csrf_token` cookie, an unsafe request without/with-wrong `X-CSRF-Token` header correctly gets `403 CSRF token missing or invalid`, and a request with the matching header passes CSRF and reaches the next layer (`401 Not authenticated` when unauthenticated, as expected).
+- Logged in via existing Telegram dev-bypass (`dev_bypass:7035629762`, the hardcoded Super Admin ID) — did not touch the Website CMS password/login endpoint since it's a separate global setting the user already secured.
+- With that authenticated session + CSRF header, exercised full CRUD end-to-end and cleaned up all test rows afterward: blog create/edit/delete, roadmap create/edit/delete, announcements create/edit/delete, contact list/patch/delete. All CSRF-gated correctly; no CSRF errors on any authenticated write.
+- `pnpm run typecheck` — 0 errors across all packages. `pnpm run build` — api-server, website, hustlecoin all build clean.
+- Did not test on a real Safari/iPhone device (no such device available in this environment); the cookie flags (`SameSite=None; Secure`) are already correct for both same-origin and cross-origin (Telegram WebView) cases.
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
