@@ -3,7 +3,6 @@ previewPath = "/website/"
 title = "HustleCoin Website"
 version = "1.0.0"
 id = "artifacts/website"
-router = "path"
 
 [[services]]
 name = "web"
