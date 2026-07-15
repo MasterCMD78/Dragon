@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Pickaxe, Flame, Trophy, Users, Target, ShieldCheck } from "lucide-react";
+import { Seo } from "@/components/Seo";
 
 const features = [
   {
@@ -37,6 +38,11 @@ const features = [
 export default function Features() {
   return (
     <div className="flex flex-col w-full pb-20">
+      <Seo
+        title="Features & Mechanics | HustleCoin"
+        description="Explore HustleCoin's mechanics: core mining, streak multipliers, the referral engine, global leaderboards, quests, and bot protection."
+        path="/features"
+      />
       <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-4 md:px-6">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.h1 

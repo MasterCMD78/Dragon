@@ -1,8 +1,14 @@
 import { motion } from "framer-motion";
+import { Seo } from "@/components/Seo";
 
 export default function About() {
   return (
     <div className="flex flex-col w-full pb-20">
+      <Seo
+        title="About Us | HustleCoin"
+        description="HustleCoin was born from a different ethos: Powered by the Hustle. Learn about our philosophy, execution, and commitments to a fair, effort-based ecosystem."
+        path="/about"
+      />
       {/* Header */}
       <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-4 md:px-6">
         <div className="container mx-auto max-w-4xl text-center">

@@ -58,10 +58,16 @@ export function Footer() {
                 <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors text-sm">About Us</Link>
               </li>
               <li>
+                <Link href="/documentation" className="text-muted-foreground hover:text-primary transition-colors text-sm">Documentation</Link>
+              </li>
+              <li>
                 <Link href="/faq" className="text-muted-foreground hover:text-primary transition-colors text-sm">FAQ</Link>
               </li>
               <li>
                 <Link href="/news" className="text-muted-foreground hover:text-primary transition-colors text-sm">News</Link>
+              </li>
+              <li>
+                <Link href="/support" className="text-muted-foreground hover:text-primary transition-colors text-sm">Support</Link>
               </li>
               <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">Contact</Link>
@@ -75,6 +81,9 @@ export function Footer() {
             © {currentYear} HustleCoin. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
+            <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors text-xs">Privacy Policy</Link>
+            <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors text-xs">Terms of Service</Link>
+            <Link href="/cookies" className="text-muted-foreground hover:text-primary transition-colors text-xs">Cookies</Link>
             <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">Powered by the Hustle</span>
           </div>
         </div>

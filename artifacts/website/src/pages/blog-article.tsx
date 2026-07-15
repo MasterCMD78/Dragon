@@ -3,6 +3,7 @@ import { useParams, Link } from "wouter";
 import { apiFetch } from "@/lib/api";
 import { ArrowLeft, Calendar, Eye, Tag } from "lucide-react";
 import { motion } from "framer-motion";
+import { Seo } from "@/components/Seo";
 
 export default function BlogArticle() {
   const { slug } = useParams();
@@ -13,16 +14,9 @@ export default function BlogArticle() {
   useEffect(() => {
     setLoading(true);
     apiFetch<{ post: any }>(`/api/public/blog/${slug}`)
-      .then(res => {
-        setPost(res.post);
-        if (res.post.seoTitle || res.post.title) {
-          document.title = `${res.post.seoTitle || res.post.title} | HustleCoin`;
-        }
-      })
+      .then(res => setPost(res.post))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-
-    return () => { document.title = "HustleCoin"; };
   }, [slug]);
 
   if (loading) {
@@ -55,8 +49,27 @@ export default function BlogArticle() {
     return `<p className="mb-4 leading-relaxed text-lg text-white/90">${html}</p>`;
   };
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    image: post.coverImageUrl ? [post.coverImageUrl] : undefined,
+    datePublished: post.publishedAt || post.createdAt,
+    dateModified: post.updatedAt || post.publishedAt || post.createdAt,
+    author: { "@type": "Organization", name: "HustleCoin" },
+  };
+
   return (
     <article className="pb-24">
+      <Seo
+        title={`${post.seoTitle || post.title} | HustleCoin`}
+        description={post.excerpt || post.title}
+        path={`/news/${post.slug}`}
+        image={post.coverImageUrl || undefined}
+        type="article"
+        jsonLd={articleJsonLd}
+      />
       <div className="container mx-auto px-4 md:px-6 max-w-4xl pt-12 md:pt-20">
         <Link href="/news" className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-8 font-medium">
           <ArrowLeft className="w-4 h-4" /> Back to News
@@ -86,7 +99,7 @@ export default function BlogArticle() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <img src={post.coverImageUrl} alt={post.title} className="w-full h-auto max-h-[600px] object-cover rounded-3xl shadow-2xl border border-white/10" />
+          <img src={post.coverImageUrl} alt={post.title} loading="eager" fetchPriority="high" decoding="async" className="w-full h-auto max-h-[600px] object-cover rounded-3xl shadow-2xl border border-white/10" />
         </motion.div>
       )}
 

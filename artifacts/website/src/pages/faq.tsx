@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { Seo } from "@/components/Seo";
 
 const faqs = [
   {
@@ -32,8 +33,24 @@ const faqs = [
 export default function Faq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <div className="flex flex-col w-full pb-20">
+      <Seo
+        title="FAQ | HustleCoin"
+        description="Answers to common questions about HustleCoin: mining HP, streaks, referrals, the token launch, and anti-bot protections."
+        path="/faq"
+        jsonLd={faqJsonLd}
+      />
       <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-4 md:px-6">
         <div className="container mx-auto max-w-3xl text-center">
           <motion.h1 

@@ -34,9 +34,67 @@ import {
   gte,
   count,
 } from "drizzle-orm";
+import { z } from "zod";
 import { requireAdmin, type AdminRequest } from "../middlewares/admin";
 import { requireAuth } from "../middlewares/auth";
 import { adminLimiter, authLimiter } from "../middlewares/rate-limit";
+import { validateBody } from "../middlewares/validate";
+import { invalidateCache } from "../lib/ttl-cache";
+import { logger } from "../lib/logger";
+
+// ── Input validation schemas (Part 8 security hardening) ────────────────────
+// These guard the free-text/rich-content write routes (blog, roadmap,
+// announcements, contact replies) against malformed or oversized payloads
+// before they reach the DB layer. Routes that only accept a fixed whitelist
+// of known setting keys (content, social-links) already validate that way
+// and don't need a schema on top.
+
+const blogCreateSchema = z.object({
+  slug: z.string().trim().min(1).max(200),
+  title: z.string().trim().min(1).max(300),
+  excerpt: z.string().trim().max(500).optional(),
+  content: z.string().max(200_000).optional(),
+  coverImageUrl: z.string().trim().url().max(2000).nullable().optional(),
+  category: z.string().trim().max(60).optional(),
+  tags: z.array(z.string().trim().max(60)).max(20).optional(),
+  seoTitle: z.string().trim().max(300).nullable().optional(),
+  seoDescription: z.string().trim().max(500).nullable().optional(),
+  isPublished: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  publishedAt: z.string().datetime().nullable().optional(),
+  scheduledFor: z.string().datetime().nullable().optional(),
+});
+const blogUpdateSchema = blogCreateSchema.partial();
+
+const contactUpdateSchema = z.object({
+  status: z.enum(["new", "read", "replied", "archived"]).optional(),
+  adminReply: z.string().trim().min(1).max(5000).optional(),
+}).refine((v) => v.status !== undefined || v.adminReply !== undefined, {
+  message: "Nothing to update",
+});
+
+const roadmapCreateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000).optional(),
+  status: z.enum(["planned", "in_progress", "completed"]).optional(),
+  progress: z.number().min(0).max(100).optional(),
+  targetDate: z.string().trim().max(60).nullable().optional(),
+  sortOrder: z.number().int().optional(),
+  items: z.array(z.string().trim().max(300)).max(50).optional(),
+});
+const roadmapUpdateSchema = roadmapCreateSchema.partial();
+
+const announcementCreateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  message: z.string().trim().min(1).max(1000),
+  type: z.enum(["banner", "modal", "toast"]).optional(),
+  isActive: z.boolean().optional(),
+  isDismissible: z.boolean().optional(),
+  expiresAt: z.string().datetime().nullable().optional(),
+  ctaLabel: z.string().trim().max(60).nullable().optional(),
+  ctaUrl: z.string().trim().url().max(2000).nullable().optional(),
+});
+const announcementUpdateSchema = announcementCreateSchema.partial();
 
 const router: IRouter = Router();
 router.use(adminLimiter);
@@ -129,6 +187,18 @@ router.post(
     if (candidateHash !== validHash) {
       res.status(403).json({ error: "Invalid credentials" });
       return;
+    }
+
+    // Security: the fallback password is a fixed value shipped in the
+    // (public) repo. It's fine for first-run bootstrap, but logging in with
+    // it in production means the account hasn't been secured yet — flag it
+    // loudly so it doesn't go unnoticed. Use POST /admin/website-auth/set-password
+    // to set a real one.
+    if (!storedHash && process.env.NODE_ENV === "production") {
+      logger.warn(
+        { telegramId: user.telegramId },
+        "SECURITY: website admin logged in using the default fallback password — set a real password via /admin/website-auth/set-password",
+      );
     }
 
     req.session.userId = user.id;
@@ -523,22 +593,13 @@ router.get(
 router.post(
   "/admin/blog",
   requireAdmin,
+  validateBody(blogCreateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
     const {
       slug, title, excerpt, content, coverImageUrl, category, tags,
       seoTitle, seoDescription, isPublished, isFeatured, publishedAt, scheduledFor,
-    } = req.body as Partial<{
-      slug: string; title: string; excerpt: string; content: string;
-      coverImageUrl: string; category: string; tags: string[];
-      seoTitle: string; seoDescription: string; isPublished: boolean;
-      isFeatured: boolean; publishedAt: string; scheduledFor: string;
-    }>;
-
-    if (!slug?.trim() || !title?.trim()) {
-      res.status(400).json({ error: "slug and title are required" });
-      return;
-    }
+    } = req.body as z.infer<typeof blogCreateSchema>;
 
     const [post] = await db
       .insert(blogPostsTable)
@@ -569,18 +630,13 @@ router.post(
 router.put(
   "/admin/blog/:id",
   requireAdmin,
+  validateBody(blogUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
     const id = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
-    const body = req.body as Partial<{
-      slug: string; title: string; excerpt: string; content: string;
-      coverImageUrl: string | null; category: string; tags: string[];
-      seoTitle: string | null; seoDescription: string | null;
-      isPublished: boolean; isFeatured: boolean;
-      publishedAt: string | null; scheduledFor: string | null;
-    }>;
+    const body = req.body as z.infer<typeof blogUpdateSchema>;
 
     const updates: Record<string, unknown> = { updatedAt: new Date() };
     if (body.slug !== undefined) updates["slug"] = body.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
@@ -674,15 +730,13 @@ router.get(
 router.patch(
   "/admin/contact/:id",
   requireAdmin,
+  validateBody(contactUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
     const id = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
-    const { status, adminReply } = req.body as {
-      status?: string;
-      adminReply?: string;
-    };
+    const { status, adminReply } = req.body as z.infer<typeof contactUpdateSchema>;
 
     const updates: Record<string, unknown> = {};
     if (status !== undefined) updates["status"] = status;
@@ -744,17 +798,11 @@ router.get(
 router.post(
   "/admin/roadmap",
   requireAdmin,
+  validateBody(roadmapCreateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
-    const { title, description, status, progress, targetDate, sortOrder, items } = req.body as Partial<{
-      title: string; description: string; status: string;
-      progress: number; targetDate: string; sortOrder: number; items: string[];
-    }>;
-
-    if (!title?.trim()) {
-      res.status(400).json({ error: "title is required" });
-      return;
-    }
+    const { title, description, status, progress, targetDate, sortOrder, items } =
+      req.body as z.infer<typeof roadmapCreateSchema>;
 
     const [phase] = await db
       .insert(roadmapPhasesTable)
@@ -769,6 +817,7 @@ router.post(
       })
       .returning();
 
+    invalidateCache("public:roadmap");
     await writeAdminLog(admin.telegramId, "create_roadmap_phase", undefined, `id=${phase!.id}`);
     res.status(201).json({ phase });
   },
@@ -778,15 +827,13 @@ router.post(
 router.put(
   "/admin/roadmap/:id",
   requireAdmin,
+  validateBody(roadmapUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
     const id = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
-    const body = req.body as Partial<{
-      title: string; description: string; status: string;
-      progress: number; targetDate: string | null; sortOrder: number; items: string[];
-    }>;
+    const body = req.body as z.infer<typeof roadmapUpdateSchema>;
 
     const updates: Record<string, unknown> = { updatedAt: new Date() };
     if (body.title !== undefined) updates["title"] = body.title.trim();
@@ -805,6 +852,7 @@ router.put(
       .returning();
 
     if (!phase) { res.status(404).json({ error: "Phase not found" }); return; }
+    invalidateCache("public:roadmap");
     await writeAdminLog(admin.telegramId, "edit_roadmap_phase", undefined, `id=${id}`);
     res.json({ phase });
   },
@@ -820,6 +868,7 @@ router.delete(
     if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
     await db.delete(roadmapPhasesTable).where(eq(roadmapPhasesTable.id, id));
+    invalidateCache("public:roadmap");
     await writeAdminLog(admin.telegramId, "delete_roadmap_phase", undefined, `id=${id}`);
     res.json({ success: true });
   },
@@ -844,21 +893,13 @@ router.get(
 router.post(
   "/admin/website-announcements",
   requireAdmin,
+  validateBody(announcementCreateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
     const {
       title, message, type, isActive, isDismissible,
       expiresAt, ctaLabel, ctaUrl,
-    } = req.body as Partial<{
-      title: string; message: string; type: string;
-      isActive: boolean; isDismissible: boolean;
-      expiresAt: string; ctaLabel: string; ctaUrl: string;
-    }>;
-
-    if (!title?.trim() || !message?.trim()) {
-      res.status(400).json({ error: "title and message are required" });
-      return;
-    }
+    } = req.body as z.infer<typeof announcementCreateSchema>;
 
     const [item] = await db
       .insert(websiteAnnouncementsTable)
@@ -875,6 +916,7 @@ router.post(
       })
       .returning();
 
+    invalidateCache("public:announcements");
     await writeAdminLog(admin.telegramId, "create_website_announcement", undefined, `id=${item!.id}`);
     res.status(201).json({ announcement: item });
   },
@@ -884,16 +926,13 @@ router.post(
 router.put(
   "/admin/website-announcements/:id",
   requireAdmin,
+  validateBody(announcementUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const admin = (req as AdminRequest).currentUser;
     const id = parseInt(req.params["id"] as string, 10);
     if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
-    const body = req.body as Partial<{
-      title: string; message: string; type: string;
-      isActive: boolean; isDismissible: boolean;
-      expiresAt: string | null; ctaLabel: string | null; ctaUrl: string | null;
-    }>;
+    const body = req.body as z.infer<typeof announcementUpdateSchema>;
 
     const updates: Record<string, unknown> = { updatedAt: new Date() };
     if (body.title !== undefined) updates["title"] = body.title.trim();
@@ -913,6 +952,7 @@ router.put(
       .returning();
 
     if (!item) { res.status(404).json({ error: "Announcement not found" }); return; }
+    invalidateCache("public:announcements");
     await writeAdminLog(admin.telegramId, "edit_website_announcement", undefined, `id=${id}`);
     res.json({ announcement: item });
   },
@@ -928,6 +968,7 @@ router.delete(
     if (Number.isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
     await db.delete(websiteAnnouncementsTable).where(eq(websiteAnnouncementsTable.id, id));
+    invalidateCache("public:announcements");
     await writeAdminLog(admin.telegramId, "delete_website_announcement", undefined, `id=${id}`);
     res.json({ success: true });
   },
@@ -988,6 +1029,7 @@ router.put(
         });
     }
 
+    invalidateCache("public:content");
     await writeAdminLog(
       admin.telegramId,
       "update_content",
@@ -1051,6 +1093,7 @@ router.put(
         });
     }
 
+    invalidateCache("public:social-links");
     await writeAdminLog(
       admin.telegramId,
       "update_social_links",

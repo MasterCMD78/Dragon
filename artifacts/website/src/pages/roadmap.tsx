@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, CircleDashed, Rocket } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { Seo } from "@/components/Seo";
 
 const hardcodedRoadmap = [
   {
@@ -73,6 +74,11 @@ export default function Roadmap() {
 
   return (
     <div className="flex flex-col w-full pb-20">
+      <Seo
+        title="Roadmap | HustleCoin"
+        description="A clear path forward. Track HustleCoin's development phases from foundation and growth through tokenomics and ecosystem expansion."
+        path="/roadmap"
+      />
       <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-4 md:px-6">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div

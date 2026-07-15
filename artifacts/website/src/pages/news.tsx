@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Newspaper, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Link } from "wouter";
+import { Seo } from "@/components/Seo";
 
 export default function News() {
   const [data, setData] = useState<{ posts: any[], total: number } | null>(null);
@@ -21,6 +22,11 @@ export default function News() {
 
   return (
     <div className="flex flex-col w-full pb-20">
+      <Seo
+        title="News | HustleCoin"
+        description="The latest HustleCoin announcements, updates, and community news."
+        path="/news"
+      />
       <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-4 md:px-6 text-center">
         <div className="container mx-auto max-w-4xl">
           <motion.div
@@ -65,7 +71,7 @@ export default function News() {
                       <div className="bg-card border border-white/5 rounded-2xl overflow-hidden hover:border-primary/50 transition-all h-full flex flex-col">
                         <div className="aspect-[16/9] w-full relative overflow-hidden bg-black/50">
                           {post.coverImageUrl ? (
-                            <img src={post.coverImageUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <img src={post.coverImageUrl} alt={post.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-black/80 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                               <span className="text-primary font-heading font-bold text-4xl opacity-20">H</span>

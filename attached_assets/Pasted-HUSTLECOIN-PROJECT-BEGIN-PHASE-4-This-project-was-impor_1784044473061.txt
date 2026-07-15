@@ -1,0 +1,239 @@
+HUSTLECOIN PROJECT — BEGIN PHASE 4
+
+This project was imported from GitHub into a fresh Replit.
+
+IMPORTANT
+
+Read the repository first.
+
+Do NOT recreate, refactor, or replace existing features unless a bug requires it.
+
+The GitHub repository is the source of truth.
+
+⸻
+
+PROJECT STATUS
+
+The following phases are fully completed:
+
+✅ Phase 1
+
+✅ Phase 2
+
+✅ Phase 3
+
+Phase 3 included:
+
+* Production validation
+* CSRF protection
+* Rate limiting
+* Persistent PostgreSQL sessions
+* Admin authentication
+* Telegram Mini App verification
+* Public website verification
+* Admin CMS verification
+* Database cleanup
+* Typecheck passed
+* Production builds passed
+* GitHub updated
+* PHASE3_COMPLETION.md created
+
+Do not modify completed Phase 3 work unless you discover a genuine bug.
+
+⸻
+
+OBJECTIVE
+
+Start Phase 4.
+
+Phase 4 is about making HustleCoin production-ready for public launch.
+
+Do not redesign the application.
+
+Build on top of the existing architecture.
+
+⸻
+
+PHASE 4 ROADMAP
+
+PART 1 — PERFORMANCE
+
+Improve performance by:
+
+* Optimize database queries
+* Add intelligent caching where appropriate
+* Optimize API response times
+* Reduce duplicate queries
+* Lazy load heavy frontend components
+* Optimize images/assets
+* Remove unnecessary renders
+
+⸻
+
+PART 2 — SEO
+
+Implement:
+
+* Meta tags
+* Dynamic page titles
+* Open Graph tags
+* Twitter Cards
+* JSON-LD structured data
+* robots.txt
+* sitemap.xml
+* Canonical URLs
+
+Ensure every public page is SEO friendly.
+
+⸻
+
+PART 3 — AI DISCOVERABILITY
+
+Prepare HustleCoin to be understood by AI assistants.
+
+Implement:
+
+* Structured project descriptions
+* Machine-readable documentation
+* Rich metadata
+* AI-friendly landing content
+* Semantic HTML
+* Search indexing improvements
+
+⸻
+
+PART 4 — PUBLIC WEBSITE POLISH
+
+Improve:
+
+* Homepage
+* About
+* FAQ
+* Roadmap
+* Blog
+* Contact
+* Help Center
+
+Create any missing public pages:
+
+* Privacy Policy
+* Terms of Service
+* Cookies Policy
+* Documentation
+* Support
+
+⸻
+
+PART 5 — ANALYTICS & MONITORING
+
+Implement:
+
+* Better analytics
+* Error logging
+* Health monitoring
+* Performance monitoring
+* Admin alerts
+
+⸻
+
+PART 6 — SCALABILITY
+
+Prepare for larger traffic:
+
+* Background job system
+* Queue architecture where appropriate
+* Better cache strategy
+* CDN readiness
+* Image optimization
+* Compression
+
+⸻
+
+PART 7 — USER EXPERIENCE
+
+Improve:
+
+* Loading states
+* Empty states
+* Skeleton loaders
+* Animations
+* Mobile responsiveness
+* Accessibility
+* Error messages
+* Success feedback
+
+⸻
+
+PART 8 — SECURITY REVIEW
+
+Audit the project again.
+
+Check for:
+
+* XSS
+* SQL Injection
+* Permission issues
+* Admin authorization
+* Sensitive endpoint exposure
+* Input validation
+
+Fix anything discovered.
+
+⸻
+
+PART 9 — FINAL TESTING
+
+When all Phase 4 work is complete:
+
+Run:
+
+* Full typecheck
+* Production builds
+* API verification
+* Website verification
+* Telegram Mini App verification
+* Admin verification
+
+Fix every issue discovered.
+
+⸻
+
+PART 10 — DOCUMENTATION
+
+Create:
+
+PHASE4_COMPLETION.md
+
+Include:
+
+* Features added
+* Optimizations
+* SEO improvements
+* AI improvements
+* Security improvements
+* Performance improvements
+* Deployment notes
+* Remaining roadmap
+
+⸻
+
+GIT
+
+Commit logically as work progresses.
+
+Use descriptive commit messages.
+
+Push everything to GitHub.
+
+⸻
+
+IMPORTANT RULES
+
+* Never break existing functionality.
+* Never remove completed Phase 3 work.
+* Keep the existing UI style unless improving UX.
+* Preserve database compatibility.
+* Test continuously.
+* If a major architectural decision is required, explain it before making the change.
+
+Begin Phase 4 implementation now.

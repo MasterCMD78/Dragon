@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, TrendingUp, Users, Shield, Zap, Search } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Link } from "wouter";
+import { Seo } from "@/components/Seo";
 
 interface Stats {
   totalUsers: number;
@@ -30,6 +31,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-col w-full">
+      <Seo
+        title="HustleCoin (HSL) — Powered by the Hustle."
+        description="HustleCoin (HSL) is a Telegram Mini App where users mine HP, earn streak bonuses, climb leaderboards, and grow a community. Powered by the Hustle."
+        path="/"
+      />
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center pt-10 pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-grid-white opacity-[0.02]" />

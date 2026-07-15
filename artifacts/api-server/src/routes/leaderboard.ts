@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, usersTable, referralsTable } from "@workspace/db";
 import { eq, desc, count, sql, gt, and, or } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
+import { cached } from "../lib/ttl-cache";
 
 const router: IRouter = Router();
 
@@ -9,6 +10,12 @@ type AuthedRequest = Request & { currentUser: typeof usersTable.$inferSelect };
 
 const MAX_LIMIT = 100;
 const DEFAULT_LIMIT = 50;
+
+// Leaderboards are read-heavy, expensive (full sort/aggregation) and don't
+// need per-request freshness — a short cache keyed by page params cuts
+// repeat-query load dramatically during normal Mini App usage without users
+// noticing a 20s-stale rank.
+const LEADERBOARD_TTL_MS = 20_000;
 
 function parsePageParams(query: Record<string, unknown>) {
   const limit = Math.min(
@@ -26,30 +33,37 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     const { limit, offset } = parsePageParams(req.query);
 
-    const [rows, [{ total }]] = await Promise.all([
-      db
-        .select({
-          telegramId: usersTable.telegramId,
-          username: usersTable.username,
-          firstName: usersTable.firstName,
-          lastName: usersTable.lastName,
-          level: usersTable.level,
-          balance: usersTable.balance,
-        })
-        .from(usersTable)
-        .where(eq(usersTable.isBanned, false))
-        .orderBy(desc(usersTable.balance), desc(usersTable.id))
-        .limit(limit)
-        .offset(offset),
-      db
-        .select({ total: count() })
-        .from(usersTable)
-        .where(eq(usersTable.isBanned, false)),
-    ]);
+    const { rows, total } = await cached(
+      `leaderboard:global:${limit}:${offset}`,
+      LEADERBOARD_TTL_MS,
+      async () => {
+        const [rows, [{ total }]] = await Promise.all([
+          db
+            .select({
+              telegramId: usersTable.telegramId,
+              username: usersTable.username,
+              firstName: usersTable.firstName,
+              lastName: usersTable.lastName,
+              level: usersTable.level,
+              balance: usersTable.balance,
+            })
+            .from(usersTable)
+            .where(eq(usersTable.isBanned, false))
+            .orderBy(desc(usersTable.balance), desc(usersTable.id))
+            .limit(limit)
+            .offset(offset),
+          db
+            .select({ total: count() })
+            .from(usersTable)
+            .where(eq(usersTable.isBanned, false)),
+        ]);
+        return { rows, total: Number(total) };
+      },
+    );
 
     res.json({
       entries: rows.map((r, i) => ({ rank: offset + i + 1, ...r })),
-      total: Number(total),
+      total,
     });
   },
 );
@@ -61,30 +75,37 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     const { limit, offset } = parsePageParams(req.query);
 
-    const [rows, [{ total }]] = await Promise.all([
-      db
-        .select({
-          telegramId: usersTable.telegramId,
-          username: usersTable.username,
-          firstName: usersTable.firstName,
-          lastName: usersTable.lastName,
-          totalMines: usersTable.totalMines,
-          streak: usersTable.streak,
-        })
-        .from(usersTable)
-        .where(and(eq(usersTable.isBanned, false), gt(usersTable.totalMines, 0)))
-        .orderBy(desc(usersTable.totalMines), desc(usersTable.streak), desc(usersTable.id))
-        .limit(limit)
-        .offset(offset),
-      db
-        .select({ total: count() })
-        .from(usersTable)
-        .where(and(eq(usersTable.isBanned, false), gt(usersTable.totalMines, 0))),
-    ]);
+    const { rows, total } = await cached(
+      `leaderboard:mining:${limit}:${offset}`,
+      LEADERBOARD_TTL_MS,
+      async () => {
+        const [rows, [{ total }]] = await Promise.all([
+          db
+            .select({
+              telegramId: usersTable.telegramId,
+              username: usersTable.username,
+              firstName: usersTable.firstName,
+              lastName: usersTable.lastName,
+              totalMines: usersTable.totalMines,
+              streak: usersTable.streak,
+            })
+            .from(usersTable)
+            .where(and(eq(usersTable.isBanned, false), gt(usersTable.totalMines, 0)))
+            .orderBy(desc(usersTable.totalMines), desc(usersTable.streak), desc(usersTable.id))
+            .limit(limit)
+            .offset(offset),
+          db
+            .select({ total: count() })
+            .from(usersTable)
+            .where(and(eq(usersTable.isBanned, false), gt(usersTable.totalMines, 0))),
+        ]);
+        return { rows, total: Number(total) };
+      },
+    );
 
     res.json({
       entries: rows.map((r, i) => ({ rank: offset + i + 1, ...r })),
-      total: Number(total),
+      total,
     });
   },
 );
@@ -96,45 +117,52 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     const { limit, offset } = parsePageParams(req.query);
 
-    const [rows, [{ total }]] = await Promise.all([
-      db
-        .select({
-          telegramId: usersTable.telegramId,
-          username: usersTable.username,
-          firstName: usersTable.firstName,
-          lastName: usersTable.lastName,
-          totalReferrals: sql<number>`count(${referralsTable.id})::int`,
-          totalReferralHp: sql<number>`coalesce(sum(${referralsTable.referrerHpEarned}), 0)::int`,
-        })
-        .from(usersTable)
-        .innerJoin(
-          referralsTable,
-          eq(referralsTable.referrerTelegramId, usersTable.telegramId),
-        )
-        .where(eq(usersTable.isBanned, false))
-        .groupBy(
-          usersTable.id,
-          usersTable.telegramId,
-          usersTable.username,
-          usersTable.firstName,
-          usersTable.lastName,
-        )
-        .orderBy(
-          sql`count(${referralsTable.id}) desc`,
-          sql`coalesce(sum(${referralsTable.referrerHpEarned}), 0) desc`,
-        )
-        .limit(limit)
-        .offset(offset),
-      db
-        .select({
-          total: sql<number>`count(distinct ${referralsTable.referrerTelegramId})::int`,
-        })
-        .from(referralsTable),
-    ]);
+    const { rows, total } = await cached(
+      `leaderboard:referrals:${limit}:${offset}`,
+      LEADERBOARD_TTL_MS,
+      async () => {
+        const [rows, [{ total }]] = await Promise.all([
+          db
+            .select({
+              telegramId: usersTable.telegramId,
+              username: usersTable.username,
+              firstName: usersTable.firstName,
+              lastName: usersTable.lastName,
+              totalReferrals: sql<number>`count(${referralsTable.id})::int`,
+              totalReferralHp: sql<number>`coalesce(sum(${referralsTable.referrerHpEarned}), 0)::int`,
+            })
+            .from(usersTable)
+            .innerJoin(
+              referralsTable,
+              eq(referralsTable.referrerTelegramId, usersTable.telegramId),
+            )
+            .where(eq(usersTable.isBanned, false))
+            .groupBy(
+              usersTable.id,
+              usersTable.telegramId,
+              usersTable.username,
+              usersTable.firstName,
+              usersTable.lastName,
+            )
+            .orderBy(
+              sql`count(${referralsTable.id}) desc`,
+              sql`coalesce(sum(${referralsTable.referrerHpEarned}), 0) desc`,
+            )
+            .limit(limit)
+            .offset(offset),
+          db
+            .select({
+              total: sql<number>`count(distinct ${referralsTable.referrerTelegramId})::int`,
+            })
+            .from(referralsTable),
+        ]);
+        return { rows, total: Number(total) };
+      },
+    );
 
     res.json({
       entries: rows.map((r, i) => ({ rank: offset + i + 1, ...r })),
-      total: Number(total),
+      total,
     });
   },
 );

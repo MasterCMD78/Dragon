@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Search as SearchIcon, Loader2, ArrowRight, Newspaper, Map } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Link } from "wouter";
+import { Seo } from "@/components/Seo";
 
 export default function Search() {
   const [location] = useLocation();
@@ -52,6 +53,12 @@ export default function Search() {
 
   return (
     <div className="flex flex-col w-full min-h-[70vh]">
+      <Seo
+        title="Search | HustleCoin"
+        description="Search HustleCoin's news and roadmap knowledge base."
+        path="/search"
+        noindex
+      />
       <section className="pt-20 pb-10 px-4 md:px-6">
         <div className="container mx-auto max-w-3xl">
           <form onSubmit={onSubmit} className="relative">

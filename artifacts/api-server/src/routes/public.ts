@@ -27,8 +27,18 @@ import {
   count,
   isNull,
 } from "drizzle-orm";
+import { z } from "zod";
+import { validateBody } from "../middlewares/validate";
+import { cached } from "../lib/ttl-cache";
 
 const router: IRouter = Router();
+
+// Short TTLs on public read-heavy content the website/Mini App polls
+// frequently (stats ticker, announcements banner, blog/roadmap listings).
+// These change rarely relative to how often they're fetched, so caching
+// cuts DB load without users perceiving staleness.
+const STATS_TTL_MS = 15_000;
+const CONTENT_TTL_MS = 30_000;
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -57,40 +67,44 @@ function detectDevice(ua: string | undefined): string {
 router.get(
   "/public/stats",
   async (_req: Request, res: Response): Promise<void> => {
-    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const stats = await cached("public:stats", STATS_TTL_MS, async () => {
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
 
-    const [
-      [{ totalUsers }],
-      [{ totalHP }],
-      [{ totalMines }],
-      [{ totalReferrals }],
-      [{ totalQuests }],
-      [{ onlineUsers }],
-    ] = await Promise.all([
-      db.select({ totalUsers: count() }).from(usersTable),
-      db
-        .select({ totalHP: sql<number>`coalesce(sum(balance),0)` })
-        .from(usersTable),
-      db.select({ totalMines: count() }).from(miningLogsTable),
-      db.select({ totalReferrals: count() }).from(referralsTable),
-      db
-        .select({ totalQuests: count() })
-        .from(questProgressTable)
-        .where(eq(questProgressTable.completed, 1)),
-      db
-        .select({ onlineUsers: count() })
-        .from(usersTable)
-        .where(gte(usersTable.lastActive, fiveMinAgo)),
-    ]);
+      const [
+        [{ totalUsers }],
+        [{ totalHP }],
+        [{ totalMines }],
+        [{ totalReferrals }],
+        [{ totalQuests }],
+        [{ onlineUsers }],
+      ] = await Promise.all([
+        db.select({ totalUsers: count() }).from(usersTable),
+        db
+          .select({ totalHP: sql<number>`coalesce(sum(balance),0)` })
+          .from(usersTable),
+        db.select({ totalMines: count() }).from(miningLogsTable),
+        db.select({ totalReferrals: count() }).from(referralsTable),
+        db
+          .select({ totalQuests: count() })
+          .from(questProgressTable)
+          .where(eq(questProgressTable.completed, 1)),
+        db
+          .select({ onlineUsers: count() })
+          .from(usersTable)
+          .where(gte(usersTable.lastActive, fiveMinAgo)),
+      ]);
 
-    res.json({
-      totalUsers,
-      totalHP: Number(totalHP),
-      totalMines,
-      totalReferrals,
-      totalQuests,
-      onlineUsers,
+      return {
+        totalUsers,
+        totalHP: Number(totalHP),
+        totalMines,
+        totalReferrals,
+        totalQuests,
+        onlineUsers,
+      };
     });
+
+    res.set("Cache-Control", "public, max-age=15").json(stats);
   },
 );
 
@@ -99,22 +113,24 @@ router.get(
 router.get(
   "/public/announcements",
   async (_req: Request, res: Response): Promise<void> => {
-    const now = new Date();
-    const items = await db
-      .select()
-      .from(websiteAnnouncementsTable)
-      .where(
-        and(
-          eq(websiteAnnouncementsTable.isActive, true),
-          or(
-            isNull(websiteAnnouncementsTable.expiresAt),
-            gte(websiteAnnouncementsTable.expiresAt, now),
+    const items = await cached("public:announcements", CONTENT_TTL_MS, async () => {
+      const now = new Date();
+      return db
+        .select()
+        .from(websiteAnnouncementsTable)
+        .where(
+          and(
+            eq(websiteAnnouncementsTable.isActive, true),
+            or(
+              isNull(websiteAnnouncementsTable.expiresAt),
+              gte(websiteAnnouncementsTable.expiresAt, now),
+            ),
           ),
-        ),
-      )
-      .orderBy(desc(websiteAnnouncementsTable.createdAt));
+        )
+        .orderBy(desc(websiteAnnouncementsTable.createdAt));
+    });
 
-    res.json({ announcements: items });
+    res.set("Cache-Control", "public, max-age=30").json({ announcements: items });
   },
 );
 
@@ -146,32 +162,36 @@ router.get(
       conditions.push(eq(blogPostsTable.isFeatured, true) as ReturnType<typeof eq>);
     }
 
-    const [posts, [{ total }]] = await Promise.all([
-      db
-        .select({
-          id: blogPostsTable.id,
-          slug: blogPostsTable.slug,
-          title: blogPostsTable.title,
-          excerpt: blogPostsTable.excerpt,
-          coverImageUrl: blogPostsTable.coverImageUrl,
-          category: blogPostsTable.category,
-          tags: blogPostsTable.tags,
-          isFeatured: blogPostsTable.isFeatured,
-          publishedAt: blogPostsTable.publishedAt,
-          viewCount: blogPostsTable.viewCount,
-        })
-        .from(blogPostsTable)
-        .where(and(...conditions))
-        .orderBy(desc(blogPostsTable.publishedAt))
-        .limit(limit)
-        .offset(offset),
-      db
-        .select({ total: count() })
-        .from(blogPostsTable)
-        .where(and(...conditions)),
-    ]);
+    const cacheKey = `public:blog:${category ?? ""}:${featured ?? ""}:${limit}:${offset}`;
+    const { posts, total } = await cached(cacheKey, CONTENT_TTL_MS, async () => {
+      const [posts, [{ total }]] = await Promise.all([
+        db
+          .select({
+            id: blogPostsTable.id,
+            slug: blogPostsTable.slug,
+            title: blogPostsTable.title,
+            excerpt: blogPostsTable.excerpt,
+            coverImageUrl: blogPostsTable.coverImageUrl,
+            category: blogPostsTable.category,
+            tags: blogPostsTable.tags,
+            isFeatured: blogPostsTable.isFeatured,
+            publishedAt: blogPostsTable.publishedAt,
+            viewCount: blogPostsTable.viewCount,
+          })
+          .from(blogPostsTable)
+          .where(and(...conditions))
+          .orderBy(desc(blogPostsTable.publishedAt))
+          .limit(limit)
+          .offset(offset),
+        db
+          .select({ total: count() })
+          .from(blogPostsTable)
+          .where(and(...conditions)),
+      ]);
+      return { posts, total: Number(total) };
+    });
 
-    res.json({ posts, total, limit, offset });
+    res.set("Cache-Control", "public, max-age=30").json({ posts, total, limit, offset });
   },
 );
 
@@ -215,12 +235,14 @@ router.get(
 router.get(
   "/public/roadmap",
   async (_req: Request, res: Response): Promise<void> => {
-    const phases = await db
-      .select()
-      .from(roadmapPhasesTable)
-      .orderBy(asc(roadmapPhasesTable.sortOrder), asc(roadmapPhasesTable.id));
+    const phases = await cached("public:roadmap", CONTENT_TTL_MS, () =>
+      db
+        .select()
+        .from(roadmapPhasesTable)
+        .orderBy(asc(roadmapPhasesTable.sortOrder), asc(roadmapPhasesTable.id)),
+    );
 
-    res.json({ phases });
+    res.set("Cache-Control", "public, max-age=30").json({ phases });
   },
 );
 
@@ -242,8 +264,8 @@ router.get(
       SETTING_KEYS.CONTENT_CONTACT_NOTE,
     ];
 
-    const settings = await getSettings(contentKeys);
-    res.json({ content: settings });
+    const settings = await cached("public:content", CONTENT_TTL_MS, () => getSettings(contentKeys));
+    res.set("Cache-Control", "public, max-age=30").json({ content: settings });
   },
 );
 
@@ -263,8 +285,8 @@ router.get(
       SETTING_KEYS.SOCIAL_GITHUB,
     ];
 
-    const settings = await getSettings(socialKeys);
-    res.json({ links: settings });
+    const settings = await cached("public:social-links", CONTENT_TTL_MS, () => getSettings(socialKeys));
+    res.set("Cache-Control", "public, max-age=30").json({ links: settings });
   },
 );
 
@@ -334,32 +356,24 @@ router.get(
 
 // ── POST /public/contact ──────────────────────────────────────────────────────
 
+const contactSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  email: z.string().trim().toLowerCase().email().max(320),
+  subject: z.string().trim().max(300).optional(),
+  message: z.string().trim().min(1).max(5000),
+});
+
 router.post(
   "/public/contact",
+  validateBody(contactSchema),
   async (req: Request, res: Response): Promise<void> => {
-    const { name, email, subject, message } = req.body as {
-      name?: string;
-      email?: string;
-      subject?: string;
-      message?: string;
-    };
-
-    if (!name?.trim() || !email?.trim() || !message?.trim()) {
-      res.status(400).json({ error: "name, email and message are required" });
-      return;
-    }
-
-    // Basic email validation
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      res.status(400).json({ error: "Invalid email address" });
-      return;
-    }
+    const { name, email, subject, message } = req.body as z.infer<typeof contactSchema>;
 
     await db.insert(contactMessagesTable).values({
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      subject: subject?.trim() ?? "",
-      message: message.trim(),
+      name,
+      email,
+      subject: subject ?? "",
+      message,
     });
 
     res.status(201).json({ success: true });
@@ -368,18 +382,16 @@ router.post(
 
 // ── POST /public/analytics/track ─────────────────────────────────────────────
 
+const analyticsTrackSchema = z.object({
+  path: z.string().trim().min(1).max(500),
+  sessionId: z.string().trim().max(100).optional(),
+});
+
 router.post(
   "/public/analytics/track",
+  validateBody(analyticsTrackSchema),
   async (req: Request, res: Response): Promise<void> => {
-    const { path, sessionId } = req.body as {
-      path?: string;
-      sessionId?: string;
-    };
-
-    if (!path) {
-      res.status(400).json({ error: "path required" });
-      return;
-    }
+    const { path, sessionId } = req.body as z.infer<typeof analyticsTrackSchema>;
 
     const ua = req.headers["user-agent"] as string | undefined;
     const referrer = req.headers["referer"] as string | undefined;

@@ -7,6 +7,8 @@ import express, {
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
+import helmet from "helmet";
+import compression from "compression";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { sessionMiddleware } from "./middlewares/session";
@@ -36,6 +38,20 @@ app.use(
     },
   }),
 );
+
+// Security headers. The API is JSON-only (no HTML/inline scripts to protect
+// via CSP), so we keep helmet's safe defaults (X-Content-Type-Options,
+// X-Frame-Options, HSTS, etc.) but disable CSP/COEP/CORP directives that
+// exist to protect *rendered* pages — they have no effect here and could
+// only cause friction for cross-origin fetches from the website/Mini App.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
+app.use(compression());
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 const allowedOrigins = process.env.REPLIT_DOMAINS

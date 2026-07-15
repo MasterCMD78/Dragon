@@ -1,0 +1,29 @@
+# HustleCoin (HSL)
+
+> HustleCoin is a Telegram Mini App that gamifies consistent effort. Users mine HP (Hustle Points) daily, build streaks, complete quests, refer friends, and climb leaderboards — no wallet setup required, accessible directly inside Telegram.
+
+## Key facts
+
+- Product: Telegram Mini App, opened via the @HustleCoinMinerBot bot on Telegram.
+- Core loop: daily mining of HP, streak multipliers for consecutive days, referral bonuses, one-time/recurring quests, global and referral leaderboards.
+- HP has no guaranteed monetary value; any future token generation event is speculative and covered only by the public roadmap.
+- Anti-abuse: multi-accounting, bots, and sybil referral networks are detected and penalized (HP wipe, account ban).
+- No financial advice: HustleCoin does not offer investment guarantees.
+
+## Pages
+
+- [Home](https://hustlecoin.app/): product overview and live network stats.
+- [About](https://hustlecoin.app/about): philosophy and commitments.
+- [Features](https://hustlecoin.app/features): mining, streaks, referrals, leaderboards, quests, anti-bot mechanics.
+- [Documentation](https://hustlecoin.app/documentation): how to get started and how each mechanic works.
+- [Roadmap](https://hustlecoin.app/roadmap): development phases and status.
+- [FAQ](https://hustlecoin.app/faq): common questions.
+- [News](https://hustlecoin.app/news): announcements and updates.
+- [Support](https://hustlecoin.app/support): help channels.
+- [Contact](https://hustlecoin.app/contact): contact form and Telegram community link.
+- [Privacy Policy](https://hustlecoin.app/privacy)
+- [Terms of Service](https://hustlecoin.app/terms)
+
+## Contact
+
+Telegram community: https://t.me/HustleCoinMinerBot

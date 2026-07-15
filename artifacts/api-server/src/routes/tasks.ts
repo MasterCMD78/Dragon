@@ -6,7 +6,7 @@ import {
   taskCompletionsTable,
   transactionsTable,
 } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 import { classifyTask, DAY_MS, FEATURE_LAUNCH_AT, type TaskCategory, type TaskStatus } from "../lib/tasks";
 import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
@@ -84,6 +84,120 @@ async function getEffectiveState(
   return { status: "available", canClaim: false, lastCompletedAt: null, latest };
 }
 
+/**
+ * Batched variant of getEffectiveState for the task-list endpoint.
+ * Replaces N+1 per-task queries (2 queries per task) with 2 queries total:
+ * one for all of the user's completions across the given tasks, one for
+ * reward transactions for whichever completions came back "approved".
+ */
+async function getEffectiveStatesForTasks(
+  tasks: Array<{ id: number; category: TaskCategory }>,
+  telegramId: string,
+): Promise<Map<number, EffectiveState>> {
+  const taskIds = tasks.map((t) => t.id);
+  const categoryByTaskId = new Map(tasks.map((t) => [t.id, t.category]));
+
+  const completions =
+    taskIds.length === 0
+      ? []
+      : await db
+          .select()
+          .from(taskCompletionsTable)
+          .where(
+            and(
+              inArray(taskCompletionsTable.taskId, taskIds),
+              eq(taskCompletionsTable.telegramId, telegramId),
+            ),
+          )
+          .orderBy(desc(taskCompletionsTable.completedAt));
+
+  // Latest completion per task (completions are already ordered desc).
+  const latestByTaskId = new Map<number, TaskCompletion>();
+  for (const completion of completions) {
+    if (!latestByTaskId.has(completion.taskId)) {
+      latestByTaskId.set(completion.taskId, completion);
+    }
+  }
+
+  // Batch-check reward transactions only for the "approved" completions
+  // that actually need it (mirrors the single-task getEffectiveState logic).
+  const approvedIds: number[] = [];
+  for (const [taskId, latest] of latestByTaskId) {
+    const category = categoryByTaskId.get(taskId)!;
+    const isStale = category === "daily" && Date.now() - latest.completedAt.getTime() >= DAY_MS;
+    if (latest.status === "approved" && !isStale && latest.completedAt >= FEATURE_LAUNCH_AT) {
+      approvedIds.push(latest.id);
+    }
+  }
+
+  const rewardedCompletionIds = new Set<number>();
+  if (approvedIds.length > 0) {
+    const rows = await db
+      .select({ relatedId: transactionsTable.relatedId })
+      .from(transactionsTable)
+      .where(
+        and(
+          eq(transactionsTable.type, "task"),
+          inArray(transactionsTable.relatedId, approvedIds.map(String)),
+        ),
+      );
+    for (const row of rows) {
+      if (row.relatedId) rewardedCompletionIds.add(Number(row.relatedId));
+    }
+  }
+
+  const result = new Map<number, EffectiveState>();
+  for (const task of tasks) {
+    const latest = latestByTaskId.get(task.id) ?? null;
+    if (!latest) {
+      result.set(task.id, { status: "available", canClaim: false, lastCompletedAt: null, latest: null });
+      continue;
+    }
+
+    const isStale = task.category === "daily" && Date.now() - latest.completedAt.getTime() >= DAY_MS;
+
+    if (latest.status === "rejected" || (isStale && (latest.status === "completed" || latest.status === "approved"))) {
+      result.set(task.id, { status: "available", canClaim: false, lastCompletedAt: null, latest });
+      continue;
+    }
+
+    if (latest.status === "completed") {
+      result.set(task.id, {
+        status: "completed",
+        canClaim: false,
+        lastCompletedAt: latest.completedAt.toISOString(),
+        latest,
+      });
+      continue;
+    }
+
+    if (latest.status === "approved") {
+      const canClaim = latest.completedAt >= FEATURE_LAUNCH_AT && !rewardedCompletionIds.has(latest.id);
+      result.set(task.id, {
+        status: "completed",
+        canClaim,
+        lastCompletedAt: latest.completedAt.toISOString(),
+        latest,
+      });
+      continue;
+    }
+
+    if (latest.status === "pending") {
+      result.set(task.id, { status: "pending_approval", canClaim: false, lastCompletedAt: null, latest });
+      continue;
+    }
+
+    if (latest.status === "in_progress") {
+      result.set(task.id, { status: "in_progress", canClaim: false, lastCompletedAt: null, latest });
+      continue;
+    }
+
+    result.set(task.id, { status: "available", canClaim: false, lastCompletedAt: null, latest });
+  }
+
+  return result;
+}
+
 async function hasNoRewardTransaction(completionId: number): Promise<boolean> {
   const [row] = await db
     .select({ id: transactionsTable.id })
@@ -130,12 +244,14 @@ router.get(
       .where(eq(tasksTable.status, "active"))
       .orderBy(tasksTable.id);
 
-    const results = await Promise.all(
-      tasks.map(async (task) => {
-        const { category } = classifyTask(task.title);
-        const state = await getEffectiveState(task.id, user.telegramId, category);
-        return serializeTask(task, category, state);
-      }),
+    const tasksWithCategory = tasks.map((task) => ({ task, category: classifyTask(task.title).category }));
+    const states = await getEffectiveStatesForTasks(
+      tasksWithCategory.map(({ task, category }) => ({ id: task.id, category })),
+      user.telegramId,
+    );
+
+    const results = tasksWithCategory.map(({ task, category }) =>
+      serializeTask(task, category, states.get(task.id)!),
     );
 
     res.json({ tasks: results });

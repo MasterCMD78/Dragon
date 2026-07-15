@@ -5,6 +5,7 @@ import { apiFetch } from "@/lib/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Seo } from "@/components/Seo";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -60,6 +61,11 @@ export default function Contact() {
         </div>
       </section>
 
+      <Seo
+        title="Contact | HustleCoin"
+        description="Get in touch with the HustleCoin team via Telegram or our contact form for formal inquiries, partnerships, and support."
+        path="/contact"
+      />
       <section className="px-4 md:px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="grid lg:grid-cols-5 gap-8 lg:gap-16">
