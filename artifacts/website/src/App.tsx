@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, type ComponentType } from 'react';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { Layout } from '@/components/layout/Layout';
 import Home from '@/pages/home';
@@ -16,6 +16,20 @@ import Cookies from '@/pages/cookies';
 import Documentation from '@/pages/documentation';
 import Support from '@/pages/support';
 import NotFound from '@/pages/not-found';
+
+// Docs Center is lazy-loaded as its own chunk: it's a large collection of
+// long-form guide pages that most visitors landing on the marketing site
+// won't hit on their first request.
+const DocsHome = lazy(() => import('@/pages/docs/index'));
+const DocsWhatIsHustleCoin = lazy(() => import('@/pages/docs/what-is-hustlecoin'));
+const DocsGettingStarted = lazy(() => import('@/pages/docs/getting-started'));
+const DocsMiningGuide = lazy(() => import('@/pages/docs/mining-guide'));
+const DocsReferralGuide = lazy(() => import('@/pages/docs/referral-guide'));
+const DocsAchievements = lazy(() => import('@/pages/docs/achievements'));
+const DocsTokenomics = lazy(() => import('@/pages/docs/tokenomics'));
+const DocsRoadmap = lazy(() => import('@/pages/docs/roadmap'));
+const DocsFaq = lazy(() => import('@/pages/docs/faq'));
+const DocsWhitepaper = lazy(() => import('@/pages/docs/whitepaper'));
 
 // Admin bundle is lazy-loaded: it's a large CMS panel that only admins ever
 // visit, so public visitors (the vast majority of traffic) shouldn't pay for
@@ -61,6 +75,32 @@ const PCookies = () => <Layout><Cookies /></Layout>;
 const PDocumentation = () => <Layout><Documentation /></Layout>;
 const PSupport = () => <Layout><Support /></Layout>;
 const PNotFound = () => <Layout><NotFound /></Layout>;
+
+const DocsFallback = () => (
+  <div className="min-h-[50vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+// Docs pages get their own Suspense boundary (inside Layout, so Navbar/Footer
+// stay visible) since each route is a separate lazy-loaded chunk.
+const withDocsLayout = (Component: ComponentType) => () => (
+  <Layout>
+    <Suspense fallback={<DocsFallback />}>
+      <Component />
+    </Suspense>
+  </Layout>
+);
+const PDocsHome = withDocsLayout(DocsHome);
+const PDocsWhatIsHustleCoin = withDocsLayout(DocsWhatIsHustleCoin);
+const PDocsGettingStarted = withDocsLayout(DocsGettingStarted);
+const PDocsMiningGuide = withDocsLayout(DocsMiningGuide);
+const PDocsReferralGuide = withDocsLayout(DocsReferralGuide);
+const PDocsAchievements = withDocsLayout(DocsAchievements);
+const PDocsTokenomics = withDocsLayout(DocsTokenomics);
+const PDocsRoadmap = withDocsLayout(DocsRoadmap);
+const PDocsFaq = withDocsLayout(DocsFaq);
+const PDocsWhitepaper = withDocsLayout(DocsWhitepaper);
 
 // Admin wrapper — auth + layout
 const AdminPage = ({ children }: { children: React.ReactNode }) => (
@@ -145,6 +185,18 @@ function AppContent() {
         <Route path="/cookies" component={PCookies} />
         <Route path="/documentation" component={PDocumentation} />
         <Route path="/support" component={PSupport} />
+
+        {/* Docs Center */}
+        <Route path="/docs/what-is-hustlecoin" component={PDocsWhatIsHustleCoin} />
+        <Route path="/docs/getting-started" component={PDocsGettingStarted} />
+        <Route path="/docs/mining-guide" component={PDocsMiningGuide} />
+        <Route path="/docs/referral-guide" component={PDocsReferralGuide} />
+        <Route path="/docs/achievements" component={PDocsAchievements} />
+        <Route path="/docs/tokenomics" component={PDocsTokenomics} />
+        <Route path="/docs/roadmap" component={PDocsRoadmap} />
+        <Route path="/docs/faq" component={PDocsFaq} />
+        <Route path="/docs/whitepaper" component={PDocsWhitepaper} />
+        <Route path="/docs" component={PDocsHome} />
         <Route path="/" component={PHome} />
         <Route component={PNotFound} />
       </Switch>

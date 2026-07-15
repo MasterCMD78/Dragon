@@ -263,6 +263,17 @@ export default function Home() {
           >
             Launch HustleCoin App
           </a>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Want the full picture first?{" "}
+            <Link href="/docs/whitepaper" className="text-primary hover:underline font-medium">
+              Read the Whitepaper
+            </Link>{" "}
+            or browse the{" "}
+            <Link href="/docs" className="text-primary hover:underline font-medium">
+              Documentation Center
+            </Link>
+            .
+          </p>
         </div>
       </section>
     </div>
