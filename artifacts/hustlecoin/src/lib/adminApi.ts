@@ -1,4 +1,10 @@
-const API_BASE = "/api";
+// In the Railway cross-origin deployment the frontend and API server are on
+// different domains. Use the same VITE_API_URL that main.tsx passes to
+// setBaseUrl() so admin requests go to the API server, not the static frontend.
+const _apiOrigin = (import.meta.env.VITE_API_URL as string | undefined)
+  ?.trim()
+  .replace(/\/+$/, "") ?? "";
+const API_BASE = `${_apiOrigin}/api`;
 
 async function apiFetch<T>(
   method: string,
