@@ -39,6 +39,22 @@ router.post(
       return;
     }
 
+    // ── Diagnostic logging ──────────────────────────────────────────────────
+    // Log enough detail to diagnose initData issues in the live deployment
+    // without exposing the full token. Remove once confirmed working.
+    req.log.info(
+      {
+        initDataLength: initData.length,
+        initDataEmpty: initData.length === 0,
+        initDataPrefix: initData.slice(0, 40),
+        isDevBypass: ALLOW_DEV_BYPASS && initData.startsWith("dev_bypass"),
+        allowDevBypass: ALLOW_DEV_BYPASS,
+        botTokenConfigured: !!BOT_TOKEN,
+        botTokenLength: BOT_TOKEN?.length ?? 0,
+      },
+      "[auth-diag] POST /api/auth/telegram received",
+    );
+
     let telegramUser: ReturnType<typeof validateTelegramInitData>["user"];
     let startParam: string | undefined;
 
@@ -54,13 +70,34 @@ router.post(
           last_name: "User",
           username: `testuser_${userId}`,
         };
+        req.log.info({ userId }, "[auth-diag] dev_bypass path taken");
       } else {
         const parsed = validateTelegramInitData(initData, BOT_TOKEN);
         telegramUser = parsed.user;
         startParam = parsed.start_param;
+        req.log.info(
+          {
+            telegramUserId: telegramUser.id,
+            firstName: telegramUser.first_name,
+            username: telegramUser.username ?? null,
+            authDate: parsed.auth_date,
+            ageSeconds: Math.floor(Date.now() / 1000) - parsed.auth_date,
+          },
+          "[auth-diag] initData validated successfully",
+        );
       }
     } catch (err) {
-      req.log.warn({ err }, "Invalid Telegram initData");
+      req.log.warn(
+        {
+          err,
+          errMessage: err instanceof Error ? err.message : String(err),
+          initDataLength: initData.length,
+          hasHash: initData.includes("hash="),
+          hasAuthDate: initData.includes("auth_date="),
+          hasUser: initData.includes("user="),
+        },
+        "[auth-diag] initData validation FAILED",
+      );
       res.status(401).json({ error: "Invalid Telegram authentication data" });
       return;
     }
@@ -244,6 +281,19 @@ router.post(
 
     req.session.userId = user.id;
 
+    const serialized = serializeUser(user);
+    req.log.info(
+      {
+        userId: serialized.id,
+        telegramId: serialized.telegramId,
+        firstName: serialized.firstName,
+        username: serialized.username ?? null,
+        balance: serialized.balance,
+        isNewUser,
+      },
+      "[auth-diag] responding 200 with user",
+    );
+
     // Explicitly save the session before responding. express-session auto-saves
     // on res.end(), but that write is async — the response (with the Set-Cookie
     // header) is sent first, and the browser can immediately fire GET /api/auth/me
@@ -257,7 +307,7 @@ router.post(
         return;
       }
       res.json({
-        user: serializeUser(user),
+        user: serialized,
         isNewUser,
       });
     });
