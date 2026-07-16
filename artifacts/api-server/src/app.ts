@@ -54,12 +54,23 @@ app.use(
 app.use(compression());
 
 const IS_DEV = process.env.NODE_ENV !== "production";
-const allowedOrigins = process.env.REPLIT_DOMAINS
-  ? process.env.REPLIT_DOMAINS.split(",").map((d) => `https://${d.trim()}`)
-  : [];
 
-// In production, fail-closed: reject credentialed requests if REPLIT_DOMAINS is missing.
-// In development, allow all origins for local testing.
+// Build the allowlist from two sources:
+//   REPLIT_DOMAINS — set automatically by Replit (comma-separated bare hostnames)
+//   ALLOWED_ORIGINS — set manually for non-Replit deployments such as Railway
+//                     (comma-separated full https:// URLs, e.g.
+//                      https://workspacehustlecoin-production.up.railway.app)
+const allowedOrigins: string[] = [
+  ...(process.env.REPLIT_DOMAINS
+    ? process.env.REPLIT_DOMAINS.split(",").map((d) => `https://${d.trim()}`)
+    : []),
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+    : []),
+];
+
+// In production, fail-closed: reject credentialed requests if no origins are
+// configured. In development, allow all origins for local testing.
 app.use(
   cors({
     origin: IS_DEV || allowedOrigins.length > 0 ? (allowedOrigins.length > 0 ? allowedOrigins : true) : false,
