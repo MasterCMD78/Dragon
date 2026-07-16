@@ -62,8 +62,9 @@ export function ensureCsrfToken(
   res: Response,
   next: NextFunction,
 ): void {
+  let token: string;
   if (!req.cookies?.[CSRF_COOKIE]) {
-    const token = generateToken();
+    token = generateToken();
     req.cookies = { ...req.cookies, [CSRF_COOKIE]: token };
     res.cookie(CSRF_COOKIE, token, {
       httpOnly: false, // frontend JS must read this to mirror it into a header
@@ -72,7 +73,19 @@ export function ensureCsrfToken(
       maxAge: 30 * 24 * 60 * 60 * 1000,
       path: "/",
     });
+  } else {
+    token = req.cookies[CSRF_COOKIE] as string;
   }
+
+  // Expose the CSRF token in a response header so cross-origin frontends
+  // (e.g. the Mini App on a different Railway subdomain) can capture it.
+  // document.cookie is domain-restricted, so the frontend JS cannot read the
+  // csrf_token cookie when the API lives on a different origin.  Echoing it
+  // here lets customFetch cache the value and mirror it back on unsafe
+  // requests — equivalent to the double-submit-cookie check but without
+  // requiring same-origin cookie access.
+  res.setHeader("X-CSRF-Token", token);
+
   next();
 }
 

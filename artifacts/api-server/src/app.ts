@@ -75,6 +75,11 @@ app.use(
   cors({
     origin: IS_DEV || allowedOrigins.length > 0 ? (allowedOrigins.length > 0 ? allowedOrigins : true) : false,
     credentials: true,
+    // Expose the CSRF token response header so cross-origin frontends (e.g. the
+    // Mini App on a different Railway subdomain) can read it via
+    // response.headers.get("X-CSRF-Token").  Without this, browsers suppress all
+    // non-"simple" response headers from cross-origin requests by default.
+    exposedHeaders: ["X-CSRF-Token"],
   }),
 );
 app.use(express.json());

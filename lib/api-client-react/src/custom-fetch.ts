@@ -18,6 +18,34 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
 
+// Cross-origin CSRF token cache.
+//
+// When the API server lives on a different origin (e.g. Railway subdomain),
+// the browser prevents JS on the frontend domain from reading the `csrf_token`
+// cookie that the API set on its own domain.  The API now echoes the token in
+// an `X-CSRF-Token` *response* header on every request (see
+// artifacts/api-server/src/middlewares/csrf.ts: ensureCsrfToken).  We capture
+// that header here so that subsequent unsafe (mutating) requests can mirror it
+// back — equivalent to the same-origin double-submit-cookie pattern but
+// without relying on cross-origin cookie access.
+let _csrfTokenCache: string | null = null;
+
+/**
+ * Manually seed the CSRF token (e.g. from an auth response body).
+ * Call this if you receive the token through a channel other than response
+ * headers (future-proofing; currently handled automatically by customFetch).
+ */
+export function setCsrfToken(token: string): void {
+  _csrfTokenCache = token;
+}
+
+/**
+ * Returns the currently cached CSRF token, or null if none has been captured.
+ */
+export function getCsrfToken(): string | null {
+  return _csrfTokenCache;
+}
+
 /**
  * Set a base URL that is prepended to every relative request URL
  * (i.e. paths that start with `/`).
@@ -357,7 +385,11 @@ export async function customFetch<T = unknown>(
   const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
 
   if (CSRF_UNSAFE_METHODS.has(method) && !headers.has(CSRF_HEADER_NAME)) {
-    const csrfToken = readCsrfCookie();
+    // Prefer the cookie (same-origin / Replit path-based routing).
+    // Fall back to the in-memory cache populated from the X-CSRF-Token
+    // response header, which works in cross-origin Railway deployments where
+    // document.cookie cannot read the API server's csrf_token cookie.
+    const csrfToken = readCsrfCookie() ?? _csrfTokenCache;
     if (csrfToken) {
       headers.set(CSRF_HEADER_NAME, csrfToken);
     }
@@ -387,6 +419,15 @@ export async function customFetch<T = unknown>(
   const requestInfo = { method, url: resolveUrl(input) };
 
   const response = await fetch(input, { ...init, method, headers, credentials: "include" });
+
+  // Capture CSRF token from response header (works cross-origin because
+  // response headers are always readable, unlike cross-domain cookies).
+  // The API server echoes the current token in every response via
+  // ensureCsrfToken middleware so our cache stays fresh.
+  const freshToken = response.headers.get(CSRF_HEADER_NAME);
+  if (freshToken) {
+    _csrfTokenCache = freshToken;
+  }
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

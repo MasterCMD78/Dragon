@@ -87,7 +87,10 @@ export default function Home() {
         });
       },
       onError: (error: unknown) => {
-        const msg = (error as { error?: string })?.error ?? "An unexpected error occurred";
+        // ApiError wraps the response; the body is in .data.  Plain Error has .message.
+        type ApiLike = { data?: { error?: string }; message?: string };
+        const e = error as ApiLike;
+        const msg = e?.data?.error ?? e?.message ?? "An unexpected error occurred";
         toast({ title: "Failed to start mining", description: msg, variant: "destructive" });
       }
     });
@@ -109,7 +112,9 @@ export default function Home() {
         }, 3000);
       },
       onError: (error: unknown) => {
-        const msg = (error as { error?: string })?.error ?? "An unexpected error occurred";
+        type ApiLike = { data?: { error?: string }; message?: string };
+        const e = error as ApiLike;
+        const msg = e?.data?.error ?? e?.message ?? "An unexpected error occurred";
         toast({ title: "Failed to claim rewards", description: msg, variant: "destructive" });
       }
     });

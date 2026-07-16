@@ -1,10 +1,11 @@
-// In the Railway cross-origin deployment the frontend and API server are on
-// different domains. Use the same VITE_API_URL that main.tsx passes to
-// setBaseUrl() so admin requests go to the API server, not the static frontend.
-const _apiOrigin = (import.meta.env.VITE_API_URL as string | undefined)
-  ?.trim()
-  .replace(/\/+$/, "") ?? "";
-const API_BASE = `${_apiOrigin}/api`;
+// Use the api-client's customFetch so that:
+//   1. VITE_API_URL is respected (set via setBaseUrl() in main.tsx) — required
+//      for cross-origin Railway deployments where the API is on a different domain.
+//   2. CSRF token is automatically read from the X-CSRF-Token response header
+//      cache and sent back on unsafe (POST/PUT/DELETE) requests — raw fetch()
+//      cannot read the csrf_token cookie cross-domain.
+//   3. credentials: "include" is applied automatically.
+import { customFetch } from "@workspace/api-client-react";
 
 async function apiFetch<T>(
   method: string,
@@ -12,7 +13,9 @@ async function apiFetch<T>(
   body?: unknown,
   params?: Record<string, string | number | undefined>,
 ): Promise<T> {
-  let url = `${API_BASE}${path}`;
+  // Paths in adminApi are like "/admin/stats"; prefix with /api so customFetch
+  // builds the full URL: {VITE_API_URL}/api/admin/stats.
+  let url = `/api${path}`;
   if (params) {
     const q = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
@@ -22,18 +25,17 @@ async function apiFetch<T>(
     if (qs) url += `?${qs}`;
   }
 
-  const res = await fetch(url, {
-    method,
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
+  try {
+    return await customFetch<T>(url, {
+      method,
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch (err) {
+    // customFetch throws ApiError; extract a friendly message.
+    const e = err as { data?: { error?: string }; message?: string; status?: number };
+    const msg = e?.data?.error ?? e?.message ?? `HTTP ${e?.status ?? "error"}`;
+    throw new Error(msg);
   }
-  return data as T;
 }
 
 const get = <T>(path: string, params?: Record<string, string | number | undefined>) =>

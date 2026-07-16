@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { format, isToday, isThisWeek, isThisMonth } from "date-fns";
+import { customFetch } from "@workspace/api-client-react";
 import {
   Wallet,
   Pickaxe,
@@ -18,8 +19,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const API_BASE = "/api";
 
 interface WalletTransaction {
   id: number;
@@ -52,11 +51,10 @@ async function fetchWallet(params: {
   if (params.type) q.set("type", params.type);
   if (params.search) q.set("search", params.search);
 
-  const res = await fetch(`${API_BASE}/wallet/transactions?${q.toString()}`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to load wallet");
-  return res.json() as Promise<WalletResponse>;
+  // Use the api-client's customFetch so that VITE_API_URL is respected in
+  // cross-origin Railway deployments (same as all other pages) and the
+  // CSRF token is automatically applied for any future mutating requests.
+  return customFetch<WalletResponse>(`/api/wallet/transactions?${q.toString()}`);
 }
 
 // ─── Type metadata ────────────────────────────────────────────────────────────
