@@ -58,5 +58,15 @@ export const sessionMiddleware = session({
 declare module "express-session" {
   interface SessionData {
     userId: number;
+    /**
+     * CSRF token stored in the session as a cross-domain fallback.
+     * When the API lives on a different origin (Railway subdomain), the
+     * csrf_token cookie may be blocked by the browser's third-party cookie
+     * policy, making the double-submit-cookie pattern unreliable.  Storing the
+     * token in the session lets requireCsrf validate the X-CSRF-Token request
+     * header against the session-resident token instead of the cookie — the
+     * attacker cannot read or forge the session value.
+     */
+    csrfToken?: string;
   }
 }

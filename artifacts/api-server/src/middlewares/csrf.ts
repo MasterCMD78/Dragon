@@ -86,6 +86,21 @@ export function ensureCsrfToken(
   // requiring same-origin cookie access.
   res.setHeader("X-CSRF-Token", token);
 
+  // ── Session-resident CSRF token (cross-domain fallback) ─────────────────
+  // When the API is on a different domain, the browser's third-party-cookie
+  // policy (e.g. Safari ITP / Telegram WebView) may block the csrf_token
+  // cookie on cross-origin requests, making the double-submit-cookie pattern
+  // unreliable.  We also store the token in the server-side session so that
+  // requireCsrf can validate the X-CSRF-Token request header against the
+  // session-resident value — an attacker cannot read or forge this value
+  // since the session lives on the server.
+  if (req.session) {
+    const sess = req.session as typeof req.session & { csrfToken?: string };
+    if (sess.csrfToken !== token) {
+      sess.csrfToken = token;
+    }
+  }
+
   next();
 }
 
@@ -116,15 +131,24 @@ export function requireCsrf(
 
   const cookieToken = req.cookies?.[CSRF_COOKIE];
   const headerToken = req.headers[CSRF_HEADER];
+  const sessionToken = (req.session as typeof req.session & { csrfToken?: string })?.csrfToken;
 
-  const isValid =
-    typeof cookieToken === "string" &&
-    typeof headerToken === "string" &&
-    cookieToken.length > 0 &&
-    cookieToken.length === headerToken.length &&
-    crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken));
+  /** Constant-time comparison of two strings; returns false if either is absent. */
+  function tokensMatch(a: unknown, b: unknown): boolean {
+    if (typeof a !== "string" || typeof b !== "string") return false;
+    if (a.length === 0 || a.length !== b.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  }
 
-  if (!isValid) {
+  // Primary: double-submit-cookie pattern (same-origin / cookie readable).
+  const cookieValid = tokensMatch(cookieToken, headerToken);
+
+  // Fallback: session-resident token (cross-domain — cookie may be blocked by
+  // ITP or similar third-party-cookie policy, but the session still holds the
+  // value the server issued; an attacker cannot read or forge the session).
+  const sessionValid = !cookieValid && tokensMatch(sessionToken, headerToken);
+
+  if (!cookieValid && !sessionValid) {
     res.status(403).json({ error: "CSRF token missing or invalid" });
     return;
   }

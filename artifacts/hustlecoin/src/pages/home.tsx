@@ -26,7 +26,12 @@ export default function Home() {
   const { toast } = useToast();
   const { user } = useAuth();
   
-  const { data: status, isLoading: isStatusLoading } = useGetMiningStatus({
+  const {
+    data: status,
+    isLoading: isStatusLoading,
+    isError: isStatusError,
+    refetch: refetchStatus,
+  } = useGetMiningStatus({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     query: {
       // Re-fetch every 30 s so the UI transitions to "claimable" automatically
@@ -134,9 +139,35 @@ export default function Home() {
     );
   }
 
+  // If the status query errored (e.g. transient network issue) show a retry
+  // screen rather than the "idle" UI with a non-functional START button.
+  if (!devState && isStatusError && !status) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center gap-6">
+        <div className="w-24 h-24 bg-destructive/10 rounded-full flex items-center justify-center">
+          <Zap className="w-10 h-10 text-destructive/50" />
+        </div>
+        <div className="text-center">
+          <p className="text-white font-display font-bold text-lg mb-1">Connection Error</p>
+          <p className="text-muted-foreground text-sm">Could not load mining status</p>
+        </div>
+        <button
+          onClick={() => void refetchStatus()}
+          className="px-6 py-3 bg-primary text-black font-display font-bold rounded-xl text-sm"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   const isMining = devState === "mining" || status?.state === "mining";
   const isClaimable = devState === "claimable" || status?.state === "claimable";
-  const isIdle = !isMining && !isClaimable && (devState === "idle" || status?.state === "idle" || (!devState && !status?.state));
+  // Only show "idle" UI when we have a confirmed idle state — NOT when status
+  // is undefined (query error / not yet loaded).  Previously the fallback
+  // `!status?.state` branch showed the START MINING button even when the
+  // query had failed, making the button appear functional but be a no-op.
+  const isIdle = !isMining && !isClaimable && (devState === "idle" || status?.state === "idle");
 
   return (
     <div className="p-6 flex flex-col pt-8 space-y-8 relative">
