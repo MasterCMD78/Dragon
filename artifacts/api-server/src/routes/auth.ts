@@ -244,9 +244,22 @@ router.post(
 
     req.session.userId = user.id;
 
-    res.json({
-      user: serializeUser(user),
-      isNewUser,
+    // Explicitly save the session before responding. express-session auto-saves
+    // on res.end(), but that write is async — the response (with the Set-Cookie
+    // header) is sent first, and the browser can immediately fire GET /api/auth/me
+    // before the session row has been committed to PostgreSQL. On Railway, the
+    // Neon DB round-trip makes this race reliably losable. Saving here guarantees
+    // the session row exists in the store before the client ever receives the 200.
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        req.log.error({ err: saveErr }, "Failed to save session after auth");
+        res.status(500).json({ error: "Session save failed" });
+        return;
+      }
+      res.json({
+        user: serializeUser(user),
+        isNewUser,
+      });
     });
   },
 );

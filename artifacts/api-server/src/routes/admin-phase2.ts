@@ -205,15 +205,25 @@ router.post(
 
     await writeAdminLog(user.telegramId, "website_admin_login", undefined, `ip=${req.ip}`);
 
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        telegramId: user.telegramId,
-        username: user.username,
-        firstName: user.firstName,
-        isAdmin: user.isAdmin,
-      },
+    // Explicitly save before responding — same race as Telegram auth: the
+    // session cookie reaches the browser before the PG write completes, so the
+    // immediately-following GET /admin/website-auth/me would 401 without this.
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        logger.error({ err: saveErr }, "Failed to save admin session after login");
+        res.status(500).json({ error: "Session save failed" });
+        return;
+      }
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          telegramId: user.telegramId,
+          username: user.username,
+          firstName: user.firstName,
+          isAdmin: user.isAdmin,
+        },
+      });
     });
   },
 );
