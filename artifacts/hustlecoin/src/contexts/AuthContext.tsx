@@ -114,7 +114,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authMutation.mutate(
         { data: { initData, referralCode: startParam } },
         {
-          onSuccess: () => {
+          onSuccess: (data) => {
+            // Immediately populate the user cache from the POST response body.
+            // In cross-origin deployments (e.g. Railway), the session cookie
+            // issued by the API server domain may not be available for the
+            // GET /api/auth/me refetch that invalidateQueries triggers — the
+            // browser may buffer, partition, or delay cross-domain cookies.
+            // setQueryData here ensures the user is recognised as authenticated
+            // immediately, without waiting for the refetch to confirm it.
+            // TanStack Query preserves this data even if the subsequent refetch
+            // returns 401 (stale-while-revalidate semantics in v5).
+            queryClient.setQueryData(getGetMeQueryKey(), data.user);
             queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
           },
@@ -137,7 +147,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authMutation.mutate(
         { data: { initData: `dev_bypass:${DEV_USER_ID}` } },
         {
-          onSuccess: () => {
+          onSuccess: (data) => {
+            queryClient.setQueryData(getGetMeQueryKey(), data.user);
             queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
           },

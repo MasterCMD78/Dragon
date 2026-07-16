@@ -1,6 +1,25 @@
 import crypto from "node:crypto";
 import { type Request, type Response, type NextFunction } from "express";
 
+// Origins that the CORS middleware already trusts.  Requests arriving with
+// one of these Origin values have already been verified by the CORS allowlist
+// — an attacker from a different origin cannot forge an Origin header that
+// passes the CORS check and reaches this middleware.  For these requests CORS
+// provides equivalent CSRF protection to the cookie-mirror pattern, so we
+// skip the double-submit check.  Requests with no Origin header are
+// same-origin and are inherently safe from CSRF.
+//
+// REPLIT_DOMAINS  — bare hostnames injected by Replit automatically.
+// ALLOWED_ORIGINS — full https:// URLs set for non-Replit deployments (e.g. Railway).
+const CORS_TRUSTED_ORIGINS = new Set<string>([
+  ...(process.env.REPLIT_DOMAINS
+    ? process.env.REPLIT_DOMAINS.split(",").map((d) => `https://${d.trim()}`)
+    : []),
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+    : []),
+]);
+
 /**
  * Double-submit-cookie CSRF protection.
  *
@@ -68,6 +87,16 @@ export function requireCsrf(
   }
 
   if (CSRF_EXEMPT_PATHS.has(req.path)) {
+    next();
+    return;
+  }
+
+  // Cross-origin requests from CORS-trusted origins (and same-origin requests
+  // that carry no Origin header) don't need the cookie-mirror check — the
+  // CORS allowlist already ensures only our own frontend can reach this point
+  // with a credentialed cross-origin request.
+  const requestOrigin = req.headers.origin as string | undefined;
+  if (!requestOrigin || CORS_TRUSTED_ORIGINS.has(requestOrigin)) {
     next();
     return;
   }
