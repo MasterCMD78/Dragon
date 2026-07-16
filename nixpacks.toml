@@ -1,0 +1,7 @@
+# Force pnpm for all Railway Nixpacks builds in this monorepo.
+# The packageManager field in package.json activates the correct pnpm version
+# via corepack; this file overrides the install phase to use pnpm explicitly
+# so Railway never falls back to npm (which cannot resolve workspace:* deps).
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
