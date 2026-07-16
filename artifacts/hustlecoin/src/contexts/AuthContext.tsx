@@ -4,6 +4,7 @@ import {
   useGetMe,
   getGetMeQueryKey,
   getGetMiningStatusQueryKey,
+  getGetUserProfileQueryKey,
   type User,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -127,6 +128,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             queryClient.setQueryData(getGetMeQueryKey(), data.user);
             queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+            // Also invalidate the user profile query — Profile page reads from
+            // GET /api/users/me (a separate endpoint with its own cache key).
+            // Without this, any cached 401 error on that key is never cleared
+            // after login and the profile name stays blank.
+            queryClient.invalidateQueries({ queryKey: getGetUserProfileQueryKey() });
           },
           onError: (err: unknown) => {
             if (isAccountBanned(err)) {
@@ -151,6 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             queryClient.setQueryData(getGetMeQueryKey(), data.user);
             queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
+            queryClient.invalidateQueries({ queryKey: getGetUserProfileQueryKey() });
           },
           onError: (err: unknown) => {
             if (isAccountBanned(err)) {

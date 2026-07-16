@@ -9,6 +9,7 @@ import {
   getGetMiningStatusQueryKey,
   getGetMiningHistoryQueryKey
 } from "@workspace/api-client-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, Zap, Flame, Clock, History, Check, ShieldCheck, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +24,7 @@ function formatCountdown(secs: number) {
 export default function Home() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const { data: status, isLoading: isStatusLoading } = useGetMiningStatus({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -178,7 +180,7 @@ export default function Home() {
       <div className="flex flex-col items-center justify-center">
         <h2 className="text-muted-foreground text-xs tracking-widest font-display uppercase mb-2">Total Balance</h2>
         <div className="text-5xl font-display font-bold text-white tracking-tight" data-testid="text-balance">
-          {status?.balance?.toLocaleString() || '0'} <span className="text-primary text-3xl">HP</span>
+          {(status?.balance ?? user?.balance ?? 0).toLocaleString()} <span className="text-primary text-3xl">HP</span>
         </div>
       </div>
 

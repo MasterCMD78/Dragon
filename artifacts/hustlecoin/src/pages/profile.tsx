@@ -54,18 +54,32 @@ function ProfileSkeleton() {
 }
 
 export default function Profile() {
-  const { data: profile, isLoading } = useGetUserProfile();
+  const { data: profile, isLoading: isProfileLoading } = useGetUserProfile();
   const { user } = useAuth();
+
+  // Show skeleton only when we have no data at all — not when profile is still
+  // loading but the auth user (already populated via setQueryData from the POST
+  // response) can cover the identity fields immediately.
+  const isLoading = isProfileLoading && !user;
 
   if (isLoading) {
     return <ProfileSkeleton />;
   }
 
-  const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ");
+  // Use auth user as primary source for identity — it is guaranteed to be
+  // populated from setQueryData immediately after login (no extra round-trip).
+  // Fall back to profile for any field the auth user doesn't carry.
+  const firstName = user?.firstName ?? profile?.firstName;
+  const lastName = user?.lastName ?? profile?.lastName;
+  const username = user?.username ?? profile?.username;
+  const telegramId = user?.telegramId ?? profile?.telegramId;
+  const referralCode = user?.referralCode ?? profile?.referralCode;
+
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
   const displayName = fullName
-    || (profile?.username && profile.username !== "user" ? `@${profile.username}` : null)
-    || (profile?.telegramId ? String(profile.telegramId) : "—");
-  const initial = (fullName || profile?.username || profile?.telegramId?.toString() || "U")
+    || (username && username !== "user" ? `@${username}` : null)
+    || (telegramId ? String(telegramId) : "—");
+  const initial = (fullName || username || telegramId?.toString() || "U")
     .charAt(0)
     .toUpperCase();
 
@@ -97,7 +111,7 @@ export default function Profile() {
             className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-medium font-display border border-primary/20"
             data-testid="text-referral-code"
           >
-            Ref: {profile?.referralCode}
+            Ref: {referralCode}
           </div>
         </div>
       </motion.div>
@@ -124,7 +138,7 @@ export default function Profile() {
           index={0}
           icon={<Pickaxe className="w-5 h-5 text-primary" />}
           label="Total Mines"
-          value={(profile?.totalMines ?? 0).toLocaleString()}
+          value={(profile?.totalMines ?? user?.totalMines ?? 0).toLocaleString()}
           color="bg-primary/15"
           data-testid="text-total-mined"
         />
@@ -132,7 +146,7 @@ export default function Profile() {
           index={1}
           icon={<Flame className="w-5 h-5 text-orange-500" />}
           label="Best Streak"
-          value={String(profile?.streak ?? 0)}
+          value={String(profile?.streak ?? user?.streak ?? 0)}
           color="bg-orange-500/15"
           data-testid="text-profile-streak"
         />
@@ -148,7 +162,7 @@ export default function Profile() {
           index={3}
           icon={<Calendar className="w-5 h-5 text-green-400" />}
           label="Joined"
-          value={profile?.joinDate ? format(new Date(profile.joinDate), "MMM yyyy") : "---"}
+          value={(profile?.joinDate ?? user?.joinDate) ? format(new Date((profile?.joinDate ?? user?.joinDate)!), "MMM yyyy") : "---"}
           color="bg-emerald-500/15"
           data-testid="text-join-date"
         />
