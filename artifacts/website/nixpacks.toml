@@ -15,6 +15,5 @@
 
 [phases.install]
 cmds = [
-  "npm install -g pnpm@10.26.1",
-  "cd /app && pnpm install --frozen-lockfile",
+  "cd /app && npx pnpm@10.26.1 install --frozen-lockfile",
 ]
