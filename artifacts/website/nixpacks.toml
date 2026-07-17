@@ -3,24 +3,18 @@
 # WHY THIS FILE EXISTS
 # --------------------
 # When Railway's Root Directory is set to artifacts/website/, Nixpacks reads
-# this file (not the root nixpacks.toml). Without it, Nixpacks auto-detects
-# Node.js but has no `packageManager` field in artifacts/website/package.json
-# and no pnpm lockfile in that subdirectory, so it falls back to npm.
-# npm cannot resolve `workspace:*` deps and fails immediately with:
-#   npm ERR! code EUNSUPPORTEDPROTOCOL
+# this file (not the repo root nixpacks.toml). Without it, Nixpacks falls back
+# to npm, which cannot resolve workspace:* deps.
 #
 # HOW IT WORKS
 # ------------
-# Railway clones the *entire* repo to /app, then sets the working directory
-# to /app/artifacts/website/ (the Root Directory). pnpm-workspace.yaml and
-# the root package.json (packageManager: pnpm@10.26.1) live at /app/, so we
-# cd there before every pnpm command.
-#
+# Railway clones the entire repo to /app. We install pnpm globally via npm
+# (avoids corepack signature-verification issues) then run pnpm install from
+# the repo root (/app) so workspace:* deps resolve correctly.
 # The build phase is left empty — railway.json's buildCommand handles it.
 
 [phases.install]
 cmds = [
-  "cd /app && corepack enable",
-  "cd /app && corepack prepare pnpm@10.26.1 --activate",
+  "npm install -g pnpm@10.26.1",
   "cd /app && pnpm install --frozen-lockfile",
 ]
