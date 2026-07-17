@@ -1,3 +1,12 @@
+// Support cross-origin deployments (e.g. Railway static site + separate API service).
+// In Replit dev the website is same-origin with the API (path proxy routes /api/*
+// to the API server), so VITE_API_URL is unset and all calls use relative paths.
+// On Railway the website is a static service on a different domain from the API, so
+// VITE_API_URL must be set to the full API origin at build time (e.g.
+//   VITE_API_URL=https://workspaceapi-server-production-ed9c.up.railway.app
+// ) so that all fetch() calls resolve correctly across origins.
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+
 const CSRF_COOKIE = "csrf_token";
 const CSRF_HEADER = "X-CSRF-Token";
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -11,14 +20,14 @@ function readCookie(name: string): string | null {
 
 /**
  * Ensures the browser holds a `csrf_token` cookie by hitting a cheap,
- * same-origin GET endpoint. The backend's `ensureCsrfToken` middleware
- * issues the cookie as a side effect of *any* response, so a lightweight
- * GET is enough to prime it. This only runs when the cookie is missing
- * (e.g. first load, or after it expires/gets cleared), so normal requests
- * never pay this extra round-trip.
+ * same-origin (or API_BASE-prefixed) GET endpoint. The backend's
+ * `ensureCsrfToken` middleware issues the cookie as a side effect of *any*
+ * response, so a lightweight GET is enough to prime it. This only runs when
+ * the cookie is missing (e.g. first load, or after it expires/gets cleared),
+ * so normal requests never pay this extra round-trip.
  */
 async function ensureCsrfCookie(): Promise<void> {
-  await fetch("/api/admin/website-auth/me", { credentials: "include" }).catch(() => {});
+  await fetch(`${API_BASE}/api/admin/website-auth/me`, { credentials: "include" }).catch(() => {});
 }
 
 /**
@@ -29,6 +38,10 @@ async function ensureCsrfCookie(): Promise<void> {
  * `document.cookie` on every call rather than cached, so if the token ever
  * changes (new session, cookie cleared, etc.) the next request automatically
  * picks up the fresh value.
+ *
+ * API_BASE is prepended to all paths so this works both in Replit dev
+ * (API_BASE = "", relative paths) and Railway production (API_BASE = full
+ * API origin, absolute cross-origin requests with credentials).
  */
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const method = (options?.method ?? "GET").toUpperCase();
@@ -45,7 +58,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     }
   }
 
-  const res = await fetch(path, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: "include",
     headers,
