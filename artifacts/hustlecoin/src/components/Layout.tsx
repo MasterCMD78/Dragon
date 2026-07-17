@@ -165,7 +165,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     );
   }
 
-  if (isLoading || !isAuthenticated) {
+  // isLoading already covers every unauthenticated case that isn't handled
+  // by the !isTelegramAvailable and authFailed guards above, so the
+  // !isAuthenticated check here is redundant.  Keeping it would cause the
+  // CONNECTING screen to flash on again during rapid state transitions (e.g.
+  // the auth mutation resolving while isMeLoading is still true).
+  if (isLoading) {
     return (
       <div className="min-h-[100dvh] w-full flex items-center justify-center bg-black">
         <div className="w-full max-w-[430px] h-[100dvh] bg-background flex flex-col items-center justify-center border-x border-border/50">

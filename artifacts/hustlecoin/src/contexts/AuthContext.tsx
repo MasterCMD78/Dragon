@@ -91,19 +91,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsBanned(false);
     setPhase("checking");
 
-    // Give the Telegram WebApp SDK a chance to populate `initData` — it's
-    // synchronous in normal launches, but retry briefly to cover any startup
-    // race (e.g. the script finishing init a tick after our effect runs).
-    let initData = window.Telegram?.WebApp?.initData ?? "";
+    // Capture the WebApp reference immediately so we can call ready() without
+    // waiting for initData.  ready() MUST be called as early as possible —
+    // Telegram holds its own loading overlay until it receives this signal.
+    // If we delay ready() until after the initData retry loop (≤ 2 s), some
+    // Telegram clients time out and close or reset the Mini App, producing a
+    // blank / broken startup state that does not occur when opening from a
+    // regular browser (where there is no Telegram overlay to time out).
+    const webApp = window.Telegram?.WebApp;
+    webApp?.ready();
+
+    // Give the SDK a chance to populate `initData`.  It is synchronous in
+    // normal Telegram launches (the script reads the URL hash before our JS
+    // runs), but we retry briefly for clients that deliver it asynchronously.
+    let initData = webApp?.initData ?? "";
     for (let attempt = 0; !initData && attempt < INIT_DATA_RETRY_ATTEMPTS; attempt++) {
       await sleep(INIT_DATA_RETRY_DELAY_MS);
-      initData = window.Telegram?.WebApp?.initData ?? "";
+      initData = webApp?.initData ?? "";
     }
 
-    const webApp = window.Telegram?.WebApp;
-
     if (initData) {
-      webApp?.ready();
+      // Expand to full screen only once we know we are inside Telegram.
+      // expand() is safe to call after ready(); it resizes the WebView to the
+      // maximum available height so the app fills the screen.
       webApp?.expand();
       setPhase("authenticating");
       // Also extract start_param from initDataUnsafe as an explicit referralCode.
