@@ -418,6 +418,28 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
+  // ── Request tracing (development diagnostics) ─────────────────────────────
+  // Logs every API request so you can compare "Website (dev bypass)" vs
+  // "Telegram WebView" side-by-side. Safe to leave in production — it only
+  // logs in the browser console and adds no network overhead.
+  const _traceStart = typeof performance !== "undefined" ? performance.now() : 0;
+  const _traceCookieSent = typeof document !== "undefined" ? document.cookie : "(server-side)";
+  const _traceCsrfHeader = headers.get(CSRF_HEADER_NAME) ?? "(none)";
+  const _traceAuthHeader = headers.has("authorization") ? "Bearer ***" : "(none)";
+  // eslint-disable-next-line no-console
+  console.debug(
+    `[fetch] ${method} ${requestInfo.url}`,
+    {
+      credentials: "include",
+      csrfHeader: _traceCsrfHeader,
+      authHeader: _traceAuthHeader,
+      cookiesPresent: _traceCookieSent
+        .split(";")
+        .map((c) => c.trim().split("=")[0])
+        .filter(Boolean),
+    },
+  );
+
   const response = await fetch(input, { ...init, method, headers, credentials: "include" });
 
   // Capture CSRF token from response header (works cross-origin because
@@ -428,6 +450,21 @@ export async function customFetch<T = unknown>(
   if (freshToken) {
     _csrfTokenCache = freshToken;
   }
+
+  // ── Response trace ─────────────────────────────────────────────────────────
+  const _traceElapsed = typeof performance !== "undefined"
+    ? `${(performance.now() - _traceStart).toFixed(0)}ms`
+    : "?";
+  const _traceCookieReceived = response.headers.get("set-cookie") ?? "(blocked by CORS/browser — check DevTools)";
+  // eslint-disable-next-line no-console
+  console.debug(
+    `[fetch] ${response.status} ${method} ${requestInfo.url} (${_traceElapsed})`,
+    {
+      status: response.status,
+      csrfTokenCaptured: freshToken ?? "(none in response)",
+      setCookieVisible: _traceCookieReceived,
+    },
+  );
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

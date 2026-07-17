@@ -91,6 +91,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsBanned(false);
     setPhase("checking");
 
+    // ── Startup diagnostics ────────────────────────────────────────────────
+    // Logged on every auth attempt so you can compare "Browser (dev bypass)"
+    // vs "Telegram WebView" side-by-side in the console / DevTools.
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const webAppRaw = window.Telegram?.WebApp;
+    /* eslint-disable no-console */
+    console.group("[HustleCoin] 🔍 Startup diagnostics");
+    console.log("window.location.href       :", window.location.href);
+    console.log("search params              :", Object.fromEntries(searchParams.entries()));
+    console.log("hash params (tgWebApp*)    :", Object.fromEntries(hashParams.entries()));
+    console.log("tgWebAppData (hash)        :", hashParams.get("tgWebAppData") ?? "(none)");
+    console.log("tgWebAppStartParam (hash)  :", hashParams.get("tgWebAppStartParam") ?? "(none)");
+    console.log("Telegram SDK loaded        :", !!window.Telegram);
+    console.log("Telegram.WebApp exists     :", !!webAppRaw);
+    console.log("Telegram.WebApp.platform   :", webAppRaw?.platform ?? "(none)");
+    console.log("Telegram.WebApp.version    :", webAppRaw?.version ?? "(none)");
+    console.log("Telegram.WebApp.initData   :", webAppRaw?.initData ? `${webAppRaw.initData.slice(0, 60)}…` : "(empty)");
+    console.log("Telegram.WebApp.initDataUnsafe:", JSON.stringify(webAppRaw?.initDataUnsafe ?? "(none)"));
+    console.log("DEV_BYPASS active          :", DEV_BYPASS);
+    console.groupEnd();
+    /* eslint-enable no-console */
+
     // Capture the WebApp reference immediately so we can call ready() without
     // waiting for initData.  ready() MUST be called as early as possible —
     // Telegram holds its own loading overlay until it receives this signal.
@@ -98,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Telegram clients time out and close or reset the Mini App, producing a
     // blank / broken startup state that does not occur when opening from a
     // regular browser (where there is no Telegram overlay to time out).
-    const webApp = window.Telegram?.WebApp;
+    const webApp = webAppRaw;
     webApp?.ready();
 
     // Give the SDK a chance to populate `initData`.  It is synchronous in
@@ -108,6 +131,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     for (let attempt = 0; !initData && attempt < INIT_DATA_RETRY_ATTEMPTS; attempt++) {
       await sleep(INIT_DATA_RETRY_DELAY_MS);
       initData = webApp?.initData ?? "";
+      if (initData) {
+        // eslint-disable-next-line no-console
+        console.log(`[HustleCoin] initData arrived on retry attempt ${attempt + 1}`);
+      }
     }
 
     if (initData) {
@@ -122,21 +149,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // if the link format or Telegram version differs.
       const startParam: string | null =
         (webApp?.initDataUnsafe as { start_param?: string } | undefined)?.start_param ?? null;
+      /* eslint-disable no-console */
+      console.group("[HustleCoin] 🔐 Telegram auth → POST /api/auth/telegram");
+      console.log("initData length :", initData.length);
+      console.log("initData prefix :", initData.slice(0, 60) + "…");
+      console.log("start_param     :", startParam);
+      console.log("platform        :", webApp?.platform ?? "(none)");
+      console.log("version         :", webApp?.version ?? "(none)");
+      console.groupEnd();
+      /* eslint-enable no-console */
       authMutation.mutate(
         { data: { initData, referralCode: startParam } },
         {
           onSuccess: (data) => {
-            // Immediately populate the user cache from the POST response body.
-            // In cross-origin deployments (e.g. Railway), the session cookie
-            // issued by the API server domain may not be available for the
-            // GET /api/auth/me refetch that invalidateQueries triggers — the
-            // browser may buffer, partition, or delay cross-domain cookies.
-            // setQueryData here ensures the user is recognised as authenticated
-            // immediately, without waiting for the refetch to confirm it.
-            // TanStack Query preserves this data even if the subsequent refetch
-            // returns 401 (stale-while-revalidate semantics in v5).
+            // eslint-disable-next-line no-console
+            console.log("[HustleCoin] ✅ Auth success → user:", data.user?.id, data.user?.firstName);
+            // Populate the user cache directly from the POST /api/auth/telegram
+            // response body. This is the single source of truth for the initial
+            // authenticated user object.
+            //
+            // ⚠️  DO NOT call invalidateQueries({ queryKey: getGetMeQueryKey() })
+            // here. In Telegram's iOS WKWebView the Set-Cookie header from the
+            // auth POST response is written to the WKHTTPCookieStore
+            // asynchronously. If we trigger a GET /api/auth/me refetch
+            // immediately (which invalidateQueries does when there is an active
+            // useGetMe() subscriber), the request flies out before the session
+            // cookie lands in the store → 401 → stale query data is cleared →
+            // the user appears logged out and all subsequent authenticated API
+            // calls (mining, referrals, wallet) fail with 401 as well.
+            //
+            // setQueryData alone is sufficient: the user object is fresh from
+            // the server, isAuthenticated becomes true immediately, and the
+            // 30-second staleTime means the next background refetch only fires
+            // well after the cookie is safely persisted.
             queryClient.setQueryData(getGetMeQueryKey(), data.user);
-            queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+            // Invalidate dependent queries so pages get fresh data after login.
+            // Mining status and user profile do NOT depend on the session cookie
+            // being present before the invalidation fires — they simply refetch
+            // and will 401 gracefully if the cookie is not yet stored, then
+            // succeed on the next stale refetch (30 s later).
             queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
             // Also invalidate the user profile query — Profile page reads from
             // GET /api/users/me (a separate endpoint with its own cache key).
@@ -145,6 +196,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             queryClient.invalidateQueries({ queryKey: getGetUserProfileQueryKey() });
           },
           onError: (err: unknown) => {
+            // eslint-disable-next-line no-console
+            console.error("[HustleCoin] ❌ Auth FAILED (real initData path)", err);
             if (isAccountBanned(err)) {
               setIsBanned(true);
             } else {
@@ -164,8 +217,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { data: { initData: `dev_bypass:${DEV_USER_ID}` } },
         {
           onSuccess: (data) => {
+            // Same reasoning as the real initData path above:
+            // do NOT invalidate getGetMeQueryKey after setQueryData.
             queryClient.setQueryData(getGetMeQueryKey(), data.user);
-            queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetMiningStatusQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetUserProfileQueryKey() });
           },
