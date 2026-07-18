@@ -54,7 +54,10 @@ const blogCreateSchema = z.object({
   title: z.string().trim().min(1).max(300),
   excerpt: z.string().trim().max(500).optional(),
   content: z.string().max(200_000).optional(),
-  coverImageUrl: z.string().trim().url().max(2000).nullable().optional(),
+  coverImageUrl: z.preprocess(
+    (v) => (v === "" ? null : v),
+    z.string().trim().url().max(2000).nullable().optional(),
+  ),
   category: z.string().trim().max(60).optional(),
   tags: z.array(z.string().trim().max(60)).max(20).optional(),
   seoTitle: z.string().trim().max(300).nullable().optional(),
