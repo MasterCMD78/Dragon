@@ -59,6 +59,11 @@ export default defineConfig({
     strictPort: true,
     host: '0.0.0.0',
     allowedHosts: true,
+    headers: {
+      // Prevent Replit's edge proxy from caching HTML responses so that
+      // changes to index.html (e.g. meta tags) are always served fresh.
+      'Cache-Control': 'no-store',
+    },
     fs: {
       strict: true,
     },
