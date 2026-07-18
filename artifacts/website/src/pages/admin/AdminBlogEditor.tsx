@@ -83,7 +83,14 @@ export default function AdminBlogEditor() {
       }
       setLocation("/admin/blog");
     } catch (err: any) {
-      alert(err.message);
+      // Surface field-level validation details when the API returns them
+      const details = (err as any).details as Array<{ path: string; message: string }> | undefined;
+      if (details && details.length > 0) {
+        const fieldErrors = details.map(d => `• ${d.path || "field"}: ${d.message}`).join("\n");
+        alert(`Validation failed:\n${fieldErrors}`);
+      } else {
+        alert(err.message ?? "Failed to save post");
+      }
     } finally {
       setSaving(false);
     }

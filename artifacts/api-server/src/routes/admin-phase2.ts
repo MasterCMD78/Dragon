@@ -55,7 +55,16 @@ const blogCreateSchema = z.object({
   excerpt: z.string().trim().max(500).optional(),
   content: z.string().max(200_000).optional(),
   coverImageUrl: z.preprocess(
-    (v) => (v === "" ? null : v),
+    (v) => {
+      if (v === "" || v === null || v === undefined) return null;
+      if (typeof v === "string") {
+        // Accept only well-formed absolute URLs; silently discard anything
+        // that looks like a relative path or malformed URL so the editor
+        // never hard-fails on a non-URL cover image value.
+        try { new URL(v); } catch { return null; }
+      }
+      return v;
+    },
     z.string().trim().url().max(2000).nullable().optional(),
   ),
   category: z.string().trim().max(60).optional(),

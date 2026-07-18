@@ -10,6 +10,7 @@ import pinoHttp from "pino-http";
 import helmet from "helmet";
 import compression from "compression";
 import router from "./routes";
+import seoRouter from "./routes/seo";
 import { logger } from "./lib/logger";
 import { sessionMiddleware } from "./middlewares/session";
 import { ensureCsrfToken, requireCsrf } from "./middlewares/csrf";
@@ -89,6 +90,10 @@ app.use(sessionMiddleware);
 app.use(ensureCsrfToken);
 app.use(requireCsrf);
 app.use("/api", generalApiLimiter);
+
+// SEO routes (sitemap.xml, robots.txt, rss.xml) — mounted BEFORE /api so they
+// are accessible at the root level without the /api prefix.
+app.use(seoRouter);
 
 app.use("/api", router);
 

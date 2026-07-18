@@ -65,7 +65,13 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw Object.assign(new Error(err.error ?? "Request failed"), { status: res.status });
+    const error = Object.assign(new Error(err.error ?? "Request failed"), {
+      status: res.status,
+      // Pass through field-level validation details (from validateBody middleware)
+      // so callers can surface them to the user without re-parsing the response.
+      details: err.details as Array<{ path: string; message: string }> | undefined,
+    });
+    throw error;
   }
   return res.json() as Promise<T>;
 }

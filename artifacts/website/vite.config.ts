@@ -67,6 +67,16 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    proxy: {
+      // Proxy SEO/crawler files to the API server so /sitemap.xml, /robots.txt,
+      // and /rss.xml are served dynamically (with live blog post data) from
+      // the website's dev server URL — no /api prefix needed.
+      '/sitemap.xml': { target: 'http://localhost:8080', changeOrigin: true },
+      '/robots.txt': { target: 'http://localhost:8080', changeOrigin: true },
+      '/rss.xml': { target: 'http://localhost:8080', changeOrigin: true },
+      // Also proxy all API calls so the website can reach the API server
+      '/api': { target: 'http://localhost:8080', changeOrigin: true },
+    },
   },
   preview: {
     port,

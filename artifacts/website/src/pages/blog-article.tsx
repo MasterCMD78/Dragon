@@ -49,15 +49,25 @@ export default function BlogArticle() {
     return `<p className="mb-4 leading-relaxed text-lg text-white/90">${html}</p>`;
   };
 
+  const SITE_URL = "https://hustlecoin.app";
   const articleJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.excerpt,
+    "@type": "BlogPosting",
+    headline: post.seoTitle || post.title,
+    description: post.seoDescription || post.excerpt || post.title,
     image: post.coverImageUrl ? [post.coverImageUrl] : undefined,
+    url: `${SITE_URL}/news/${post.slug}`,
     datePublished: post.publishedAt || post.createdAt,
     dateModified: post.updatedAt || post.publishedAt || post.createdAt,
-    author: { "@type": "Organization", name: "HustleCoin" },
+    author: { "@type": "Organization", name: "HustleCoin", url: SITE_URL },
+    publisher: {
+      "@type": "Organization",
+      name: "HustleCoin",
+      url: SITE_URL,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/favicon.svg` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/news/${post.slug}` },
+    keywords: post.tags?.join(", ") || undefined,
   };
 
   return (
