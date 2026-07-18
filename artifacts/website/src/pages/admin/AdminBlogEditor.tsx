@@ -68,7 +68,12 @@ export default function AdminBlogEditor() {
     try {
       const payload = {
         ...formData,
-        tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean)
+        // Convert empty strings to null for nullable URL/text fields so the
+        // backend's z.string().url().nullable() validator accepts them.
+        coverImageUrl: formData.coverImageUrl.trim() || null,
+        seoTitle: formData.seoTitle.trim() || null,
+        seoDescription: formData.seoDescription.trim() || null,
+        tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
       };
 
       if (isNew) {
