@@ -1,0 +1,165 @@
+Continue the HustleCoin V2 project from the latest GitHub commit.
+
+The GitHub repository is already connected to this Replit workspace.
+
+There are TWO remaining tasks to complete.
+
+====================================================
+TASK 1 — Fix the Blog Admin publishing completely
+
+Background:
+
+Google Search Console verification is already complete.
+
+The remaining issue is that creating or editing blog posts from the admin panel still fails in the browser with:
+
+“Invalid request body”
+
+Previous investigation already found:
+
+• The original issue with coverImageUrl = “” was fixed using z.preprocess().
+• The backend accepts null correctly.
+• The browser still fails.
+• The production API and browser behaviour must be tested.
+• Do NOT repeat old fixes.
+
+Your job is to finish this completely.
+
+Steps:
+
+1. Add temporary diagnostics to BOTH:
+
+POST /api/admin/blog
+
+PUT /api/admin/blog/:id
+
+2. Log:
+
+* Entire request body
+* Parsed request body
+* Full Zod validation errors
+* error.flatten()
+* error.issues
+
+3. Temporarily return the validation error JSON in the API response instead of only:
+
+“Invalid request body”
+
+4. Run the website.
+5. Create a blog post from the ADMIN PANEL.
+
+Do NOT rely only on curl.
+
+Use the real browser flow and reproduce the problem through the website.
+
+6. Identify EVERY failing field.
+
+Do NOT stop after fixing one issue.
+
+Continue debugging until:
+
+✓ Creating a blog post works
+
+AND
+
+✓ Editing a blog post works
+
+from the browser.
+
+7. Remove all temporary diagnostics and debug logging.
+8. Keep the permanent z.preprocess() fix.
+9. Commit.
+10. Push to GitHub.
+
+====================================================
+TASK 2 — Finish Google Search Console SEO setup
+
+Ownership verification has already succeeded.
+
+Google Search Console currently shows:
+
+✓ Ownership verified
+
+✓ Crawl successful
+
+✓ Indexing requested
+
+Remaining work:
+
+1. Generate sitemap.xml
+
+Include:
+
+* Home
+* Website pages
+* Blog posts
+* Future public pages
+
+Expose it at:
+
+/sitemap.xml
+
+2. Create robots.txt
+
+Allow all search engines.
+
+Reference sitemap.xml.
+
+3. Add structured data (JSON-LD)
+
+Include:
+
+* Organization
+* Website
+* BlogPosting
+
+4. Ensure every blog post automatically includes:
+
+* SEO title
+* Meta description
+* Canonical URL
+* Open Graph tags
+* Twitter Card tags
+
+5. Generate RSS feed
+
+/rss.xml
+
+6. Verify:
+
+https://dragon–abdulmuminimard.replit.app/sitemap.xml
+
+works correctly.
+
+Verify robots.txt contains:
+
+Sitemap:
+https://dragon–abdulmuminimard.replit.app/sitemap.xml
+
+7. Commit.
+8. Push to GitHub.
+
+====================================================
+IMPORTANT
+
+Do NOT stop after finding one issue.
+
+Continue working until BOTH tasks are fully completed.
+
+After every fix, verify it against the deployed production website—not just the local development server.
+
+Only finish when the production website behaves correctly.
+
+When everything is complete, provide:
+
+• Git commit hashes
+• GitHub push confirmation
+• Blog creation verification
+• Blog edit verification
+• Sitemap URL
+• robots.txt contents
+• RSS feed URL
+• JSON-LD verification
+• Any remaining manual steps (if any)
+
+Do not ask me questions unless absolutely necessary. Work through the issues until everything is fully functional.
