@@ -220,11 +220,11 @@ router.get(
       return;
     }
 
-    // Increment view count async (don't await)
-    void db
-      .update(blogPostsTable)
+    // Increment view count — must subscribe (.catch) to trigger Drizzle's lazy execution
+    db.update(blogPostsTable)
       .set({ viewCount: sql`${blogPostsTable.viewCount} + 1` })
-      .where(eq(blogPostsTable.id, post.id));
+      .where(eq(blogPostsTable.id, post.id))
+      .catch((err) => req.log.error({ err }, "blog view-count increment failed"));
 
     res.json({ post });
   },
@@ -397,13 +397,15 @@ router.post(
     const referrer = req.headers["referer"] as string | undefined;
     const deviceType = detectDevice(ua);
 
-    // Fire-and-forget — don't block response on insert
-    void db.insert(siteAnalyticsTable).values({
-      path: path.slice(0, 500),
-      referrer: referrer?.slice(0, 500),
-      deviceType,
-      sessionId: sessionId?.slice(0, 100),
-    });
+    // Must subscribe (.catch) to trigger Drizzle's lazy execution; void alone never runs
+    db.insert(siteAnalyticsTable)
+      .values({
+        path: path.slice(0, 500),
+        referrer: referrer?.slice(0, 500),
+        deviceType,
+        sessionId: sessionId?.slice(0, 100),
+      })
+      .catch((err) => req.log.error({ err }, "analytics insert failed"));
 
     res.status(204).send();
   },
