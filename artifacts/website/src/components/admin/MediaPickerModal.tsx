@@ -43,7 +43,7 @@ export function MediaPickerModal({ open, onClose, onSelect, currentUrl }: Props)
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const load = useCallback(async (page = 1, q = search) => {
     setLoading(true);

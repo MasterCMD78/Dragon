@@ -49,7 +49,7 @@ export default function AdminMedia() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const load = useCallback(async (page = 1, q = search) => {
     setLoading(true);
