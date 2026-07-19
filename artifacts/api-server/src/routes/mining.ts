@@ -8,6 +8,7 @@ import {
   buildMiningDescription,
   secondsRemaining,
   SESSION_DURATION_MS,
+  calculateLevel,
 } from "../lib/mining";
 import { checkAchievementsAfterEvent } from "../lib/achievement-engine";
 
@@ -124,9 +125,10 @@ router.post(
     const { hpEarned, bonusHp, total } = calcReward(newStreak);
     const newBalance = user.balance + total;
     const newTotalMines = user.totalMines + 1;
+    const newLevel = calculateLevel(newBalance);
     const claimedAt = new Date();
 
-    // Atomic update: balance, streak, total_mines, last_mine, clear session
+    // Atomic update: balance, streak, total_mines, last_mine, level, clear session
     const [updated] = await db
       .update(usersTable)
       .set({
@@ -136,6 +138,7 @@ router.post(
         lastMine: claimedAt,
         miningSessionStart: null,
         lastActive: claimedAt,
+        level: newLevel,
       })
       .where(eq(usersTable.id, user.id))
       .returning();
@@ -174,6 +177,7 @@ router.post(
       newBalance: updated.balance,
       newStreak: updated.streak,
       newTotalMines: updated.totalMines,
+      newLevel: updated.level,
     });
 
     // Fire-and-forget — must run after res.json so the DB already reflects the

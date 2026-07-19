@@ -1,0 +1,93 @@
+TASK: Fix HustleCoin User Level Progression ONLY
+
+CRITICAL INSTRUCTIONS
+
+This is a bug fix only.
+
+DO NOT:
+
+* Refactor existing code.
+* Rename files.
+* Change database schema unless it is absolutely required to fix the level logic.
+* Modify authentication.
+* Modify mining logic.
+* Modify HP earning.
+* Modify achievements.
+* Modify quests.
+* Modify referrals.
+* Modify leaderboard.
+* Modify admin panel.
+* Modify analytics.
+* Modify API routes unrelated to level progression.
+* Modify UI styling.
+* Update packages.
+* Touch any working feature.
+
+Only investigate and fix the user level progression logic.
+
+⸻
+
+Problem
+
+The HustleCoin Mini App works correctly.
+
+Mining works.
+
+HP increases correctly.
+
+Achievements work.
+
+Everything works except one issue:
+
+Every user remains at Level 1 forever.
+
+The level should automatically increase according to the existing level progression rules, but it never updates.
+
+⸻
+
+Your Tasks
+
+1. Read the entire level progression implementation before changing anything.
+2. Locate:
+    * level calculation
+    * level thresholds
+    * XP/HP conversion
+    * user profile update
+    * database update
+    * any scheduled recalculation
+3. Find the exact reason users stay at Level 1.
+4. Fix ONLY that bug.
+5. Preserve the existing level design and progression rules.
+6. Ensure users automatically advance when they meet the required requirements.
+7. Existing users should also receive the correct level after the fix.
+8. If a recalculation is needed, create a safe migration or one-time recalculation that does not affect any other user data.
+
+⸻
+
+After Fixing
+
+Verify:
+
+* New account starts at Level 1.
+* Mining increases HP correctly.
+* Level changes automatically after the required amount is reached.
+* Multiple level jumps work correctly.
+* Existing users recalculate correctly.
+* Database stores the correct level.
+* UI displays the updated level immediately after refresh.
+* No regression in mining, achievements, quests, referrals, leaderboard, or rewards.
+
+⸻
+
+Final Report
+
+When finished, report only:
+
+* Root cause of the bug.
+* File(s) changed.
+* Why users stayed at Level 1.
+* How the fix works.
+* Confirmation that no unrelated code was modified.
+* Results of your verification tests.
+
+This is a surgical bug fix. Do not improve, optimize, refactor, or rewrite anything outside the level progression system.
