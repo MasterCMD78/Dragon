@@ -1,0 +1,281 @@
+HUSTLECOIN V2 — AGENT HANDOFF (CONTINUE ONLY)
+
+You are continuing an existing production project.
+
+CRITICAL RULES
+
+* DO NOT rewrite, refactor, rename, or reorganize the project.
+* DO NOT touch authentication.
+* DO NOT touch blog CRUD.
+* DO NOT touch SEO.
+* DO NOT touch routing unless absolutely required by this task.
+* DO NOT change UI styling outside Analytics.
+* DO NOT modify existing APIs unless required for analytics tracking.
+* DO NOT break any existing functionality.
+* If an existing feature works, leave it alone.
+
+Only complete the unfinished Analytics Phase 2 work.
+
+⸻
+
+PROJECT STATUS
+
+Already completed:
+
+* Website deployed
+* Blog system working
+* SEO working
+* Google Search Console connected
+* Analytics Phase 1 working
+* Page views tracking works
+* Blog view counter works
+* Media Library completed
+* Analytics dashboard already exists
+
+Analytics Phase 1 bug (view counter not incrementing) has already been fixed.
+
+⸻
+
+PREVIOUS AGENT FINDINGS
+
+The previous agent completed most of Phase 2 but stopped after the monthly quota expired.
+
+The previous agent discovered:
+
+geoip-lite v2.x no longer bundles the GeoLite database.
+
+Need to downgrade to geoip-lite v1.x OR make geoip-lite external so __dirname works correctly.
+
+The API server was already running before quota expired.
+
+The remaining work is mostly wiring and verification.
+
+⸻
+
+TASK
+
+Complete Analytics Phase 2.
+
+Implement these metrics inside the existing Analytics dashboard.
+
+1. Live Visitors
+
+Current online visitors.
+
+⸻
+
+2. Countries
+
+Visitor countries.
+
+⸻
+
+3. Cities
+
+Visitor cities.
+
+⸻
+
+4. Device Breakdown
+
+Desktop
+
+Mobile
+
+Tablet
+
+⸻
+
+5. Browser Breakdown
+
+Chrome
+
+Safari
+
+Firefox
+
+Edge
+
+Opera
+
+Others
+
+⸻
+
+6. Traffic Sources
+
+Google
+
+TikTok
+
+Telegram
+
+X
+
+Facebook
+
+Instagram
+
+Discord
+
+Direct
+
+Referral
+
+Unknown
+
+⸻
+
+7. Most Read Blog Posts
+
+Rank blog posts by views.
+
+⸻
+
+8. Charts
+
+Daily
+
+Weekly
+
+Monthly
+
+Yearly
+
+⸻
+
+9. Average Session Duration
+
+Estimate using first activity and last activity for each visitor session.
+
+⸻
+
+10. Returning vs New Visitors
+
+Track repeat visitors.
+
+⸻
+
+DATABASE
+
+Only add tables if absolutely necessary.
+
+Prefer extending existing analytics tables.
+
+Do NOT delete data.
+
+Do NOT rename tables.
+
+⸻
+
+TRACKING
+
+Track:
+
+* pathname
+* country
+* city
+* browser
+* OS
+* device
+* referrer
+* traffic source
+* session id
+* visitor id
+* timestamps
+
+⸻
+
+GEOLOCATION
+
+Use geoip-lite version that works correctly with Node runtime.
+
+If necessary:
+
+* downgrade to geoip-lite@1.x
+
+OR
+
+configure bundler so geoip-lite is external.
+
+Do NOT invent another geolocation solution.
+
+⸻
+
+DASHBOARD
+
+Upgrade ONLY the existing Analytics dashboard.
+
+Do NOT redesign the whole admin panel.
+
+Keep HustleCoin design language.
+
+Dark theme.
+
+Gold accents.
+
+Current cards should remain.
+
+Add the new sections below them.
+
+⸻
+
+IMPORTANT
+
+Do NOT modify Blog pages.
+
+Do NOT modify Media Library.
+
+Do NOT modify Contact.
+
+Do NOT modify SEO.
+
+Do NOT modify Admin Login.
+
+Do NOT modify Website Routing.
+
+Do NOT modify existing APIs except analytics endpoints.
+
+⸻
+
+BEFORE FINISHING
+
+Verify:
+
+✓ Page views still increment
+
+✓ Blog views still increment
+
+✓ Countries populate
+
+✓ Cities populate
+
+✓ Devices populate
+
+✓ Browsers populate
+
+✓ Traffic sources populate
+
+✓ Charts render
+
+✓ No TypeScript errors
+
+✓ No runtime errors
+
+✓ API server starts cleanly
+
+✓ Build succeeds
+
+⸻
+
+AFTER COMPLETION
+
+Provide ONLY:
+
+1. What files changed
+2. What database changes were made
+3. Any new environment variables required
+4. Any package added
+5. Verification results
+
+Do NOT perform unrelated improvements.

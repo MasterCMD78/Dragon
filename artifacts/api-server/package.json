@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.21.0",
+    "geoip-lite": "^1.4.10",
     "@types/express-session": "^1.19.0",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",

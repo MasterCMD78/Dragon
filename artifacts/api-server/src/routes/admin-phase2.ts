@@ -1135,58 +1135,153 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     const { period = "7d" } = req.query as { period?: string };
 
-    const days = period === "30d" ? 30 : period === "1d" ? 1 : 7;
+    const days = period === "1y" ? 365 : period === "30d" ? 30 : period === "1d" ? 1 : 7;
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+    // Choose grouping granularity: hourly for 1d, monthly for 1y, daily otherwise
+    const truncUnit = period === "1d" ? "hour" : period === "1y" ? "month" : "day";
+    const truncLabel = period === "1d"
+      ? sql<string>`to_char(date_trunc('hour', ${siteAnalyticsTable.createdAt}), 'YYYY-MM-DD HH24:00')`
+      : period === "1y"
+        ? sql<string>`to_char(date_trunc('month', ${siteAnalyticsTable.createdAt}), 'YYYY-MM')`
+        : sql<string>`date_trunc('day', ${siteAnalyticsTable.createdAt})::date::text`;
 
     const [
       [{ total }],
-      byDay,
+      byPeriod,
       byPath,
       byDevice,
+      [{ liveVisitors }],
+      byCountry,
+      byCity,
+      byBrowser,
+      byTrafficSource,
+      topBlogPosts,
+      sessionDurationRows,
+      visitorRows,
     ] = await Promise.all([
       // Total views
-      db
-        .select({ total: count() })
+      db.select({ total: count() })
         .from(siteAnalyticsTable)
         .where(gte(siteAnalyticsTable.createdAt, since)),
-      // Views by day
-      db
-        .select({
-          day: sql<string>`date_trunc('day', ${siteAnalyticsTable.createdAt})::date::text`,
-          views: count(),
-        })
+
+      // Views by period (hourly / daily / monthly depending on period)
+      db.select({ label: truncLabel, views: count() })
         .from(siteAnalyticsTable)
         .where(gte(siteAnalyticsTable.createdAt, since))
-        .groupBy(sql`date_trunc('day', ${siteAnalyticsTable.createdAt})`)
-        .orderBy(sql`date_trunc('day', ${siteAnalyticsTable.createdAt})`),
+        .groupBy(sql`date_trunc(${truncUnit}, ${siteAnalyticsTable.createdAt})`)
+        .orderBy(sql`date_trunc(${truncUnit}, ${siteAnalyticsTable.createdAt})`),
+
       // Top pages
-      db
-        .select({
-          path: siteAnalyticsTable.path,
-          views: count(),
-        })
+      db.select({ path: siteAnalyticsTable.path, views: count() })
         .from(siteAnalyticsTable)
         .where(gte(siteAnalyticsTable.createdAt, since))
         .groupBy(siteAnalyticsTable.path)
         .orderBy(desc(count()))
         .limit(10),
+
       // By device
-      db
-        .select({
-          deviceType: siteAnalyticsTable.deviceType,
-          views: count(),
-        })
+      db.select({ deviceType: siteAnalyticsTable.deviceType, views: count() })
         .from(siteAnalyticsTable)
         .where(gte(siteAnalyticsTable.createdAt, since))
         .groupBy(siteAnalyticsTable.deviceType),
+
+      // Live visitors (distinct sessions active in last 5 min)
+      db.select({ liveVisitors: sql<number>`count(distinct ${siteAnalyticsTable.sessionId})` })
+        .from(siteAnalyticsTable)
+        .where(gte(siteAnalyticsTable.createdAt, fiveMinAgo)),
+
+      // By country
+      db.select({ country: siteAnalyticsTable.country, views: count() })
+        .from(siteAnalyticsTable)
+        .where(and(gte(siteAnalyticsTable.createdAt, since), sql`${siteAnalyticsTable.country} is not null`))
+        .groupBy(siteAnalyticsTable.country)
+        .orderBy(desc(count()))
+        .limit(20),
+
+      // By city
+      db.select({ city: siteAnalyticsTable.city, views: count() })
+        .from(siteAnalyticsTable)
+        .where(and(gte(siteAnalyticsTable.createdAt, since), sql`${siteAnalyticsTable.city} is not null`))
+        .groupBy(siteAnalyticsTable.city)
+        .orderBy(desc(count()))
+        .limit(20),
+
+      // By browser
+      db.select({ browser: siteAnalyticsTable.browser, views: count() })
+        .from(siteAnalyticsTable)
+        .where(and(gte(siteAnalyticsTable.createdAt, since), sql`${siteAnalyticsTable.browser} is not null`))
+        .groupBy(siteAnalyticsTable.browser)
+        .orderBy(desc(count())),
+
+      // By traffic source
+      db.select({ trafficSource: siteAnalyticsTable.trafficSource, views: count() })
+        .from(siteAnalyticsTable)
+        .where(and(gte(siteAnalyticsTable.createdAt, since), sql`${siteAnalyticsTable.trafficSource} is not null`))
+        .groupBy(siteAnalyticsTable.trafficSource)
+        .orderBy(desc(count())),
+
+      // Top blog posts by view count
+      db.select({ id: blogPostsTable.id, title: blogPostsTable.title, slug: blogPostsTable.slug, views: blogPostsTable.viewCount })
+        .from(blogPostsTable)
+        .where(eq(blogPostsTable.isPublished, true))
+        .orderBy(desc(blogPostsTable.viewCount))
+        .limit(10),
+
+      // Session durations: per-session min/max for sessions with >1 event
+      db.select({
+        sessionId: siteAnalyticsTable.sessionId,
+        durationSecs: sql<number>`extract(epoch from (max(${siteAnalyticsTable.createdAt}) - min(${siteAnalyticsTable.createdAt})))`,
+      })
+        .from(siteAnalyticsTable)
+        .where(and(gte(siteAnalyticsTable.createdAt, since), sql`${siteAnalyticsTable.sessionId} is not null`))
+        .groupBy(siteAnalyticsTable.sessionId)
+        .having(sql`count(*) > 1`),
+
+      // Visitor breakdown: first seen per visitor_id (for new vs returning)
+      db.select({
+        visitorId: siteAnalyticsTable.visitorId,
+        firstSeen: sql<string>`min(${siteAnalyticsTable.createdAt})`,
+      })
+        .from(siteAnalyticsTable)
+        .where(sql`${siteAnalyticsTable.visitorId} is not null`)
+        .groupBy(siteAnalyticsTable.visitorId),
     ]);
+
+    // Compute avg session duration in seconds
+    const durations = sessionDurationRows.map((r) => Number(r.durationSecs)).filter((d) => d > 0 && d < 86400);
+    const avgSessionDuration = durations.length > 0
+      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+      : 0;
+
+    // Returning vs new visitors in the selected period
+    const sinceTs = since.getTime();
+    let newVisitors = 0;
+    let returningVisitors = 0;
+    for (const v of visitorRows) {
+      const firstSeenTs = new Date(v.firstSeen).getTime();
+      if (firstSeenTs >= sinceTs) {
+        newVisitors++;
+      } else {
+        returningVisitors++;
+      }
+    }
 
     res.json({
       period,
-      totalViews: total,
-      byDay,
+      totalViews: Number(total),
+      liveVisitors: Number(liveVisitors),
+      byDay: byPeriod,
       topPages: byPath,
       byDevice,
+      byCountry,
+      byCity,
+      byBrowser,
+      byTrafficSource,
+      topBlogPosts,
+      avgSessionDuration,
+      returningVsNew: { new: newVisitors, returning: returningVisitors },
     });
   },
 );

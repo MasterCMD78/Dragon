@@ -31,6 +31,17 @@ import { z } from "zod";
 import { validateBody } from "../middlewares/validate";
 import { cached } from "../lib/ttl-cache";
 
+// geoip-lite is externalized in esbuild so the bundled GeoLite DB is accessible
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let geoip: any;
+try {
+  // Dynamic require via the CJS shim injected by the esbuild banner
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  geoip = require("geoip-lite");
+} catch {
+  geoip = null;
+}
+
 const router: IRouter = Router();
 
 // Short TTLs on public read-heavy content the website/Mini App polls
@@ -60,6 +71,58 @@ function detectDevice(ua: string | undefined): string {
     return "mobile";
   }
   return "desktop";
+}
+
+function detectBrowser(ua: string | undefined): string {
+  if (!ua) return "Other";
+  const u = ua.toLowerCase();
+  if (u.includes("edg/") || u.includes("edge/")) return "Edge";
+  if (u.includes("opr/") || u.includes("opera")) return "Opera";
+  if (u.includes("chrome") && !u.includes("chromium") && !u.includes("edg")) return "Chrome";
+  if (u.includes("firefox") || u.includes("fxios")) return "Firefox";
+  if ((u.includes("safari") || u.includes("applewebkit")) && !u.includes("chrome")) return "Safari";
+  return "Other";
+}
+
+function detectOS(ua: string | undefined): string {
+  if (!ua) return "Other";
+  const u = ua.toLowerCase();
+  if (u.includes("android")) return "Android";
+  if (u.includes("iphone") || u.includes("ipad") || u.includes("ios")) return "iOS";
+  if (u.includes("windows")) return "Windows";
+  if (u.includes("mac os") || u.includes("macos")) return "macOS";
+  if (u.includes("linux")) return "Linux";
+  return "Other";
+}
+
+function detectTrafficSource(referrer: string | undefined): string {
+  if (!referrer) return "Direct";
+  try {
+    const host = new URL(referrer).hostname.toLowerCase();
+    if (host.includes("google.")) return "Google";
+    if (host.includes("tiktok.")) return "TikTok";
+    if (host.includes("t.me") || host.includes("telegram.")) return "Telegram";
+    if (host.includes("twitter.") || host === "x.com" || host.endsWith(".x.com")) return "X";
+    if (host.includes("facebook.") || host.includes("fb.com")) return "Facebook";
+    if (host.includes("instagram.")) return "Instagram";
+    if (host.includes("discord.")) return "Discord";
+    return "Referral";
+  } catch {
+    return "Unknown";
+  }
+}
+
+function geoLookup(ip: string): { country: string | null; city: string | null } {
+  if (!geoip) return { country: null, city: null };
+  try {
+    const lookup = geoip.lookup(ip);
+    return {
+      country: lookup?.country ?? null,
+      city: lookup?.city ?? null,
+    };
+  } catch {
+    return { country: null, city: null };
+  }
 }
 
 // ── GET /public/stats ─────────────────────────────────────────────────────────
@@ -385,17 +448,27 @@ router.post(
 const analyticsTrackSchema = z.object({
   path: z.string().trim().min(1).max(500),
   sessionId: z.string().trim().max(100).optional(),
+  visitorId: z.string().trim().max(100).optional(),
 });
 
 router.post(
   "/public/analytics/track",
   validateBody(analyticsTrackSchema),
   async (req: Request, res: Response): Promise<void> => {
-    const { path, sessionId } = req.body as z.infer<typeof analyticsTrackSchema>;
+    const { path, sessionId, visitorId } = req.body as z.infer<typeof analyticsTrackSchema>;
 
     const ua = req.headers["user-agent"] as string | undefined;
     const referrer = req.headers["referer"] as string | undefined;
     const deviceType = detectDevice(ua);
+    const browser = detectBrowser(ua);
+    const os = detectOS(ua);
+    const trafficSource = detectTrafficSource(referrer);
+
+    // Geo-lookup from the connecting IP (X-Forwarded-For set by Replit's proxy)
+    const rawIp = (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim()
+      ?? req.ip
+      ?? "";
+    const { country, city } = geoLookup(rawIp);
 
     // Must subscribe (.catch) to trigger Drizzle's lazy execution; void alone never runs
     db.insert(siteAnalyticsTable)
@@ -403,7 +476,13 @@ router.post(
         path: path.slice(0, 500),
         referrer: referrer?.slice(0, 500),
         deviceType,
+        browser,
+        os,
+        trafficSource,
+        country,
+        city: city?.slice(0, 200) ?? null,
         sessionId: sessionId?.slice(0, 100),
+        visitorId: visitorId?.slice(0, 100),
       })
       .catch((err) => req.log.error({ err }, "analytics insert failed"));
 
