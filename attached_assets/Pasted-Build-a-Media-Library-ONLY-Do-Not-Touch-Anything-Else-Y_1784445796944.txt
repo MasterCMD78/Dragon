@@ -1,0 +1,169 @@
+Build a Media Library ONLY (Do Not Touch Anything Else)
+
+You are working on the HustleCoin V2 project.
+
+IMPORTANT:
+
+⚠️ Do NOT modify, refactor, or touch any existing functionality.
+
+Do NOT edit:
+
+* Authentication
+* Admin login
+* Blog CRUD logic
+* Google Search Console
+* SEO
+* Sitemap
+* Robots.txt
+* RSS
+* API routes (except adding media endpoints if absolutely necessary)
+* Database schema unrelated to media
+* Frontend routing
+* Existing components
+
+The website is already working correctly.
+
+Your ONLY task is to build a complete Media Library for the admin panel.
+
+⸻
+
+Goal
+
+Allow the admin to upload images once and reuse them everywhere.
+
+The media library should work like WordPress.
+
+⸻
+
+Requirements
+
+1. Upload Images
+
+Create a Media page inside Admin.
+
+Allow uploading:
+
+* PNG
+* JPG
+* JPEG
+* WEBP
+* GIF
+
+Maximum size:
+
+10MB
+
+⸻
+
+2. Store Images
+
+Store uploaded files in a persistent uploads folder.
+
+Every uploaded image should have:
+
+* id
+* filename
+* originalName
+* url
+* size
+* uploadedAt
+
+⸻
+
+3. Media Library UI
+
+Display uploaded images as cards/grid.
+
+Each card should show:
+
+* image preview
+* filename
+* upload date
+* copy URL button
+* delete button
+
+⸻
+
+4. Image Picker
+
+Whenever an image is needed (Blog cover image, future pages, etc.):
+
+Instead of manually pasting a URL,
+
+show:
+
+Choose From Media Library
+
+Clicking it opens a modal with uploaded images.
+
+Selecting one automatically fills the Cover Image URL field.
+
+⸻
+
+5. Manual URL Still Works
+
+Do NOT remove manual URL input.
+
+Users can either:
+
+* Upload
+* Select existing image
+* Paste external URL
+
+⸻
+
+6. Delete Images
+
+Deleting an image should:
+
+* remove database entry
+* delete physical file
+
+Do NOT break blog posts that already reference deleted files.
+
+⸻
+
+7. Search
+
+Add search by filename.
+
+⸻
+
+8. Pagination
+
+If many images exist,
+
+show pagination.
+
+⸻
+
+9. Drag & Drop Upload
+
+Support:
+
+* drag & drop
+* click to upload
+
+⸻
+
+10. Progress Indicator
+
+While uploading,
+
+show upload progress.
+
+⸻
+
+11. Copy URL
+
+Each uploaded image should have:
+
+Copy URL
+
+which copies the public image URL.
+
+⸻
+
+12. Public URL
+
+Uploaded images should be accessible via:
