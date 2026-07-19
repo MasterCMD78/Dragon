@@ -13,6 +13,8 @@ import walletRouter from "./wallet";
 import adminRouter from "./admin";
 import adminPhase2Router from "./admin-phase2";
 import publicRouter from "./public";
+import storageRouter from "./storage";
+import mediaRouter from "./media";
 
 const router: IRouter = Router();
 
@@ -30,5 +32,7 @@ router.use(walletRouter);
 router.use(adminRouter);
 router.use(adminPhase2Router);
 router.use(publicRouter);
+router.use(storageRouter);
+router.use(mediaRouter);
 
 export default router;

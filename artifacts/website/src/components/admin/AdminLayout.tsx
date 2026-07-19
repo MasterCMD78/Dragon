@@ -4,7 +4,7 @@ import { useAdminAuth } from "@/contexts/admin-auth";
 import { 
   LayoutDashboard, Users, FileText, Mail, Map, 
   Megaphone, Edit3, Link as LinkIcon, BarChart3, 
-  Settings, LogOut, Menu, X 
+  Settings, LogOut, Menu, X, Image as ImageIcon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -35,6 +35,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
     { icon: Users, label: "Users", href: "/admin/users" },
     { icon: FileText, label: "Blog", href: "/admin/blog" },
+    { icon: ImageIcon, label: "Media", href: "/admin/media" },
     { icon: Mail, label: "Contact", href: "/admin/contact" },
     { icon: Map, label: "Roadmap", href: "/admin/roadmap" },
     { icon: Megaphone, label: "Announcements", href: "/admin/announcements" },

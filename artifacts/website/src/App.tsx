@@ -49,6 +49,7 @@ const AdminContent = lazy(() => import('@/pages/admin/AdminContent'));
 const AdminSocialLinks = lazy(() => import('@/pages/admin/AdminSocialLinks'));
 const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
+const AdminMedia = lazy(() => import('@/pages/admin/AdminMedia'));
 
 import { useAnalytics } from '@/hooks/use-analytics';
 import { AnnouncementOverlay } from '@/components/AnnouncementOverlay';
@@ -163,6 +164,9 @@ function AppContent() {
         </Route>
         <Route path="/admin/settings">
           <AdminPage><AdminSettings /></AdminPage>
+        </Route>
+        <Route path="/admin/media">
+          <AdminPage><AdminMedia /></AdminPage>
         </Route>
         <Route path="/admin/dashboard">
           <AdminPage><AdminDashboard /></AdminPage>

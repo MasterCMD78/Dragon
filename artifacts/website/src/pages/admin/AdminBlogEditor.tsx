@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { apiFetch } from "@/lib/api";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Image as ImageIcon } from "lucide-react";
 import { Link } from "wouter";
+import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 
 export default function AdminBlogEditor() {
   const { id } = useParams();
@@ -11,6 +12,7 @@ export default function AdminBlogEditor() {
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -148,6 +150,14 @@ export default function AdminBlogEditor() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Cover Image URL</label>
               <input name="coverImageUrl" value={formData.coverImageUrl} onChange={handleChange} className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white text-sm" placeholder="https://..." />
+              <button
+                type="button"
+                onClick={() => setMediaPickerOpen(true)}
+                className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-xs text-muted-foreground hover:text-white transition-colors"
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                Choose From Media Library
+              </button>
               {formData.coverImageUrl && (
                 <img src={formData.coverImageUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-lg border border-white/10" />
               )}
@@ -173,6 +183,12 @@ export default function AdminBlogEditor() {
           </div>
         </div>
       </div>
+      <MediaPickerModal
+        open={mediaPickerOpen}
+        onClose={() => setMediaPickerOpen(false)}
+        onSelect={(url) => setFormData(prev => ({ ...prev, coverImageUrl: url }))}
+        currentUrl={formData.coverImageUrl}
+      />
     </form>
   );
 }

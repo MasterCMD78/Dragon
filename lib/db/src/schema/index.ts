@@ -14,3 +14,4 @@ export * from "./contact_messages";
 export * from "./site_analytics";
 export * from "./roadmap_phases";
 export * from "./website_announcements";
+export * from "./media_files";
