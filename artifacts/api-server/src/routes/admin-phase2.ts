@@ -1140,12 +1140,18 @@ router.get(
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
 
     // Choose grouping granularity: hourly for 1d, monthly for 1y, daily otherwise
-    const truncUnit = period === "1d" ? "hour" : period === "1y" ? "month" : "day";
+    // groupByExpr must use literal strings (not bind params) so Postgres can match
+    // the GROUP BY expression to the SELECT expression.
     const truncLabel = period === "1d"
       ? sql<string>`to_char(date_trunc('hour', ${siteAnalyticsTable.createdAt}), 'YYYY-MM-DD HH24:00')`
       : period === "1y"
         ? sql<string>`to_char(date_trunc('month', ${siteAnalyticsTable.createdAt}), 'YYYY-MM')`
         : sql<string>`date_trunc('day', ${siteAnalyticsTable.createdAt})::date::text`;
+    const groupByExpr = period === "1d"
+      ? sql`date_trunc('hour', ${siteAnalyticsTable.createdAt})`
+      : period === "1y"
+        ? sql`date_trunc('month', ${siteAnalyticsTable.createdAt})`
+        : sql`date_trunc('day', ${siteAnalyticsTable.createdAt})`;
 
     const [
       [{ total }],
@@ -1170,8 +1176,8 @@ router.get(
       db.select({ label: truncLabel, views: count() })
         .from(siteAnalyticsTable)
         .where(gte(siteAnalyticsTable.createdAt, since))
-        .groupBy(sql`date_trunc(${truncUnit}, ${siteAnalyticsTable.createdAt})`)
-        .orderBy(sql`date_trunc(${truncUnit}, ${siteAnalyticsTable.createdAt})`),
+        .groupBy(groupByExpr)
+        .orderBy(groupByExpr),
 
       // Top pages
       db.select({ path: siteAnalyticsTable.path, views: count() })
