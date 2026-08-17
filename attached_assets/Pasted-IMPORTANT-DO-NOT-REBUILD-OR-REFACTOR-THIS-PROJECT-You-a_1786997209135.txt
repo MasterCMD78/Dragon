@@ -1,0 +1,111 @@
+IMPORTANT: DO NOT REBUILD OR REFACTOR THIS PROJECT
+
+You are working on an existing production-ready project that has been imported from GitHub into a new Replit workspace.
+
+STRICT RULES
+
+* DO NOT rewrite, rebuild, redesign, refactor, optimize, or regenerate any existing code.
+* DO NOT replace any files.
+* DO NOT modify the UI.
+* DO NOT modify the Telegram Mini App.
+* DO NOT modify the website.
+* DO NOT modify the admin panel.
+* DO NOT change database models.
+* DO NOT change routes.
+* DO NOT change API endpoints.
+* DO NOT update dependencies unless absolutely required to make the existing project run.
+* DO NOT remove any existing functionality.
+
+Everything in this project is already working correctly.
+
+Your job is ONLY to reconnect the imported project to the new Replit environment.
+
+⸻
+
+Current Situation
+
+This project was originally hosted on another Replit workspace.
+
+The original workspace expired.
+
+The project has now been imported from GitHub into a new Replit account.
+
+The following Replit Secrets have already been configured:
+
+* Telegram Bot Token
+* Telegram Bot Username
+* Database URL (Neon PostgreSQL)
+* All required environment variables
+
+Do NOT recreate or overwrite these secrets.
+
+⸻
+
+Your Tasks
+
+1. Inspect the project.
+2. Detect the correct startup command.
+3. Install only the dependencies already defined by the project.
+4. Ensure environment variables are being read correctly.
+5. Connect to the existing Neon PostgreSQL database.
+6. Run any existing migrations ONLY if the project requires them and ONLY if they are safe and non-destructive.
+7. Ensure the Telegram Mini App connects successfully.
+8. Ensure the website works.
+9. Ensure the website Admin Panel works.
+10. Ensure static assets are served correctly.
+11. Ensure API endpoints work exactly as before.
+12. Ensure the bot webhook or polling configuration is restored exactly as the project expects.
+13. Start the application.
+
+⸻
+
+DO NOT
+
+* Create a new database.
+* Delete database data.
+* Reset tables.
+* Seed new data unless the existing project explicitly requires it.
+* Generate new admin accounts.
+* Change project architecture.
+* Touch authentication.
+* Touch HP balances.
+* Touch user accounts.
+* Touch achievements.
+* Touch quests.
+* Touch referrals.
+* Touch mining logic.
+* Touch leaderboards.
+
+⸻
+
+Final Verification
+
+Before finishing, verify that:
+
+✅ Telegram Mini App opens successfully.
+
+✅ Telegram Bot is responding correctly.
+
+✅ Website homepage loads.
+
+✅ Website admin panel loads.
+
+✅ Existing users remain intact.
+
+✅ Existing HP balances remain intact.
+
+✅ Existing achievements remain intact.
+
+✅ Existing referrals remain intact.
+
+✅ Existing posts/blog content remains intact.
+
+✅ Existing APIs return successful responses.
+
+⸻
+
+If an issue occurs, fix ONLY the minimum amount of code necessary.
+
+Never replace working code with newly generated code.
+
+Treat this as a restoration task, NOT a development task.
